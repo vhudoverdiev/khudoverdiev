@@ -68,6 +68,20 @@ button {
     box-sizing: border-box;
 }
 
+.ui-icon-symbol {
+    display: inline-grid;
+    place-items: center;
+    font-family: "Segoe UI Symbol", "Arial Unicode MS", Arial, sans-serif;
+    font-variant-emoji: text;
+    font-weight: 900;
+    text-align: center;
+}
+
+.ui-icon-symbol::before,
+.ui-icon-symbol::after {
+    display: none;
+}
+
 .ui-icon-arrow-up-right::before {
     left: 0.18em;
     top: 0.47em;
@@ -461,6 +475,10 @@ textarea:focus-visible {
 
 .code-console-status > span { color: var(--lime); }
 .code-console-status > b { margin-left: auto; color: rgba(255, 255, 255, 0.48); font-weight: 700; }
+
+.mobile-action-console {
+    display: none;
+}
 
 .eyebrow,
 .section-index {
@@ -924,11 +942,13 @@ footer {
     min-height: 246px;
     padding: 34px 36px 36px;
     background: transparent;
-    transition: background 220ms ease;
+    transition: background-color 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
 }
 
 .principles article:hover {
-    background: rgba(206, 255, 51, 0.055);
+    background-color: #1d2418;
+    border-color: rgba(206, 255, 51, 0.24);
+    box-shadow: inset 0 0 0 1px rgba(206, 255, 51, 0.08);
 }
 
 .principles article + article {
@@ -2641,10 +2661,61 @@ footer p:last-child {
         color: rgba(255, 255, 255, 0.68);
     }
 
-    .hero-actions {
+    .mobile-action-console {
         grid-column: 1 / -1;
         grid-row: 5;
-        margin-top: 24px;
+        width: 100%;
+        margin-top: 18px;
+        display: grid;
+        gap: 0;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 16px;
+        background:
+            linear-gradient(135deg, rgba(255, 255, 255, 0.052), transparent 44%),
+            rgba(6, 8, 7, 0.72);
+        box-shadow: 0 18px 46px rgba(0, 0, 0, 0.18), inset 0 1px rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.66);
+        font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+    }
+
+    .mobile-code-line {
+        min-height: 32px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0 12px;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        font-size: 9px;
+        line-height: 1;
+        white-space: nowrap;
+        mask-image: linear-gradient(90deg, #000 88%, transparent);
+        -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent);
+    }
+
+    .mobile-code-line:first-child {
+        border-top: 0;
+    }
+
+    .mobile-code-line > span {
+        flex: 0 0 auto;
+        color: rgba(255, 255, 255, 0.22);
+    }
+
+    .mobile-code-line em {
+        color: var(--violet);
+        font-style: normal;
+    }
+
+    .mobile-code-line strong {
+        color: var(--lime);
+        font-weight: 600;
+    }
+
+    .hero-actions {
+        grid-column: 1 / -1;
+        grid-row: 6;
+        margin-top: 16px;
     }
 
     .button {

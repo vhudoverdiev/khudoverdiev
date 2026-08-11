@@ -7,6 +7,5 @@ htmlcov/
 .venv/
 venv/
 _codex_chat_files/
-static/portfolio/peredacha.mp4
 site.db
 *.log

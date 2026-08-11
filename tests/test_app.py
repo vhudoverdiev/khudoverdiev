@@ -235,7 +235,7 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "IT | Владимир Худовердиев".encode() in portfolio.data
     assert b"portfolio/vh-favicon.svg" in portfolio.data
     assert b"vh-favicon.svg?v=7" in portfolio.data
-    assert b"css/it.css?v=75" in portfolio.data
+    assert b"css/it.css?v=78" in portfolio.data
     assert b"portfolio/vladimir-avatar-favicon.png" not in portfolio.data
     assert b"portfolio/vladimir-user-cutout.png" in portfolio.data
     assert b"class=\"portrait-photo\"" in portfolio.data
@@ -246,11 +246,12 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "CRM «Передача»".encode() in portfolio.data
     assert "CRM Shans".encode() in portfolio.data
     assert "Два продукта: чистая логика, сильный интерфейс и понятный результат.".encode() not in portfolio.data
-    assert b"class=\"ui-icon ui-icon-arrow-up-right\"" in portfolio.data
-    assert b"class=\"ui-icon ui-icon-play\"" in portfolio.data
-    assert b"class=\"ui-icon ui-icon-arrow-down\"" in portfolio.data
-    for symbol in ("↗", "↓", "↑", "←", "→", "▶", "✓"):
-        assert symbol.encode() not in portfolio.data
+    assert b"class=\"ui-icon ui-icon-symbol ui-icon-arrow-up-right\"" in portfolio.data
+    assert b"class=\"ui-icon ui-icon-symbol ui-icon-play\"" in portfolio.data
+    assert b"class=\"ui-icon ui-icon-symbol ui-icon-arrow-down\"" in portfolio.data
+    assert b"class=\"mobile-action-console\"" in portfolio.data
+    for symbol in ("↗︎", "↓", "←", "→", "▶︎", "✓"):
+        assert symbol.encode() in portfolio.data
     css = Path("static/css/it.css").read_text(encoding="utf-8")
     favicon = Path("static/portfolio/vh-favicon.svg").read_text(encoding="utf-8")
     assert 'font-size="23"' in favicon
@@ -289,8 +290,16 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert ".hero-copy {\n        display: contents;" in css
     assert ".hero h1 {\n        grid-column: 1;\n        grid-row: 3;" in css
     assert ".portrait-wrap {\n        display: none;" in css
+    assert ".mobile-action-console {\n    display: none;" in css
+    assert ".mobile-action-console {\n        grid-column: 1 / -1;\n        grid-row: 5;" in css
+    assert ".hero-actions {\n        grid-column: 1 / -1;\n        grid-row: 6;" in css
     assert ".about-copy > p {\n        max-width: 330px;\n        margin-top: 2px;\n        padding: 0;" in css
     assert ".principles {\n        display: grid;\n        grid-template-columns: 1fr;" in css
+    principles_hover = re.search(r"\.principles article:hover \{(?P<body>.*?)\n\}", css, re.S)
+    assert principles_hover is not None
+    assert "background:" not in principles_hover.group("body")
+    assert "background-color: #1d2418;" in principles_hover.group("body")
+    assert ".ui-icon-symbol::before,\n.ui-icon-symbol::after {\n    display: none;" in css
     assert "flex: 0 0 248px" not in css
     assert "scroll-snap-type: x mandatory;" not in css
     assert ".media-button {\n        min-height: 54px;\n        padding: 0 12px 0 17px;\n        border-radius: 999px;" in css
@@ -456,6 +465,7 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert b"data-lightbox" in response.data
     assert b">PH<span>.</span></a>" in response.data
     assert '<a href="/#services">Фото</a>'.encode() in response.data
+    assert '<a href="/#video">Видео</a>'.encode() in response.data
     assert '<a href="/#services">Съемки</a>'.encode() not in response.data
     assert b"vkuserphoto.ru" not in response.data
     assert "visitor_id=" in response.headers["Set-Cookie"]
@@ -467,6 +477,9 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert ".ph-trust {\n    position: relative;\n    box-sizing: border-box;" in css
     assert ".ph-hero-stage {\n        width: min(520px, 100%);\n        height: 520px;" in css
     assert ".ph-hero-person {\n        height: 482px;\n        bottom: -54px;" in css
+    assert "min-height: calc(100svh - 150px);" in css
+    assert ".ph-trust {\n        min-height: 150px;" in css
+    assert ".ph-trust {\n        min-height: 0;\n        flex-direction: column;" in css
     assert ".ph-work-controls {\n    display: none;" in css
     assert "aspect-ratio: 1 / 1;" in css
     assert ".ph-full-gallery {\n    display: grid;" in css
@@ -535,6 +548,15 @@ def test_portfolio_pdf_can_be_framed_only_by_same_origin(client):
     assert response.status_code == 200
     assert response.headers["X-Frame-Options"] == "SAMEORIGIN"
     assert "frame-ancestors 'self'" in response.headers["Content-Security-Policy"]
+
+
+def test_portfolio_video_is_small_enough_to_ship_through_git_deploy():
+    gitignore = Path(".gitignore").read_text(encoding="utf-8")
+    video = Path("static/portfolio/peredacha.mp4")
+
+    assert "static/portfolio/peredacha.mp4" not in gitignore
+    assert video.exists()
+    assert video.stat().st_size < 100 * 1024 * 1024
 
 
 def test_valid_social_redirect_records_click_by_display_label(client):
