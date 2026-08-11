@@ -32,6 +32,7 @@ BRANCH_HOSTS = {
     "it": "it.khudoverdiev.ru",
     "ph": "ph.khudoverdiev.ru",
 }
+WWW_HOST = f"www.{BRANCH_HOSTS['root']}"
 PHOTO_CLIENT_BASE_URL = f"https://{BRANCH_HOSTS['ph']}"
 PHOTO_PORTFOLIO_IMAGE_ORDER = [
     38,
@@ -170,6 +171,7 @@ ALLOWED_HOSTS = {
     "::1",
     "it.localhost",
     "ph.localhost",
+    WWW_HOST,
     *BRANCH_HOSTS.values(),
 }
 CONTROL_CHARS_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
@@ -310,6 +312,7 @@ def add_security_headers(response):
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
     response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
+    frame_ancestors = "'self'" if is_portfolio_pdf else "'none'"
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
         "script-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline'; "
@@ -320,7 +323,7 @@ def add_security_headers(response):
         "frame-src https://vk.com https://vk.ru https://vkvideo.ru; "
         "base-uri 'self'; "
         "form-action 'self'; "
-        f"frame-ancestors {'\'self\'' if is_portfolio_pdf else '\'none\''}"
+        f"frame-ancestors {frame_ancestors}"
     )
     if request.is_secure or os.environ.get("FORCE_HTTPS") == "1":
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"

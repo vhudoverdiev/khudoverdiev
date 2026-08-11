@@ -211,6 +211,7 @@ def test_large_message_payload_is_rejected_before_persisting_body(client):
     ("base_url", "expected_branch"),
     [
         ("http://khudoverdiev.ru", "root"),
+        ("http://www.khudoverdiev.ru", "root"),
         ("http://it.khudoverdiev.ru", "it"),
         ("http://it.localhost", "it"),
         ("http://ph.khudoverdiev.ru", "ph"),
