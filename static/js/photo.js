@@ -6,7 +6,11 @@
     const bookingForm = bookingModal?.querySelector("[data-booking-form]");
     const bookingStatus = bookingModal?.querySelector("[data-booking-status]");
     const scrollCue = document.querySelector(".ph-scroll-cue");
-    const scrollTargets = ["#brands", "#about", "#portfolio", "#services", "#video", "#contact", "#ph-site-footer"]
+    const videoPlayer = document.querySelector("[data-video-player]");
+    const videoPlayButton = document.querySelector("[data-video-play]");
+    const videoPlayerTitle = document.querySelector("[data-video-player-title]");
+    const videoCards = [...document.querySelectorAll("[data-video-card]")];
+    const scrollTargets = ["#about", "#portfolio", "#services", "#video", "#contact", "#ph-site-footer"]
         .map((selector) => document.querySelector(selector))
         .filter(Boolean);
     let lastTrigger = null;
@@ -55,34 +59,62 @@
         lastBookingTrigger?.focus();
     };
 
-    document.querySelectorAll("[data-photo-card]").forEach((card) => {
-        const slides = [...card.querySelectorAll(".ph-work-slide")];
-        const counter = card.querySelector("[data-card-counter]");
-        if (!slides.length) return;
+    const renderVideoPlayer = () => {
+        if (!videoPlayer) return;
+        const activeCard = videoCards.find((card) => card.classList.contains("is-active"));
+        const src = videoPlayer.dataset.videoSrc || activeCard?.dataset.videoSrc || "";
+        const title = videoPlayer.dataset.videoTitle || activeCard?.dataset.videoTitle || "Видеоработа";
+        if (!src) return;
 
-        let activeIndex = Math.max(0, slides.findIndex((slide) => slide.classList.contains("is-active")));
+        const iframe = document.createElement("iframe");
+        iframe.src = src.includes("autoplay=1") ? src : `${src}${src.includes("?") ? "&" : "?"}autoplay=1`;
+        iframe.title = title;
+        iframe.loading = "lazy";
+        iframe.allow = "autoplay; encrypted-media; fullscreen; picture-in-picture; screen-wake-lock";
+        iframe.allowFullscreen = true;
+        videoPlayer.replaceChildren(iframe);
+    };
 
-        const render = () => {
-            slides.forEach((slide, index) => {
-                slide.classList.toggle("is-active", index === activeIndex);
-                slide.setAttribute("aria-hidden", index === activeIndex ? "false" : "true");
-                slide.tabIndex = index === activeIndex ? 0 : -1;
-            });
-            if (counter) {
-                counter.textContent = `${String(activeIndex + 1).padStart(2, "0")} / ${String(slides.length).padStart(2, "0")}`;
-            }
-        };
+    const setActiveVideo = (button, shouldPlay = false) => {
+        if (!button || !videoPlayer) return;
+        videoCards.forEach((card) => card.classList.toggle("is-active", card === button));
+        videoPlayer.dataset.videoSrc = button.dataset.videoSrc || "";
+        videoPlayer.dataset.videoTitle = button.dataset.videoTitle || "";
+        if (videoPlayerTitle && videoPlayer.dataset.videoTitle) {
+            videoPlayerTitle.textContent = videoPlayer.dataset.videoTitle;
+        }
+        if (shouldPlay) renderVideoPlayer();
+    };
 
-        card.querySelector("[data-card-prev]")?.addEventListener("click", () => {
-            activeIndex = (activeIndex - 1 + slides.length) % slides.length;
-            render();
-        });
-        card.querySelector("[data-card-next]")?.addEventListener("click", () => {
-            activeIndex = (activeIndex + 1) % slides.length;
-            render();
-        });
-        render();
+    document.querySelectorAll('.ph-header nav a[href$="#services"], .ph-header nav a[href="#services"]').forEach((link) => {
+        if (link.textContent.trim() === "Съемки") link.textContent = "Фото";
     });
+
+    const fixedWorkImages = [
+        "portfolio-100.jpg",
+        "portfolio-123.jpg",
+        "portfolio-113.jpg",
+        "portfolio-110.jpg",
+        "portfolio-058.jpg",
+    ];
+    document.querySelectorAll("[data-photo-card]").forEach((card, cardIndex) => {
+        const desiredImage = fixedWorkImages[cardIndex];
+        const slides = [...card.querySelectorAll(".ph-work-slide")];
+        slides.forEach((slide) => {
+            const isDesired = Boolean(desiredImage && slide.querySelector("img")?.getAttribute("src")?.endsWith(desiredImage));
+            slide.classList.toggle("is-active", isDesired);
+            slide.setAttribute("aria-hidden", isDesired ? "false" : "true");
+            slide.tabIndex = isDesired ? 0 : -1;
+        });
+    });
+
+    if (videoCards.length) {
+        setActiveVideo(videoCards.find((card) => card.classList.contains("is-active")) || videoCards[0]);
+        videoCards.forEach((button) => {
+            button.addEventListener("click", () => setActiveVideo(button, true));
+        });
+        videoPlayButton?.addEventListener("click", renderVideoPlayer);
+    }
 
     document.querySelectorAll("[data-lightbox]").forEach((button) => {
         button.addEventListener("click", () => {

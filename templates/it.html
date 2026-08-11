@@ -7,7 +7,7 @@
     <meta name="description" content="Разработка CRM-систем и веб-продуктов под реальные бизнес-процессы. Избранные кейсы Владимира Худовердиева.">
     <meta name="theme-color" content="#f4f0e8">
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='portfolio/vh-favicon.svg') }}?v=7">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/it.css') }}?v=69">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/it.css') }}?v=75">
 </head>
 <body>
     <a class="skip-link" href="#about">Перейти к содержанию</a>
@@ -18,7 +18,7 @@
             <a href="#projects">Кейсы</a>
             <a href="#contact">Контакты</a>
         </nav>
-        <button class="header-cta" type="button" data-open-contact>Обсудить проект <span>↗</span></button>
+        <button class="header-cta" type="button" data-open-contact>Обсудить проект <span class="ui-icon ui-icon-arrow-up-right" aria-hidden="true"></span></button>
     </header>
 
     <main id="top">
@@ -36,13 +36,13 @@
                             <code><em>def</em> <strong>build_product</strong>(idea): <span>return</span> idea.to_solution()</code>
                             <i class="console-caret"></i>
                         </div>
-                        <div class="code-console-status"><span>✓</span> systems online <b>Python · Flask · Product</b></div>
+                        <div class="code-console-status"><span class="ui-icon ui-icon-check" aria-hidden="true"></span> systems online <b>Python · Flask · Product</b></div>
                     </div>
                     <p class="eyebrow"><span></span> Разработчик цифровых продуктов</p>
                     <h1 id="hero-title">Владимир<br><strong>Худовердиев</strong></h1>
                     <p class="lead">Проектирую и создаю веб-системы, которые превращают сложные процессы в понятные рабочие инструменты.</p>
                     <div class="hero-actions">
-                        <a class="button button-dark" href="#projects">Смотреть кейсы <span>↓</span></a>
+                        <a class="button button-dark" href="#projects">Смотреть кейсы <span class="ui-icon ui-icon-arrow-down" aria-hidden="true"></span></a>
                     </div>
                 </div>
                 <div class="portrait-wrap">
@@ -80,8 +80,8 @@
                         <h3>CRM «Передача»</h3>
                         <p>Передача квартир без хаоса.</p>
                         <div class="project-actions">
-                            <button class="media-button" type="button" data-media="slides" data-source-pdf="{{ url_for('static', filename='portfolio/peredacha.pdf') }}" data-slides="{{ url_for('static', filename='portfolio/slides/peredacha/slide-1.png') }}|{{ url_for('static', filename='portfolio/slides/peredacha/slide-2.png') }}|{{ url_for('static', filename='portfolio/slides/peredacha/slide-3.png') }}" data-title="CRM «Передача»">Смотреть презентацию <span>↗</span></button>
-                            <button class="media-button secondary" type="button" data-media="video" data-video-index="0" data-src="{{ url_for('static', filename='portfolio/peredacha.mp4') }}" data-title="CRM «Передача»">Смотреть видео <span>▶</span></button>
+                            <button class="media-button" type="button" data-media="slides" data-source-pdf="{{ url_for('static', filename='portfolio/peredacha.pdf') }}" data-slides="{{ url_for('static', filename='portfolio/slides/peredacha/slide-1.png') }}|{{ url_for('static', filename='portfolio/slides/peredacha/slide-2.png') }}|{{ url_for('static', filename='portfolio/slides/peredacha/slide-3.png') }}" data-title="CRM «Передача»">Смотреть презентацию <span class="ui-icon ui-icon-arrow-up-right" aria-hidden="true"></span></button>
+                            <button class="media-button secondary" type="button" data-media="video" data-video-index="0" data-src="{{ url_for('static', filename='portfolio/peredacha.mp4') }}" data-title="CRM «Передача»">Смотреть видео <span class="ui-icon ui-icon-play" aria-hidden="true"></span></button>
                         </div>
                     </div>
                 </article>
@@ -93,8 +93,8 @@
                         <h3>CRM Shans</h3>
                         <p>Личный штаб для процессов.</p>
                         <div class="project-actions">
-                            <button class="media-button" type="button" data-media="slides" data-source-pdf="{{ url_for('static', filename='portfolio/shans.pdf') }}" data-slides="{{ url_for('static', filename='portfolio/slides/shans/slide-1.png') }}|{{ url_for('static', filename='portfolio/slides/shans/slide-2.png') }}|{{ url_for('static', filename='portfolio/slides/shans/slide-3.png') }}" data-title="CRM Shans">Смотреть презентацию <span>↗</span></button>
-                            <button class="media-button secondary" type="button" data-media="video" data-video-index="1" data-src="{{ url_for('static', filename='portfolio/shans.mp4') }}" data-title="CRM Shans">Смотреть видео <span>▶</span></button>
+                            <button class="media-button" type="button" data-media="slides" data-source-pdf="{{ url_for('static', filename='portfolio/shans.pdf') }}" data-slides="{{ url_for('static', filename='portfolio/slides/shans/slide-1.png') }}|{{ url_for('static', filename='portfolio/slides/shans/slide-2.png') }}|{{ url_for('static', filename='portfolio/slides/shans/slide-3.png') }}" data-title="CRM Shans">Смотреть презентацию <span class="ui-icon ui-icon-arrow-up-right" aria-hidden="true"></span></button>
+                            <button class="media-button secondary" type="button" data-media="video" data-video-index="1" data-src="{{ url_for('static', filename='portfolio/shans.mp4') }}" data-title="CRM Shans">Смотреть видео <span class="ui-icon ui-icon-play" aria-hidden="true"></span></button>
                         </div>
                     </div>
                 </article>
@@ -123,13 +123,13 @@
                         <span class="contact-circle-kicker">Старт обсуждения</span>
                         <span class="contact-circle-title">Обсудить проект</span>
                     </span>
-                    <b aria-hidden="true">↗</b>
+                    <b class="ui-icon ui-icon-arrow-up-right" aria-hidden="true"></b>
                 </button>
             </aside>
         </section>
     </main>
 
-    <button class="page-scroll-cue" type="button" aria-label="Перейти к следующему разделу" data-direction="down"><span>↓</span></button>
+    <button class="page-scroll-cue" type="button" aria-label="Перейти к следующему разделу" data-direction="down"><span class="ui-icon ui-icon-arrow-down" aria-hidden="true"></span></button>
 
     <footer id="site-footer">
         <a class="brand" href="#top">IT<span>.</span></a>
@@ -145,9 +145,9 @@
                 <button type="button" data-close-media aria-label="Закрыть">×</button>
             </header>
             <div class="media-viewer">
-                <button class="media-nav media-prev" type="button" aria-label="Предыдущий слайд">←</button>
+                <button class="media-nav media-prev" type="button" aria-label="Предыдущий слайд"><span class="ui-icon ui-icon-arrow-left" aria-hidden="true"></span></button>
                 <div class="media-stage" id="media-stage"></div>
-                <button class="media-nav media-next" type="button" aria-label="Следующий слайд">→</button>
+                <button class="media-nav media-next" type="button" aria-label="Следующий слайд"><span class="ui-icon ui-icon-arrow-right" aria-hidden="true"></span></button>
             </div>
             <footer class="media-controls">
                 <span class="media-counter" id="media-counter">01 / 03</span>
@@ -179,10 +179,10 @@
                     <textarea name="text" maxlength="1000" placeholder="Что хотите создать или улучшить?" required></textarea>
                 </label>
                 <p class="project-form-error" id="project-form-error" role="alert"></p>
-                <button class="project-submit" type="submit"><span>Отправить сообщение</span><b>↗</b></button>
+                <button class="project-submit" type="submit"><span>Отправить сообщение</span><b class="ui-icon ui-icon-arrow-up-right" aria-hidden="true"></b></button>
             </form>
             <div class="project-success" id="project-success" aria-hidden="true">
-                <span class="success-mark">✓</span>
+                <span class="success-mark"><span class="ui-icon ui-icon-check" aria-hidden="true"></span></span>
                 <h2>Сообщение отправлено</h2>
                 <button type="button" data-close-contact>Вернуться на сайт</button>
             </div>
@@ -228,7 +228,9 @@
             const atBottom = scrollRange > 0 && (footerVisible || contactReached || window.scrollY >= scrollRange - 220);
             pageScrollCue.classList.toggle('is-up', atBottom);
             pageScrollCue.dataset.direction = atBottom ? 'up' : 'down';
-            pageScrollCue.querySelector('span').textContent = atBottom ? '↑' : '↓';
+            const pageScrollIcon = pageScrollCue.querySelector('.ui-icon');
+            pageScrollIcon.classList.toggle('ui-icon-arrow-up', atBottom);
+            pageScrollIcon.classList.toggle('ui-icon-arrow-down', !atBottom);
             pageScrollCue.setAttribute('aria-label', atBottom ? 'Вернуться в начало страницы' : 'Перейти к следующему разделу');
 
             const marker = window.scrollY + window.innerHeight * 0.34;

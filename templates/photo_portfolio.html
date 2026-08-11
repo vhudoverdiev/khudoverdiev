@@ -10,7 +10,7 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='photo/ph-favicon.ico') }}?v=1">
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='photo/ph-favicon.svg') }}?v=5">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='photo/ph-favicon.png') }}?v=2">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/photo.css') }}?v=19">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/photo.css') }}?v=25">
 </head>
 <body>
     <a class="ph-skip" href="#portfolio-grid">Перейти к фотографиям</a>
@@ -19,7 +19,7 @@
         <a class="ph-brand" href="{{ url_for('index') }}" aria-label="На главную страницу PH">PH<span>.</span></a>
         <nav aria-label="Навигация портфолио">
             <a href="{{ url_for('index') }}#portfolio">Портфолио</a>
-            <a href="{{ url_for('index') }}#services">Съемки</a>
+            <a href="{{ url_for('index') }}#services">Фото</a>
             <a href="{{ url_for('index') }}#contact">Контакты</a>
         </nav>
         <a class="ph-header-cta" href="{{ url_for('index') }}#contact">Написать <span>↘</span></a>
@@ -67,6 +67,6 @@
         <p>Нажмите Esc, чтобы закрыть</p>
     </div>
 
-    <script src="{{ url_for('static', filename='js/photo.js') }}?v=3" defer></script>
+    <script src="{{ url_for('static', filename='js/photo.js') }}?v=7" defer></script>
 </body>
 </html>

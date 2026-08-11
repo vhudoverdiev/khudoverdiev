@@ -9,6 +9,8 @@
     --line: rgba(16, 18, 15, 0.15);
     --radius-card: 12px;
     --desktop-width: 1320px;
+    --desktop-canvas-width: 1920px;
+    --desktop-canvas-height: 1080px;
     --ease-out: cubic-bezier(0.2, 0.75, 0.25, 1);
 }
 
@@ -27,7 +29,7 @@ html {
 
 body {
     margin: 0;
-    min-width: var(--desktop-width);
+    min-width: var(--desktop-canvas-width);
     overflow-x: auto;
     background: var(--paper);
     color: var(--ink);
@@ -46,6 +48,132 @@ a {
 
 button {
     font: inherit;
+}
+
+.ui-icon {
+    position: relative;
+    flex: 0 0 auto;
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    color: currentColor;
+    font-size: inherit;
+    line-height: 1;
+}
+
+.ui-icon::before,
+.ui-icon::after {
+    content: "";
+    position: absolute;
+    box-sizing: border-box;
+}
+
+.ui-icon-arrow-up-right::before {
+    left: 0.18em;
+    top: 0.47em;
+    width: 0.66em;
+    height: 0.11em;
+    border-radius: 999px;
+    background: currentColor;
+    transform: rotate(-45deg);
+    transform-origin: 50% 50%;
+}
+
+.ui-icon-arrow-up-right::after {
+    right: 0.16em;
+    top: 0.17em;
+    width: 0.42em;
+    height: 0.42em;
+    border-top: 0.12em solid currentColor;
+    border-right: 0.12em solid currentColor;
+    border-radius: 0.04em;
+}
+
+.ui-icon-arrow-down::before,
+.ui-icon-arrow-up::before {
+    left: 50%;
+    top: 50%;
+    width: 0.12em;
+    height: 0.52em;
+    border-radius: 999px;
+    background: currentColor;
+    transform: translate(-50%, -58%);
+}
+
+.ui-icon-arrow-down::after,
+.ui-icon-arrow-up::after {
+    left: 50%;
+    width: 0.42em;
+    height: 0.42em;
+    border-right: 0.12em solid currentColor;
+    border-bottom: 0.12em solid currentColor;
+    border-radius: 0.04em;
+}
+
+.ui-icon-arrow-down::after {
+    top: 50%;
+    transform: translate(-50%, -8%) rotate(45deg);
+}
+
+.ui-icon-arrow-up::before {
+    transform: translate(-50%, -42%);
+}
+
+.ui-icon-arrow-up::after {
+    top: 50%;
+    transform: translate(-50%, -92%) rotate(225deg);
+}
+
+.ui-icon-arrow-left::before,
+.ui-icon-arrow-right::before {
+    left: 0.18em;
+    top: 50%;
+    width: 0.64em;
+    height: 0.12em;
+    border-radius: 999px;
+    background: currentColor;
+    transform: translateY(-50%);
+}
+
+.ui-icon-arrow-left::after,
+.ui-icon-arrow-right::after {
+    top: 50%;
+    width: 0.42em;
+    height: 0.42em;
+    border-top: 0.12em solid currentColor;
+    border-right: 0.12em solid currentColor;
+    border-radius: 0.04em;
+}
+
+.ui-icon-arrow-left::after {
+    left: 0.12em;
+    transform: translateY(-50%) rotate(-135deg);
+}
+
+.ui-icon-arrow-right::after {
+    right: 0.12em;
+    transform: translateY(-50%) rotate(45deg);
+}
+
+.ui-icon-play::before {
+    left: 0.32em;
+    top: 0.18em;
+    width: 0;
+    height: 0;
+    border-top: 0.32em solid transparent;
+    border-bottom: 0.32em solid transparent;
+    border-left: 0.46em solid currentColor;
+}
+
+.ui-icon-check::before {
+    left: 0.2em;
+    top: 0.08em;
+    width: 0.42em;
+    height: 0.72em;
+    border-right: 0.13em solid currentColor;
+    border-bottom: 0.13em solid currentColor;
+    border-radius: 0.04em;
+    transform: rotate(42deg);
 }
 
 .skip-link {
@@ -201,14 +329,13 @@ textarea:focus-visible {
     color: var(--ink);
 }
 
-.header-cta span {
-    font-size: 18px;
+.header-cta .ui-icon {
+    font-size: 15px;
 }
 
 .hero {
     position: relative;
-    min-height: 100vh;
-    min-height: 100svh;
+    min-height: var(--desktop-canvas-height);
     overflow: hidden;
     background: linear-gradient(112deg, #10120f 0%, #121410 58%, #0b0d0b 100%);
     color: #fff;
@@ -225,8 +352,7 @@ textarea:focus-visible {
 
 .hero-grid {
     width: var(--desktop-width);
-    min-height: 100vh;
-    min-height: 100svh;
+    min-height: var(--desktop-canvas-height);
     margin: auto;
     display: grid;
     grid-template-columns: minmax(0, 1.12fr) minmax(360px, 0.88fr);
@@ -363,7 +489,7 @@ textarea:focus-visible {
 
 h1 {
     margin: 0;
-    font-size: clamp(68px, 7.4vw, 124px);
+    font-size: 124px;
     font-weight: 400;
     line-height: 0.84;
     letter-spacing: -0.075em;
@@ -413,8 +539,8 @@ h1 strong {
     box-shadow: 0 14px 38px rgba(206, 255, 51, 0.12);
 }
 
-.button span {
-    font-size: 18px;
+.button > .ui-icon {
+    font-size: 16px;
 }
 
 .text-link {
@@ -434,7 +560,7 @@ h1 strong {
     align-self: center;
     width: 500px;
     height: 500px;
-    margin-bottom: clamp(28px, 5vh, 72px);
+    margin-bottom: 42px;
     isolation: isolate;
     overflow: visible;
     animation: portrait-in 850ms var(--ease-out) 90ms both;
@@ -631,7 +757,7 @@ h1 strong {
     transform: translateX(-50%);
 }
 
-.page-scroll-cue span {
+.page-scroll-cue .ui-icon {
     font-size: 22px;
     line-height: 1;
     animation: section-arrow 1.8s ease-in-out infinite;
@@ -663,8 +789,7 @@ footer {
 
 .about {
     position: relative;
-    min-height: 100vh;
-    min-height: 100svh;
+    min-height: var(--desktop-canvas-height);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -686,7 +811,7 @@ footer {
 .projects h2,
 .contact h2 {
     margin: 0;
-    font-size: clamp(50px, 6.1vw, 92px);
+    font-size: 92px;
     line-height: 0.94;
     letter-spacing: -0.065em;
     text-wrap: balance;
@@ -912,7 +1037,7 @@ footer {
 }
 
 .projects h2 {
-    font-size: clamp(48px, 5.3vw, 78px);
+    font-size: 78px;
 }
 
 .project-showcase {
@@ -1015,7 +1140,7 @@ footer {
 
 .project-info h3 {
     margin: 18px 0 10px;
-    font-size: clamp(30px, 2.9vw, 38px);
+    font-size: 38px;
     line-height: 0.95;
     letter-spacing: -0.045em;
 }
@@ -1070,7 +1195,7 @@ footer {
         inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
 
-.media-button span {
+.media-button .ui-icon {
     display: grid;
     place-items: center;
     width: 30px;
@@ -1083,15 +1208,14 @@ footer {
     transition: transform 180ms ease;
 }
 
-.media-button:hover span {
+.media-button:hover .ui-icon {
     transform: translate(2px, -2px);
 }
 
 .contact {
     position: relative;
     scroll-margin-top: 120px;
-    min-height: calc(100vh - 110px);
-    min-height: calc(100svh - 110px);
+    min-height: calc(var(--desktop-canvas-height) - 110px);
     display: grid;
     grid-template-columns: minmax(120px, 0.28fr) minmax(0, 1fr) minmax(340px, 0.68fr);
     align-items: center;
@@ -1311,7 +1435,7 @@ footer {
     transform: translateY(1px) scale(0.985);
 }
 
-.contact-circle b {
+.contact-circle > .ui-icon {
     width: 54px;
     height: 54px;
     display: grid;
@@ -1324,7 +1448,7 @@ footer {
     transition: transform 320ms var(--ease-out);
 }
 
-.contact-circle:hover b {
+.contact-circle:hover > .ui-icon {
     transform: rotate(45deg);
 }
 
@@ -1394,7 +1518,7 @@ footer p:last-child {
 
 .contact-dialog {
     position: relative;
-    width: min(840px, 96vw);
+    width: 840px;
     min-height: 520px;
     display: grid;
     grid-template-columns: minmax(260px, 0.78fr) minmax(0, 1.22fr);
@@ -1447,7 +1571,7 @@ footer p:last-child {
     position: relative;
     z-index: 1;
     margin: 0;
-    font-size: clamp(34px, 3.4vw, 48px);
+    font-size: 48px;
     line-height: 1;
     letter-spacing: -0.045em;
 }
@@ -1549,7 +1673,7 @@ footer p:last-child {
     cursor: pointer;
 }
 
-.project-submit b {
+.project-submit .ui-icon {
     color: #fff;
     font-size: 20px;
 }
@@ -1575,7 +1699,7 @@ footer p:last-child {
 }
 
 .project-success h2 {
-    font-size: clamp(30px, 2.65vw, 34px);
+    font-size: 34px;
     line-height: 1.08;
     white-space: nowrap;
 }
@@ -1630,8 +1754,8 @@ footer p:last-child {
 
 .media-dialog {
     position: relative;
-    width: min(1240px, 94vw);
-    max-height: min(860px, 92svh);
+    width: 1240px;
+    max-height: 860px;
     display: grid;
     grid-template-rows: auto minmax(0, 1fr) auto;
     border: 1px solid rgba(16, 18, 15, 0.12);
@@ -1707,8 +1831,8 @@ footer p:last-child {
     position: relative;
     z-index: 1;
     min-height: 0;
-    width: min(100%, calc((92svh - 186px) * 16 / 9));
-    max-height: calc(92svh - 186px);
+    width: 100%;
+    max-height: 674px;
     aspect-ratio: 16 / 9;
     justify-self: center;
     display: grid;
@@ -1845,7 +1969,7 @@ footer p:last-child {
 /* Final responsive contract: fixed desktop + one dedicated mobile layout. */
 @media (min-width: 901px) {
     body {
-        min-width: var(--desktop-width);
+        min-width: var(--desktop-canvas-width);
         overflow-x: auto;
     }
 
@@ -1871,7 +1995,7 @@ footer p:last-child {
         font-size: 13px;
     }
 
-    .site-header .header-cta span {
+    .site-header .header-cta .ui-icon {
         display: inline;
     }
 
@@ -1984,7 +2108,7 @@ footer p:last-child {
         white-space: nowrap;
     }
 
-    .site-header .header-cta span {
+    .site-header .header-cta .ui-icon {
         display: inline;
         font-size: 15px;
     }
@@ -2061,6 +2185,7 @@ footer p:last-child {
     }
 
     .portrait-wrap {
+        display: none;
         width: min(100%, 350px);
         max-width: none;
         height: auto;
@@ -2264,7 +2389,7 @@ footer p:last-child {
         font-size: 23px;
     }
 
-    .contact-circle b {
+    .contact-circle > .ui-icon {
         width: 48px;
         height: 48px;
     }
@@ -2436,10 +2561,14 @@ footer p:last-child {
         min-height: 100svh;
     }
 
+    .hero::before {
+        pointer-events: none;
+    }
+
     .hero-grid {
-        min-height: 100svh;
+        min-height: auto;
         width: calc(100% - 32px);
-        grid-template-columns: minmax(0, 1fr) 118px;
+        grid-template-columns: minmax(0, 1fr);
         align-content: start;
         align-items: center;
         column-gap: 10px;
@@ -2525,7 +2654,7 @@ footer p:last-child {
         box-shadow: 0 18px 44px rgba(206, 255, 51, 0.16);
     }
 
-    .button span {
+    .button > .ui-icon {
         width: 26px;
         height: 26px;
         display: inline-grid;
@@ -2537,12 +2666,7 @@ footer p:last-child {
     }
 
     .portrait-wrap {
-        grid-column: 2;
-        grid-row: 3 / span 2;
-        align-self: center;
-        justify-self: end;
-        width: 118px;
-        margin: 0;
+        display: none;
     }
 
     .portrait-wrap::before {
@@ -2620,14 +2744,12 @@ footer p:last-child {
     }
 
     .principles {
-        display: flex;
+        display: grid;
+        grid-template-columns: 1fr;
         gap: 12px;
-        margin: 28px -16px 0;
-        padding: 0 16px 4px;
-        overflow-x: auto;
-        overflow-y: hidden;
-        scroll-snap-type: x mandatory;
-        scrollbar-width: none;
+        margin: 28px 0 0;
+        padding: 0;
+        overflow: visible;
         border: 0;
         border-radius: 0;
         background: transparent;
@@ -2639,17 +2761,15 @@ footer p:last-child {
 
     .principles article,
     .principles article + article {
-        flex: 0 0 248px;
         min-height: 0;
-        padding: 21px 20px 23px;
+        padding: 18px 18px 19px;
         overflow: hidden;
         border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 24px;
+        border-radius: 18px;
         background:
             radial-gradient(circle at 100% 0, rgba(101, 231, 223, 0.1), transparent 31%),
             linear-gradient(135deg, rgba(255, 255, 255, 0.035), transparent 46%),
             #171a16;
-        scroll-snap-align: start;
         box-shadow: 0 18px 46px rgba(16, 18, 15, 0.1);
     }
 
@@ -2658,12 +2778,12 @@ footer p:last-child {
     }
 
     .principles article::after {
-        width: 56px;
+        width: 42px;
     }
 
     .principles h3 {
-        margin: 24px 0 8px;
-        font-size: 19px;
+        margin: 20px 0 7px;
+        font-size: 18px;
         line-height: 1.08;
     }
 
@@ -2745,7 +2865,7 @@ footer p:last-child {
         box-shadow: 0 12px 30px rgba(17, 19, 15, 0.06);
     }
 
-    .media-button span {
+    .media-button .ui-icon {
         width: 34px;
         height: 34px;
         flex: 0 0 auto;
@@ -2815,7 +2935,7 @@ footer p:last-child {
         font-size: 22px;
     }
 
-    .contact-circle b {
+    .contact-circle > .ui-icon {
         width: 46px;
         height: 46px;
     }
@@ -2831,21 +2951,36 @@ footer p:last-child {
     }
 
     .media-dialog {
+        width: calc(100vw - 20px);
+        height: auto;
         max-height: calc(100svh - 20px);
         grid-template-rows: 58px minmax(0, 1fr) 52px;
         border-radius: 24px;
     }
 
+    .media-dialog header {
+        min-height: 58px;
+    }
+
     .media-viewer {
         display: grid;
+        grid-template-columns: minmax(0, 1fr);
         align-items: center;
         aspect-ratio: auto;
-        min-height: 238px;
+        min-height: 0;
         padding: 10px 10px 0;
     }
 
     .media-stage {
+        width: 100%;
+        height: auto;
+        max-height: calc(100svh - 140px);
+        aspect-ratio: 16 / 9;
         border-radius: 18px;
+    }
+
+    .media-controls {
+        min-height: 52px;
     }
 
     .contact-dialog {

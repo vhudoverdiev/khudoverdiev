@@ -234,7 +234,7 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "IT | Владимир Худовердиев".encode() in portfolio.data
     assert b"portfolio/vh-favicon.svg" in portfolio.data
     assert b"vh-favicon.svg?v=7" in portfolio.data
-    assert b"css/it.css?v=69" in portfolio.data
+    assert b"css/it.css?v=75" in portfolio.data
     assert b"portfolio/vladimir-avatar-favicon.png" not in portfolio.data
     assert b"portfolio/vladimir-user-cutout.png" in portfolio.data
     assert b"class=\"portrait-photo\"" in portfolio.data
@@ -245,6 +245,11 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "CRM «Передача»".encode() in portfolio.data
     assert "CRM Shans".encode() in portfolio.data
     assert "Два продукта: чистая логика, сильный интерфейс и понятный результат.".encode() not in portfolio.data
+    assert b"class=\"ui-icon ui-icon-arrow-up-right\"" in portfolio.data
+    assert b"class=\"ui-icon ui-icon-play\"" in portfolio.data
+    assert b"class=\"ui-icon ui-icon-arrow-down\"" in portfolio.data
+    for symbol in ("↗", "↓", "↑", "←", "→", "▶", "✓"):
+        assert symbol.encode() not in portfolio.data
     css = Path("static/css/it.css").read_text(encoding="utf-8")
     favicon = Path("static/portfolio/vh-favicon.svg").read_text(encoding="utf-8")
     assert 'font-size="23"' in favicon
@@ -253,6 +258,11 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert 'cx="45.5"' in favicon
     assert ".project-actions > button.media-button:first-child" not in css
     assert "--desktop-width: 1320px;" in css
+    assert "--desktop-canvas-width: 1920px;" in css
+    assert "--desktop-canvas-height: 1080px;" in css
+    assert "min-width: var(--desktop-canvas-width);" in css
+    assert "min-height: var(--desktop-canvas-height);" in css
+    assert "clamp(" not in css
     assert "orbit-breathe" not in css
     assert ".portrait-photo {\n    position: absolute;\n    z-index: 2;\n    inset: 68px;" in css
     assert "clip-path: circle(50% at 50% 50%);" in css
@@ -272,14 +282,19 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "body {\n        min-width: 0;\n        overflow-x: hidden;" in css
     assert "/* Mobile polish: one deliberate layout, not a squeezed desktop. */" in css
     assert ".hero {\n        min-height: 100svh;" in css
-    assert "grid-template-columns: minmax(0, 1fr) 118px;" in css
+    assert ".hero::before {\n        pointer-events: none;" in css
+    assert ".hero-grid {\n        min-height: auto;" in css
+    assert "grid-template-columns: minmax(0, 1fr) 118px;" not in css
     assert ".hero-copy {\n        display: contents;" in css
     assert ".hero h1 {\n        grid-column: 1;\n        grid-row: 3;" in css
-    assert ".portrait-wrap {\n        grid-column: 2;\n        grid-row: 3 / span 2;" in css
-    assert ".portrait-photo {\n        inset: 8px;\n        --portrait-subject-offset: 0px;" in css
+    assert ".portrait-wrap {\n        display: none;" in css
     assert ".about-copy > p {\n        max-width: 330px;\n        margin-top: 2px;\n        padding: 0;" in css
-    assert "scroll-snap-type: x mandatory;" in css
+    assert ".principles {\n        display: grid;\n        grid-template-columns: 1fr;" in css
+    assert "flex: 0 0 248px" not in css
+    assert "scroll-snap-type: x mandatory;" not in css
     assert ".media-button {\n        min-height: 54px;\n        padding: 0 12px 0 17px;\n        border-radius: 999px;" in css
+    assert ".media-dialog {\n        width: calc(100vw - 20px);" in css
+    assert ".media-stage {\n        width: 100%;\n        height: auto;\n        max-height: calc(100svh - 140px);\n        aspect-ratio: 16 / 9;" in css
     assert ".contact-circle:hover" in css
     assert "background:\n        linear-gradient(90deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.9)),\n        #fff;" in css
     assert "radial-gradient(circle at 18% 26%" not in css
@@ -319,8 +334,12 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     response = client.get("/", base_url="http://ph.khudoverdiev.ru")
 
     assert response.status_code == 200
+    assert "default-src 'self'" in response.headers["Content-Security-Policy"]
+    assert "frame-src https://vk.com https://vk.ru https://vkvideo.ru" in response.headers["Content-Security-Policy"]
     assert b"css/photo.css" in response.data
+    assert b"photo.css?v=25" in response.data
     assert b"js/photo.js" in response.data
+    assert b"photo.js?v=7" in response.data
     assert "Архангельск, Северодвинск".encode() in response.data
     assert b"photo/ph-favicon.ico" in response.data
     assert b"photo/ph-favicon.svg" in response.data
@@ -328,15 +347,23 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert b"portfolio/vh-favicon.svg" not in response.data
     assert b">PH<span>.</span></a>" in response.data
     assert b">IT<span" not in response.data
+    assert '<a href="#services">Фото</a>'.encode() in response.data
+    assert '<a href="#services">Съемки</a>'.encode() not in response.data
     assert b"photo/portrait-cutout.png" in response.data
     assert b"class=\"ph-portrait-orbit\"" in response.data
     assert b"class=\"ph-hero-collage\"" not in response.data
-    assert b"photo/portfolio/portfolio-078.jpg" in response.data
+    assert b"photo/portfolio/portfolio-100.jpg" in response.data
     assert b"photo/portfolio/portfolio-123.jpg" in response.data
+    assert b"photo/portfolio/portfolio-113.jpg" in response.data
+    assert b"photo/portfolio/portfolio-110.jpg" in response.data
+    assert b"photo/portfolio/portfolio-058.jpg" in response.data
     assert b"photo/mikhail-" not in response.data
     assert b"data-lightbox" in response.data
-    assert b"data-photo-card" in response.data
-    assert b"data-card-next" in response.data
+    assert b"data-photo-card" not in response.data
+    assert b"data-card-next" not in response.data
+    assert b"data-card-prev" not in response.data
+    assert b"data-card-counter" not in response.data
+    assert response.data.count(b"class=\"ph-work-slide is-active\"") == 5
     assert b'id="brands"' in response.data
     assert b'class="ph-scroll-cue"' in response.data
     assert b'id="ph-site-footer"' in response.data
@@ -373,6 +400,15 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert b"https://vk.ru/market-190646738?screen=group" not in response.data
     assert "Дополнительно можно заказать".encode() not in response.data
     assert b'id="video"' in response.data
+    assert b'class="ph-video-showcase"' in response.data
+    assert b"data-video-player" in response.data
+    assert b"data-video-card" in response.data
+    assert b"video_ext.php?oid=-229443984&amp;id=456239042" in response.data
+    assert b"video_ext.php?oid=-229443984&amp;id=456239046" in response.data
+    assert "Видеопортфолио".encode() in response.data
+    assert "Николай &amp; Галина".encode() in response.data
+    assert "Промоакция магазина «Пятёрочка»".encode() in response.data
+    assert "VK Клип".encode() in response.data
     assert "Видеосъемка".encode() in response.data
     assert "с живым дыханием".encode() in response.data
     assert "Свадебный фильм".encode() in response.data
@@ -401,19 +437,44 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
 
     assert response.status_code == 200
     assert b"css/photo.css" in response.data
+    assert b"photo.css?v=25" in response.data
     assert b"js/photo.js" in response.data
+    assert b"photo.js?v=7" in response.data
     assert "Портфолио".encode() in response.data
     assert "126 фотографий".encode() not in response.data
     assert "Собрал сюда все снимки из альбома ВКонтакте".encode() not in response.data
     assert b"photo/portfolio/portfolio-001.jpg" in response.data
     assert b"photo/portfolio/portfolio-126.jpg" in response.data
     assert response.data.count(b'class="ph-full-photo"') == 126
+    assert len(site.PHOTO_PORTFOLIO_IMAGE_ORDER) == 126
+    assert sorted(site.PHOTO_PORTFOLIO_IMAGE_ORDER) == list(range(1, 127))
+    assert site.PHOTO_PORTFOLIO_IMAGE_ORDER[:8] == [38, 39, 40, 41, 98, 99, 100, 101]
+    assert site.PHOTO_PORTFOLIO_IMAGE_ORDER[-1] == 42
+    assert response.data.find(b"photo/portfolio/portfolio-038.jpg") < response.data.find(b"photo/portfolio/portfolio-001.jpg")
+    assert response.data.find(b"photo/portfolio/portfolio-042.jpg") > response.data.find(b"photo/portfolio/portfolio-126.jpg")
     assert b"data-lightbox" in response.data
     assert b">PH<span>.</span></a>" in response.data
+    assert '<a href="/#services">Фото</a>'.encode() in response.data
+    assert '<a href="/#services">Съемки</a>'.encode() not in response.data
     assert b"vkuserphoto.ru" not in response.data
     assert "visitor_id=" in response.headers["Set-Cookie"]
     assert len(db_rows("visits")) == 1
     assert len(db_rows("unique_visits")) == 1
+
+    css = Path("static/css/photo.css").read_text(encoding="utf-8")
+    assert ".ph-hero {\n    position: relative;\n    box-sizing: border-box;" in css
+    assert ".ph-trust {\n    position: relative;\n    box-sizing: border-box;" in css
+    assert ".ph-hero-stage {\n        width: min(520px, 100%);\n        height: 520px;" in css
+    assert ".ph-hero-person {\n        height: 482px;\n        bottom: -54px;" in css
+    assert ".ph-work-controls {\n    display: none;" in css
+    assert "aspect-ratio: 1 / 1;" in css
+    assert ".ph-full-gallery {\n    display: grid;" in css
+    assert "grid-auto-flow: row;" in css
+    assert "columns: 4 250px" not in css
+    assert "break-inside: avoid" not in css
+    js = Path("static/js/photo.js").read_text(encoding="utf-8")
+    assert "portfolio-100.jpg" in js
+    assert 'link.textContent = "Фото";' in js
 
 
 def test_ph_localhost_maps_to_photographer_branch(client):

@@ -10,7 +10,7 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='photo/ph-favicon.ico') }}?v=1">
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='photo/ph-favicon.svg') }}?v=5">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='photo/ph-favicon.png') }}?v=2">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/photo.css') }}?v=19">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/photo.css') }}?v=25">
 </head>
 <body>
     <a class="ph-skip" href="#portfolio">Перейти к портфолио</a>
@@ -19,7 +19,7 @@
         <a class="ph-brand" href="#top" aria-label="В начало страницы">PH<span>.</span></a>
         <nav aria-label="Основная навигация">
             <a href="#portfolio">Портфолио</a>
-            <a href="#services">Съемки</a>
+            <a href="#services">Фото</a>
             <a href="#video">Видео</a>
             <a href="#contact">Контакты</a>
         </nav>
@@ -67,35 +67,28 @@
 
         <section class="ph-portfolio" id="portfolio">
             <header class="ph-section-heading">
-                <div><p class="ph-section-index">02 / Портфолио</p><h2>Серии,<br><em>которые можно листать</em></h2></div>
-                <p>Каждая карточка — отдельный формат съемки. Листайте фотографии внутри карточек, а полный альбом можно открыть во ВКонтакте.</p>
+                <div><p class="ph-section-index">02 / Портфолио</p><h2>Серии,<br><em>для разных историй</em></h2></div>
+                <p>Каждая карточка — отдельный формат съемки с одним точным кадром. Полный альбом можно открыть отдельной страницей.</p>
             </header>
 
             <div class="ph-work-grid" aria-label="Серии портфолио">
-                {% for title, text, images in [
-                    ('Портретная', 'Живой человек, характер и спокойная работа с камерой.', ['portfolio/portfolio-078.jpg', 'portfolio/portfolio-096.jpg', 'portfolio/portfolio-100.jpg']),
-                    ('Свадебная', 'День целиком: близость, детали и кадры без ощущения постановки.', ['portfolio/portfolio-057.jpg', 'portfolio/portfolio-106.jpg', 'portfolio/portfolio-123.jpg']),
-                    ('Репортажная', 'События, движение и честные моменты, которые легко вспоминать.', ['portfolio/portfolio-113.jpg', 'portfolio/portfolio-114.jpg', 'portfolio/portfolio-119.jpg']),
-                    ('Брендовая', 'Контент для экспертов, команд и локальных проектов.', ['portfolio/portfolio-108.jpg', 'portfolio/portfolio-110.jpg', 'portfolio/portfolio-112.jpg']),
-                    ('Предметная', 'Аккуратные визуалы для товаров, деталей и презентаций.', ['portfolio/portfolio-058.jpg', 'portfolio/portfolio-062.jpg', 'portfolio/portfolio-102.jpg'])
+                {% for title, text, image in [
+                    ('Портретная', 'Живой человек, характер и спокойная работа с камерой.', 'portfolio/portfolio-100.jpg'),
+                    ('Свадебная', 'День целиком: близость, детали и кадры без ощущения постановки.', 'portfolio/portfolio-123.jpg'),
+                    ('Репортажная', 'События, движение и честные моменты, которые легко вспоминать.', 'portfolio/portfolio-113.jpg'),
+                    ('Брендовая', 'Контент для экспертов, команд и локальных проектов.', 'portfolio/portfolio-110.jpg'),
+                    ('Предметная', 'Аккуратные визуалы для товаров, деталей и презентаций.', 'portfolio/portfolio-058.jpg')
                 ] %}
-                <article class="ph-work-card" data-photo-card>
+                <article class="ph-work-card">
                     <div class="ph-work-media">
-                        {% for image in images %}
-                        <button class="ph-work-slide {{ 'is-active' if loop.first else '' }}" type="button" data-lightbox data-src="{{ url_for('static', filename='photo/' + image) }}" aria-label="Открыть фотографию: {{ title }}">
+                        <button class="ph-work-slide is-active" type="button" data-lightbox data-src="{{ url_for('static', filename='photo/' + image) }}" aria-label="Открыть фотографию: {{ title }}">
                             <img src="{{ url_for('static', filename='photo/' + image) }}" alt="{{ title }}">
                         </button>
-                        {% endfor %}
                     </div>
                     <span class="ph-work-number">{{ '%02d'|format(loop.index) }}</span>
                     <div class="ph-work-copy">
                         <h3>{{ title }}</h3>
                         <p>{{ text }}</p>
-                        <div class="ph-work-controls" aria-label="Листать фотографии">
-                            <button type="button" data-card-prev aria-label="Предыдущая фотография">←</button>
-                            <span data-card-counter>01 / {{ '%02d'|format(images|length) }}</span>
-                            <button type="button" data-card-next aria-label="Следующая фотография">→</button>
-                        </div>
                     </div>
                 </article>
                 {% endfor %}
@@ -202,6 +195,37 @@
                     <p>Сохраняю движение, голос, атмосферу и важные паузы так, чтобы ролик ощущался личным, чистым и собранным. Без лишней суеты: заранее обсуждаем ритм, ключевые моменты и нужный формат отдачи.</p>
                 </div>
             </div>
+
+            <div class="ph-video-showcase" aria-label="Видеопортфолио">
+                <div class="ph-video-player" data-video-player aria-live="polite">
+                    <div class="ph-video-placeholder">
+                        <span>VK Video</span>
+                        <h3 data-video-player-title>Николай &amp; Галина</h3>
+                        <p>Выберите работу ниже и нажмите «Смотреть», чтобы открыть ролик прямо на сайте.</p>
+                        <button type="button" data-video-play>Смотреть работу <b>▶</b></button>
+                    </div>
+                </div>
+                <div class="ph-video-works" aria-label="Работы из VK Video и клипов">
+                    {% for title, meta, video_id, kind in [
+                        ('Николай & Галина', 'Свадебная история · 2:40', '456239042', 'Фильм'),
+                        ('Промоакция магазина «Пятёрочка»', 'Коммерческий ролик · 3:00', '456239040', 'Бренд'),
+                        ('Социальный проект', 'Документальный отрывок · 0:32', '456239032', 'Проект'),
+                        ('Обучающий ролик по макияжу', 'Вертикальный формат · 0:28', '456239027', 'Контент'),
+                        ('Свадьба', 'Архивная история · 2:58', '456239019', 'Фильм'),
+                        ('Руки Вверх! Бар', 'Видеоотчет с открытия · 0:41', '456239017', 'Репортаж'),
+                        ('VK Клип', 'Короткий вертикальный ролик', '456239046', 'Клип'),
+                        ('VK Клип', 'Короткий вертикальный ролик', '456239044', 'Клип')
+                    ] %}
+                    <button class="ph-video-work {{ 'is-active' if loop.first else '' }}" type="button" data-video-card data-video-src="https://vk.com/video_ext.php?oid=-229443984&amp;id={{ video_id }}&amp;hd=2" data-video-title="{{ title }}">
+                        <span>{{ '%02d'|format(loop.index) }}</span>
+                        <small>{{ kind }}</small>
+                        <strong>{{ title }}</strong>
+                        <em>{{ meta }}</em>
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+
             <div class="ph-video-grid" aria-label="Форматы видеосъемки">
                 <article>
                     <div class="ph-video-top"><span>01</span><strong>от 4 000 ₽/час</strong></div>
@@ -337,6 +361,6 @@
         <p>Нажмите Esc, чтобы закрыть</p>
     </div>
 
-    <script src="{{ url_for('static', filename='js/photo.js') }}?v=4" defer></script>
+    <script src="{{ url_for('static', filename='js/photo.js') }}?v=7" defer></script>
 </body>
 </html>
