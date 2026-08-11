@@ -23,11 +23,19 @@ def test_cmd_wrapper_allows_deploy_command_from_project_folder():
 def test_server_deploy_is_safe_and_verified():
     script = (PROJECT_ROOT / "deploy.sh").read_text(encoding="utf-8")
 
+    assert "umask 022" in script
     assert 'readlink -f -- "${BASH_SOURCE[0]}"' in script
     assert "/usr/local/bin/deploy" in script
     assert "install_deploy_command" in script
     assert "install_systemd_service" in script
     assert "install_nginx_config" in script
+    assert "existing SSL nginx config detected" in script
+    assert "ssl_certificate|managed by Certbot" in script
+    assert "ensure_runtime_permissions" in script
+    assert "chown www-data:www-data \"$APP_DIR\"" in script
+    assert 'find "$VENV_DIR" -type d -exec chmod a+rx {} +' in script
+    assert 'find "$VENV_DIR/bin" -maxdepth 1 -type f -exec chmod a+rx {} +' in script
+    assert "chown www-data:www-data \"$APP_DIR/site.db\"" in script
     assert "git merge --ff-only" in script
     assert "git clean -fd" not in script
     assert "backup_file \"$APP_DIR/site.db\"" in script
@@ -60,10 +68,18 @@ def test_nginx_config_routes_all_site_hosts_to_gunicorn():
 def test_server_bootstrap_installs_project_and_deploy_command():
     script = (PROJECT_ROOT / "deploy" / "bootstrap-server.sh").read_text(encoding="utf-8")
 
+    assert "umask 022" in script
     assert "https://github.com/vhudoverdiev/khudoverdiev.git" in script
     assert "git clone --branch" in script
     assert "python3 -m venv" in script
+    assert "ensure_runtime_permissions" in script
+    assert "chown www-data:www-data \"$APP_DIR\"" in script
+    assert 'find "$APP_DIR/venv" -type d -exec chmod a+rx {} +' in script
+    assert 'find "$APP_DIR/venv/bin" -maxdepth 1 -type f -exec chmod a+rx {} +' in script
+    assert "chown www-data:www-data \"$APP_DIR/site.db\"" in script
     assert "systemctl enable \"$SERVICE\"" in script
+    assert "existing SSL nginx config detected" in script
+    assert "ssl_certificate|managed by Certbot" in script
     assert "ln -sfn \"$APP_DIR/deploy.sh\" /usr/local/bin/deploy" in script
     assert "http://127.0.0.1:8000/health" in script
 

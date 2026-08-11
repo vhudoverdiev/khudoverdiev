@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
+umask 022
 
 SCRIPT_PATH="$(readlink -f -- "${BASH_SOURCE[0]}")"
 SCRIPT_DIR="$(cd -- "$(dirname -- "$SCRIPT_PATH")" && pwd)"
@@ -46,6 +47,14 @@ systemctl_cmd() {
   fi
 }
 
+root_cmd() {
+  if [[ "$EUID" -eq 0 ]]; then
+    "$@"
+  else
+    sudo "$@"
+  fi
+}
+
 install_deploy_command() {
   local current_target=""
 
@@ -87,6 +96,18 @@ install_nginx_config() {
   [[ -f "$NGINX_CONFIG_SOURCE" ]] || return 0
   command -v nginx >/dev/null 2>&1 || return 0
 
+  if [[ -f "$NGINX_CONFIG_TARGET" ]] && grep -Eq "ssl_certificate|managed by Certbot" "$NGINX_CONFIG_TARGET"; then
+    log "existing SSL nginx config detected; keeping $NGINX_CONFIG_TARGET"
+    if [[ "$EUID" -eq 0 ]]; then
+      nginx -t
+      systemctl reload nginx
+    else
+      sudo nginx -t
+      sudo systemctl reload nginx
+    fi
+    return 0
+  fi
+
   if [[ "$EUID" -eq 0 ]]; then
     install -m 0644 "$NGINX_CONFIG_SOURCE" "$NGINX_CONFIG_TARGET"
     ln -sfn "$NGINX_CONFIG_TARGET" "/etc/nginx/sites-enabled/$NGINX_SITE_NAME"
@@ -123,6 +144,29 @@ install_dependencies() {
     --disable-pip-version-check \
     -r requirements.txt \
     "gunicorn==$GUNICORN_VERSION"
+}
+
+ensure_runtime_permissions() {
+  log "ensuring runtime permissions"
+
+  root_cmd chmod 0755 "$(dirname "$APP_DIR")"
+  root_cmd chown www-data:www-data "$APP_DIR" || true
+  root_cmd chmod 0755 "$APP_DIR"
+
+  if [[ -d "$VENV_DIR" ]]; then
+    root_cmd find "$VENV_DIR" -type d -exec chmod a+rx {} +
+    root_cmd find "$VENV_DIR" -type f -exec chmod a+r {} +
+    if [[ -d "$VENV_DIR/bin" ]]; then
+      root_cmd find "$VENV_DIR/bin" -maxdepth 1 -type f -exec chmod a+rx {} +
+    fi
+  fi
+
+  root_cmd chmod +x "$SCRIPT_PATH"
+
+  if [[ -f "$APP_DIR/site.db" ]]; then
+    root_cmd chown www-data:www-data "$APP_DIR/site.db" || true
+    root_cmd chmod 0660 "$APP_DIR/site.db" || true
+  fi
 }
 
 check_health() {
@@ -165,6 +209,7 @@ rollback_on_error() {
     git reset --hard "$BEFORE_HEAD"
     if [[ -x "$VENV_DIR/bin/python" ]]; then
       install_dependencies
+      ensure_runtime_permissions
     fi
   fi
 
@@ -221,6 +266,7 @@ main() {
 
   log "installing dependencies"
   install_dependencies
+  ensure_runtime_permissions
 
   log "checking Python files"
   "$VENV_DIR/bin/python" -m compileall -q app.py

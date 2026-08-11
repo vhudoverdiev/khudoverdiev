@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
+umask 022
 
 APP_DIR="${APP_DIR:-/opt/khudoverdiev}"
 REPO_URL="${REPO_URL:-https://github.com/vhudoverdiev/khudoverdiev.git}"
@@ -14,6 +15,31 @@ log() {
 fail() {
   printf 'Error: %s\n' "$*" >&2
   exit 1
+}
+
+ensure_runtime_permissions() {
+  log "ensuring runtime permissions"
+
+  chmod 0755 "$(dirname "$APP_DIR")"
+  chown www-data:www-data "$APP_DIR" || true
+  chmod 0755 "$APP_DIR"
+
+  if [[ -d "$APP_DIR/venv" ]]; then
+    find "$APP_DIR/venv" -type d -exec chmod a+rx {} +
+    find "$APP_DIR/venv" -type f -exec chmod a+r {} +
+    if [[ -d "$APP_DIR/venv/bin" ]]; then
+      find "$APP_DIR/venv/bin" -maxdepth 1 -type f -exec chmod a+rx {} +
+    fi
+  fi
+
+  if [[ -f "$APP_DIR/deploy.sh" ]]; then
+    chmod +x "$APP_DIR/deploy.sh"
+  fi
+
+  if [[ -f "$APP_DIR/site.db" ]]; then
+    chown www-data:www-data "$APP_DIR/site.db" || true
+    chmod 0660 "$APP_DIR/site.db" || true
+  fi
 }
 
 [[ "$(id -u)" -eq 0 ]] || fail "run this script as root"
@@ -56,14 +82,16 @@ import secrets
 print(secrets.token_urlsafe(18))
 PY
   )"
-  umask 077
-  cat > "$APP_DIR/.env" <<EOF
+  (
+    umask 077
+    cat > "$APP_DIR/.env" <<EOF
 FLASK_SECRET_KEY=$flask_secret
 ADMIN_PASSWORD=$admin_password
 ADMIN_PASSWORD_HASH=
 FLASK_COOKIE_SECURE=1
 FORCE_HTTPS=1
 EOF
+  )
   log "generated ADMIN_PASSWORD in $APP_DIR/.env"
 fi
 
@@ -75,12 +103,14 @@ fi
 log "installing Python dependencies"
 "$APP_DIR/venv/bin/python" -m pip install --upgrade pip
 "$APP_DIR/venv/bin/python" -m pip install -r requirements.txt "gunicorn==23.0.0"
+ensure_runtime_permissions
 
 log "initializing database"
 "$APP_DIR/venv/bin/python" - <<'PY'
 from app import init_db
 init_db()
 PY
+ensure_runtime_permissions
 
 log "installing systemd service"
 install -m 0644 "$APP_DIR/deploy/khudoverdiev.service" "/etc/systemd/system/$SERVICE"
@@ -88,9 +118,14 @@ systemctl daemon-reload
 systemctl enable "$SERVICE"
 
 log "installing nginx config"
-install -m 0644 "$APP_DIR/deploy/nginx-khudoverdiev.conf" /etc/nginx/sites-available/khudoverdiev
-ln -sfn /etc/nginx/sites-available/khudoverdiev /etc/nginx/sites-enabled/khudoverdiev
-rm -f /etc/nginx/sites-enabled/default
+if [[ -f /etc/nginx/sites-available/khudoverdiev ]] \
+  && grep -Eq "ssl_certificate|managed by Certbot" /etc/nginx/sites-available/khudoverdiev; then
+  log "existing SSL nginx config detected; keeping /etc/nginx/sites-available/khudoverdiev"
+else
+  install -m 0644 "$APP_DIR/deploy/nginx-khudoverdiev.conf" /etc/nginx/sites-available/khudoverdiev
+  ln -sfn /etc/nginx/sites-available/khudoverdiev /etc/nginx/sites-enabled/khudoverdiev
+  rm -f /etc/nginx/sites-enabled/default
+fi
 nginx -t
 systemctl enable nginx
 systemctl reload nginx || systemctl restart nginx
@@ -98,6 +133,7 @@ systemctl reload nginx || systemctl restart nginx
 log "installing deploy command"
 chmod +x "$APP_DIR/deploy.sh"
 ln -sfn "$APP_DIR/deploy.sh" /usr/local/bin/deploy
+ensure_runtime_permissions
 
 log "starting application"
 systemctl restart "$SERVICE"
