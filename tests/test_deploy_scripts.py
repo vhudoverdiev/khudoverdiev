@@ -26,6 +26,8 @@ def test_server_deploy_is_safe_and_verified():
     assert 'readlink -f -- "${BASH_SOURCE[0]}"' in script
     assert "/usr/local/bin/deploy" in script
     assert "install_deploy_command" in script
+    assert "install_systemd_service" in script
+    assert "install_nginx_config" in script
     assert "git merge --ff-only" in script
     assert "git clean -fd" not in script
     assert "backup_file \"$APP_DIR/site.db\"" in script
@@ -42,3 +44,25 @@ def test_systemd_service_runs_this_flask_app():
     assert "EnvironmentFile=-/opt/khudoverdiev/.env" in service
     assert "gunicorn" in service
     assert "app:app" in service
+
+
+def test_nginx_config_routes_all_site_hosts_to_gunicorn():
+    config = (PROJECT_ROOT / "deploy" / "nginx-khudoverdiev.conf").read_text(encoding="utf-8")
+
+    assert "server_name khudoverdiev.ru" in config
+    assert "it.khudoverdiev.ru" in config
+    assert "ph.khudoverdiev.ru" in config
+    assert "phh.khudoverdiev.ru" in config
+    assert "proxy_pass http://127.0.0.1:8000" in config
+    assert "alias /opt/khudoverdiev/static/" in config
+
+
+def test_server_bootstrap_installs_project_and_deploy_command():
+    script = (PROJECT_ROOT / "deploy" / "bootstrap-server.sh").read_text(encoding="utf-8")
+
+    assert "https://github.com/vhudoverdiev/khudoverdiev.git" in script
+    assert "git clone --branch" in script
+    assert "python3 -m venv" in script
+    assert "systemctl enable \"$SERVICE\"" in script
+    assert "ln -sfn \"$APP_DIR/deploy.sh\" /usr/local/bin/deploy" in script
+    assert "http://127.0.0.1:8000/health" in script

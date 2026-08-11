@@ -14,6 +14,12 @@ HEALTH_TIMEOUT_SECONDS="${HEALTH_TIMEOUT_SECONDS:-45}"
 RUN_TESTS="${RUN_TESTS:-1}"
 GUNICORN_VERSION="${GUNICORN_VERSION:-23.0.0}"
 DEPLOY_COMMAND_PATH="${DEPLOY_COMMAND_PATH:-/usr/local/bin/deploy}"
+SYSTEMD_SOURCE="${SYSTEMD_SOURCE:-$APP_DIR/deploy/khudoverdiev.service}"
+SYSTEMD_TARGET="${SYSTEMD_TARGET:-/etc/systemd/system/$SERVICE}"
+INSTALL_NGINX_CONFIG="${INSTALL_NGINX_CONFIG:-1}"
+NGINX_SITE_NAME="${NGINX_SITE_NAME:-khudoverdiev}"
+NGINX_CONFIG_SOURCE="${NGINX_CONFIG_SOURCE:-$APP_DIR/deploy/nginx-khudoverdiev.conf}"
+NGINX_CONFIG_TARGET="${NGINX_CONFIG_TARGET:-/etc/nginx/sites-available/$NGINX_SITE_NAME}"
 
 BEFORE_HEAD=""
 UPDATED=0
@@ -61,6 +67,38 @@ install_deploy_command() {
   fi
 
   log "deploy command installed: $DEPLOY_COMMAND_PATH"
+}
+
+install_systemd_service() {
+  [[ -f "$SYSTEMD_SOURCE" ]] || fail "systemd service file was not found: $SYSTEMD_SOURCE"
+
+  if [[ "$EUID" -eq 0 ]]; then
+    install -m 0644 "$SYSTEMD_SOURCE" "$SYSTEMD_TARGET"
+  else
+    sudo install -m 0644 "$SYSTEMD_SOURCE" "$SYSTEMD_TARGET"
+  fi
+  systemctl_cmd daemon-reload
+  systemctl_cmd enable "$SERVICE" >/dev/null
+  log "systemd service installed: $SYSTEMD_TARGET"
+}
+
+install_nginx_config() {
+  [[ "$INSTALL_NGINX_CONFIG" == "1" ]] || return 0
+  [[ -f "$NGINX_CONFIG_SOURCE" ]] || return 0
+  command -v nginx >/dev/null 2>&1 || return 0
+
+  if [[ "$EUID" -eq 0 ]]; then
+    install -m 0644 "$NGINX_CONFIG_SOURCE" "$NGINX_CONFIG_TARGET"
+    ln -sfn "$NGINX_CONFIG_TARGET" "/etc/nginx/sites-enabled/$NGINX_SITE_NAME"
+    nginx -t
+    systemctl reload nginx
+  else
+    sudo install -m 0644 "$NGINX_CONFIG_SOURCE" "$NGINX_CONFIG_TARGET"
+    sudo ln -sfn "$NGINX_CONFIG_TARGET" "/etc/nginx/sites-enabled/$NGINX_SITE_NAME"
+    sudo nginx -t
+    sudo systemctl reload nginx
+  fi
+  log "nginx config installed: $NGINX_CONFIG_TARGET"
 }
 
 backup_file() {
@@ -191,6 +229,9 @@ main() {
     log "running tests"
     "$VENV_DIR/bin/python" -m pytest -q
   fi
+
+  install_systemd_service
+  install_nginx_config
 
   log "restarting $SERVICE"
   SERVICE_TOUCHED=1
