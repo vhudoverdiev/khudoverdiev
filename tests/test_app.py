@@ -323,6 +323,7 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert b"css/photo.css" in response.data
     assert b"js/photo.js" in response.data
     assert "Архангельск, Северодвинск".encode() in response.data
+    assert b"photo/ph-favicon.ico" in response.data
     assert b"photo/ph-favicon.svg" in response.data
     assert b"photo/ph-favicon.png" in response.data
     assert b"portfolio/vh-favicon.svg" not in response.data
@@ -361,7 +362,8 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "Яндекс Маркет".encode() in response.data
     assert "Руки Вверх! Бар".encode() in response.data
     assert "Фотостудия «Сюжетная Линия»".encode() in response.data
-    assert "Форматы и состав съемок собраны из актуального VK Market".encode() in response.data
+    assert "Выберите формат под задачу".encode() in response.data
+    assert "актуального VK Market".encode() not in response.data
     assert "Ты, он и белое платье".encode() in response.data
     assert "Твоя фотосессия".encode() in response.data
     assert "Все сделаем за тебя".encode() in response.data
@@ -373,11 +375,11 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "Дополнительно можно заказать".encode() not in response.data
     assert b'id="video"' in response.data
     assert "Видеосъемка".encode() in response.data
-    assert "в ритме события".encode() in response.data
-    assert "Свадебная видеосъемка".encode() in response.data
-    assert "Самый важный момент".encode() in response.data
-    assert "Любой формат".encode() in response.data
-    assert "Коммерческая видеосъемка".encode() in response.data
+    assert "с живым дыханием".encode() in response.data
+    assert "Свадебный фильм".encode() in response.data
+    assert "Главный эпизод".encode() in response.data
+    assert "Творческий ролик".encode() in response.data
+    assert "Контент для бренда".encode() in response.data
     assert "от 5 000 ₽/час".encode() in response.data
     assert "от 6 000 ₽/час".encode() in response.data
     assert b"https://vk.ru/v.khudoverdiev" not in response.data
@@ -388,6 +390,7 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert b'href="#gallery"' not in response.data
     assert b'id="gallery"' not in response.data
     assert "Снимаю".encode() not in response.data
+    assert "снимаю".encode() not in response.data
     assert "Фотограф | Архангельск".encode() not in response.data
     assert "Фотограф · Архангельск".encode() not in response.data
     assert "ГОРОДСКОЙ ПОРТРЕТ".encode() not in response.data
@@ -956,6 +959,7 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
     assert "Владимир Худовердиев</a>".encode() not in response.data
     assert "Фотограф".encode() in response.data
     assert "Владимир Худовердиев</strong>".encode() in response.data
+    assert b"photo/ph-favicon.ico" in response.data
     assert b"photo/ph-favicon.svg" in response.data
     assert b"photo/ph-favicon.png" in response.data
     assert b"portfolio/vh-favicon.svg" not in response.data
@@ -985,6 +989,7 @@ def test_inactive_or_missing_photo_client_shows_unavailable_state_without_links(
     assert missing.status_code == 404
     assert "Материалы недоступны".encode() in inactive.data
     assert "Владимир Худовердиев</a>".encode() not in inactive.data
+    assert b"photo/ph-favicon.ico" in inactive.data
     assert b"photo/ph-favicon.svg" in inactive.data
     assert b"photo/ph-favicon.png" in inactive.data
     assert b"portfolio/vh-favicon.svg" not in inactive.data

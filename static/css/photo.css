@@ -855,12 +855,11 @@ h2 em {
 
 .ph-services > header {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: 160px minmax(0, 1fr);
     align-items: start;
-    gap: 24px;
+    gap: 54px;
     margin-bottom: 60px;
 }
-.ph-services > header > div { grid-column: auto; }
 .ph-services > header .ph-section-index { margin: 0; }
 .ph-services > header h2 { margin-bottom: 24px; }
 .ph-services-lead {
@@ -1103,17 +1102,17 @@ h2 em {
 }
 .ph-contact-actions {
     display: grid;
-    gap: 10px;
+    gap: 9px;
 }
 .ph-contact-card {
     position: relative;
-    min-height: 124px;
+    min-height: 108px;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 50px;
+    grid-template-columns: minmax(0, 1fr) 44px;
     align-content: end;
     align-items: end;
     gap: 10px;
-    padding: 18px;
+    padding: 16px;
     overflow: hidden;
     border: 1px solid rgba(91, 63, 49, .18);
     border-radius: 18px;
@@ -1121,7 +1120,7 @@ h2 em {
         linear-gradient(145deg, rgba(255, 250, 243, .94), rgba(231, 220, 209, .86)),
         #fffaf3;
     color: var(--ph-ink);
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 850;
     box-shadow: 0 20px 46px rgba(44, 33, 26, .08);
     transition: transform .35s var(--ph-ease), border-color .25s ease, box-shadow .25s ease;
@@ -1165,11 +1164,11 @@ h2 em {
     position: relative;
     z-index: 1;
     grid-column: 1 / -1;
-    width: 38px;
-    height: 38px;
+    width: 34px;
+    height: 34px;
     display: grid;
     place-items: center;
-    margin-bottom: 14px;
+    margin-bottom: 10px;
     border-radius: 50%;
     background: var(--ph-coffee);
     color: #fffaf3;
@@ -1234,7 +1233,7 @@ h2 em {
 }
 .ph-contact-card small {
     color: var(--ph-muted);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
 }
 .ph-contact-card-primary small {
