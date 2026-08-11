@@ -7,7 +7,6 @@ DOMAINS=(
   www.khudoverdiev.ru
   it.khudoverdiev.ru
   ph.khudoverdiev.ru
-  phh.khudoverdiev.ru
 )
 
 log() {

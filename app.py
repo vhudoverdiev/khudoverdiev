@@ -31,7 +31,6 @@ BRANCH_HOSTS = {
     "root": "khudoverdiev.ru",
     "it": "it.khudoverdiev.ru",
     "ph": "ph.khudoverdiev.ru",
-    "phh": "phh.khudoverdiev.ru",
 }
 PHOTO_CLIENT_BASE_URL = f"https://{BRANCH_HOSTS['ph']}"
 PHOTO_PORTFOLIO_IMAGES = [f"photo/portfolio/portfolio-{index:03}.jpg" for index in range(1, 127)]
@@ -43,7 +42,6 @@ ALLOWED_HOSTS = {
     "::1",
     "it.localhost",
     "ph.localhost",
-    "phh.localhost",
     *BRANCH_HOSTS.values(),
 }
 CONTROL_CHARS_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
@@ -519,8 +517,6 @@ def index():
         response = make_response(render_template("it.html", socials=SOCIAL_LINKS))
     elif branch == "ph":
         response = make_response(render_template("photo.html"))
-    elif branch == "phh":
-        response = make_response(render_template("client_unavailable.html", direct_visit=True))
     else:
         response = make_response(
             render_template(
@@ -581,9 +577,6 @@ def go(social_name):
 
 @app.route("/client/<slug>")
 def photo_client(slug):
-    if get_site_branch() == "phh":
-        return redirect(photo_client_public_url(slug), code=301)
-
     client = get_photo_client_by_slug(clean_slug(slug))
     if client is None or not client["is_active"]:
         return render_template("client_unavailable.html", direct_visit=False), 404

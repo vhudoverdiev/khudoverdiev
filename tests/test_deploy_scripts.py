@@ -52,7 +52,7 @@ def test_nginx_config_routes_all_site_hosts_to_gunicorn():
     assert "server_name khudoverdiev.ru" in config
     assert "it.khudoverdiev.ru" in config
     assert "ph.khudoverdiev.ru" in config
-    assert "phh.khudoverdiev.ru" in config
+    assert "phh.khudoverdiev.ru" not in config
     assert "proxy_pass http://127.0.0.1:8000" in config
     assert "alias /opt/khudoverdiev/static/" in config
 
@@ -85,4 +85,4 @@ def test_ssl_setup_requests_certificates_for_all_domains():
     assert "www.khudoverdiev.ru" in script
     assert "it.khudoverdiev.ru" in script
     assert "ph.khudoverdiev.ru" in script
-    assert "phh.khudoverdiev.ru" in script
+    assert "phh.khudoverdiev.ru" not in script

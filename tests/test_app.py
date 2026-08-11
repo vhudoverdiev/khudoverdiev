@@ -214,7 +214,6 @@ def test_large_message_payload_is_rejected_before_persisting_body(client):
         ("http://it.khudoverdiev.ru", "it"),
         ("http://it.localhost", "it"),
         ("http://ph.khudoverdiev.ru", "ph"),
-        ("http://phh.khudoverdiev.ru", "phh"),
     ],
 )
 def test_site_branch_is_selected_from_allowed_host(base_url, expected_branch):
@@ -424,13 +423,10 @@ def test_ph_localhost_maps_to_photographer_branch(client):
     assert b"css/photo.css" in response.data
 
 
-def test_phh_root_shows_private_materials_entry_state(client):
+def test_phh_host_is_not_part_of_project(client):
     response = client.get("/", base_url="http://phh.khudoverdiev.ru")
 
-    assert response.status_code == 200
-    assert "Материалы недоступны".encode() in response.data
-    assert "персональной ссылке".encode() in response.data
-
+    assert response.status_code == 400
 
 def test_taplink_socials_use_tracking_redirects(client):
     response = client.get("/", base_url="http://khudoverdiev.ru")
@@ -970,14 +966,12 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
     assert b'type="file"' not in response.data
 
 
-def test_old_phh_client_page_redirects_to_ph_client_url(client):
+def test_old_phh_client_page_is_not_part_of_project(client):
     insert_photo_client(slug="old-safe-link")
 
     response = client.get("/client/old-safe-link", base_url="http://phh.khudoverdiev.ru")
 
-    assert response.status_code == 301
-    assert response.headers["Location"] == "https://ph.khudoverdiev.ru/client/old-safe-link"
-
+    assert response.status_code == 400
 
 def test_inactive_or_missing_photo_client_shows_unavailable_state_without_links(client):
     insert_photo_client(slug="disabled-client", is_active=0)
