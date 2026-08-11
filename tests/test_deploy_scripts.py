@@ -66,3 +66,23 @@ def test_server_bootstrap_installs_project_and_deploy_command():
     assert "systemctl enable \"$SERVICE\"" in script
     assert "ln -sfn \"$APP_DIR/deploy.sh\" /usr/local/bin/deploy" in script
     assert "http://127.0.0.1:8000/health" in script
+
+
+def test_server_diagnostics_cover_backend_and_nginx():
+    script = (PROJECT_ROOT / "deploy" / "diagnose-server.sh").read_text(encoding="utf-8")
+
+    assert "systemctl status \"$SERVICE\"" in script
+    assert "journalctl -u \"$SERVICE\"" in script
+    assert "nginx -t" in script
+    assert "http://127.0.0.1:8000/health" in script
+
+
+def test_ssl_setup_requests_certificates_for_all_domains():
+    script = (PROJECT_ROOT / "deploy" / "setup-ssl.sh").read_text(encoding="utf-8")
+
+    assert "certbot" in script
+    assert "khudoverdiev.ru" in script
+    assert "www.khudoverdiev.ru" in script
+    assert "it.khudoverdiev.ru" in script
+    assert "ph.khudoverdiev.ru" in script
+    assert "phh.khudoverdiev.ru" in script
