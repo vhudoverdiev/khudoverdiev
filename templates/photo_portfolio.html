@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Портфолио — Владимир Худовердиев</title>
+    <meta name="description" content="Портфолио фотографа Владимира Худовердиева: портретная, свадебная, репортажная, брендовая и предметная съемка.">
+    <meta name="theme-color" content="#5a3f31">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='photo/ph-favicon.svg') }}?v=3">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/photo.css') }}?v=16">
+</head>
+<body>
+    <a class="ph-skip" href="#portfolio-grid">Перейти к фотографиям</a>
+
+    <header class="ph-header ph-portfolio-header">
+        <a class="ph-brand" href="{{ url_for('index') }}" aria-label="На главную страницу PH">PH<span>.</span></a>
+        <nav aria-label="Навигация портфолио">
+            <a href="{{ url_for('index') }}#portfolio">Портфолио</a>
+            <a href="{{ url_for('index') }}#services">Съемки</a>
+            <a href="{{ url_for('index') }}#contact">Контакты</a>
+        </nav>
+        <a class="ph-header-cta" href="{{ url_for('index') }}#contact">Написать <span>↘</span></a>
+    </header>
+
+    <main class="ph-full-portfolio">
+        <section class="ph-full-hero" aria-labelledby="full-portfolio-title">
+            <div>
+                <p class="ph-kicker"><i></i> Полный альбом</p>
+                <h1 id="full-portfolio-title">Портфолио</h1>
+            </div>
+            <a href="#portfolio-grid" class="ph-button ph-button-primary">Смотреть фотографии <span>↓</span></a>
+        </section>
+
+        <section class="ph-full-gallery" id="portfolio-grid" aria-label="Полное портфолио">
+            {% for photo in photos %}
+            <button class="ph-full-photo" type="button" data-lightbox data-src="{{ url_for('static', filename=photo) }}" aria-label="Открыть фотографию {{ loop.index }}">
+                <img src="{{ url_for('static', filename=photo) }}" alt="Портфолио Владимира Худовердиева, фото {{ loop.index }}" loading="lazy">
+                <span>{{ '%03d'|format(loop.index) }}</span>
+            </button>
+            {% endfor %}
+        </section>
+
+        <section class="ph-full-bottom" aria-label="Связаться после просмотра портфолио">
+            <div>
+                <p class="ph-section-index">После просмотра</p>
+                <h2>Нашли<br><em>свое настроение?</em></h2>
+            </div>
+            <div class="ph-full-bottom-actions">
+                <a class="ph-button ph-button-primary" href="{{ url_for('index') }}#contact">Обсудить съемку <span>↗</span></a>
+                <a class="ph-button ph-button-quiet" href="{{ source_album_url }}" target="_blank" rel="noopener">Открыть альбом VK <span>↗</span></a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="ph-footer">
+        <a class="ph-brand" href="{{ url_for('index') }}">PH<span>.</span></a>
+        <p>Владимир Худовердиев · Все права защищены</p>
+        <p>© 2026</p>
+    </footer>
+
+    <div class="ph-lightbox" id="ph-lightbox" aria-hidden="true">
+        <button type="button" data-lightbox-close aria-label="Закрыть фотографию">×</button>
+        <img alt="Открытая фотография">
+        <p>Нажмите Esc, чтобы закрыть</p>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/photo.js') }}?v=3" defer></script>
+</body>
+</html>

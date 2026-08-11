@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Фотографии для {{ client.client_name }} — KHUDOVERDIEV PHOTO</title>
+    <meta name="description" content="Персональная страница для получения готовых фотографий.">
+    <meta name="theme-color" content="#f4f0ea">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='photo/ph-favicon.svg') }}?v=4">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='photo/ph-favicon.png') }}?v=1">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='photo/ph-favicon.png') }}?v=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=14">
+</head>
+<body class="client-body">
+    <header class="client-header">
+        <span>Персональная ссылка</span>
+    </header>
+
+    <main class="client-page">
+        <section class="client-card client-delivery-card" aria-labelledby="client-title">
+            <div class="client-copy">
+                <p class="client-kicker"><i></i> Готовая серия</p>
+                <h1 id="client-title">
+                    <span>Спасибо за съемку,</span>
+                    <span>{{ client.client_name }}!</span>
+                </h1>
+                <p class="client-lead">
+                    {% if client.message_text %}
+                    {{ client.message_text }}
+                    {% else %}
+                    Мне было очень приятно работать с вами. Ниже вы найдете ссылку на готовые фотографии.
+                    {% endif %}
+                </p>
+
+                <div class="client-actions">
+                    <a class="client-button client-button-primary" href="{{ client.photo_link }}" target="_blank" rel="noopener noreferrer">
+                        <span>Скачать фотографии</span>
+                        <b aria-hidden="true">↗</b>
+                    </a>
+                    {% if client.review_link %}
+                    <a class="client-button client-button-secondary" href="{{ client.review_link }}" target="_blank" rel="noopener noreferrer">
+                        <span>Оставить отзыв</span>
+                        <b aria-hidden="true">↗</b>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="client-portrait-panel" aria-hidden="true">
+                <div class="client-photo-stage">
+                    <div class="client-portrait-orbit"><i></i><i></i><i></i><i></i><i></i></div>
+                    <div class="client-person-plate">
+                        <img class="client-hero-person" src="{{ url_for('static', filename='photo/portrait-cutout.png') }}" alt="">
+                    </div>
+                </div>
+                <div class="client-photographer-card">
+                    <span>Фотограф</span>
+                    <strong>Владимир Худовердиев</strong>
+                </div>
+            </div>
+
+            <div class="client-detail-grid">
+                {% if client.discount_text %}
+                <div class="client-discount">
+                    <span>Благодарность</span>
+                    <strong>{{ client.discount_text }}</strong>
+                    <p>на следующую съемку</p>
+                </div>
+                {% endif %}
+                <p class="client-review-note">Если вам понравился результат, буду благодарен за отзыв. Это помогает новым людям спокойнее решиться на съемку.</p>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

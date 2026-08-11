@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Материалы недоступны — KHUDOVERDIEV PHOTO</title>
+    <meta name="description" content="Материалы по этой ссылке сейчас недоступны.">
+    <meta name="theme-color" content="#f4f0ea">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='photo/ph-favicon.svg') }}?v=4">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='photo/ph-favicon.png') }}?v=1">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='photo/ph-favicon.png') }}?v=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=14">
+</head>
+<body class="client-body">
+    <header class="client-header">
+        <span>Персональная ссылка</span>
+    </header>
+
+    <main class="client-page">
+        <section class="client-card client-card-unavailable" aria-labelledby="unavailable-title">
+            <p class="client-kicker"><i></i> Доступ закрыт</p>
+            <h1 id="unavailable-title">Материалы недоступны</h1>
+            {% if direct_visit %}
+            <p class="client-lead">Готовые фотографии открываются по персональной ссылке, которую я отправляю после съемки.</p>
+            {% else %}
+            <p class="client-lead">Ссылка могла быть выключена, изменена или еще не готова. Напишите мне, и я проверю доступ.</p>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>

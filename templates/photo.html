@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Архангельск, Северодвинск — Владимир Худовердиев</title>
+    <meta name="description" content="Портфолио Владимира Худовердиева: портретная, репортажная, свадебная, предметная и студийная съемка в Архангельске и Северодвинске.">
+    <meta name="theme-color" content="#5a3f31">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='photo/ph-favicon.svg') }}?v=4">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='photo/ph-favicon.png') }}?v=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/photo.css') }}?v=18">
+</head>
+<body>
+    <a class="ph-skip" href="#portfolio">Перейти к портфолио</a>
+
+    <header class="ph-header">
+        <a class="ph-brand" href="#top" aria-label="В начало страницы">PH<span>.</span></a>
+        <nav aria-label="Основная навигация">
+            <a href="#portfolio">Портфолио</a>
+            <a href="#services">Съемки</a>
+            <a href="#video">Видео</a>
+            <a href="#contact">Контакты</a>
+        </nav>
+        <a class="ph-header-cta" href="#booking" data-booking-open>Записаться <span>↘</span></a>
+    </header>
+
+    <main id="top">
+        <section class="ph-hero" aria-labelledby="ph-title">
+            <div class="ph-hero-copy">
+                <p class="ph-kicker"><i></i> Архангельск, Северодвинск</p>
+                <h1 id="ph-title">Фотографии<br>для вашей<br>истории</h1>
+                <p class="ph-lead">Портреты, репортажи, свадьбы и контент для брендов. Бережно работаю со светом, человеком и атмосферой кадра.</p>
+                <div class="ph-actions">
+                    <a class="ph-button ph-button-primary" href="#portfolio">Смотреть портфолио <span>↓</span></a>
+                    <a class="ph-button ph-button-quiet" href="#video">Видеосъемка <span>↓</span></a>
+                </div>
+            </div>
+
+            <div class="ph-hero-stage" aria-label="Фотограф и примеры работ">
+                <div class="ph-portrait-orbit" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+                <div class="ph-person-plate">
+                    <img class="ph-hero-person" src="{{ url_for('static', filename='photo/portrait-cutout.png') }}" alt="Фотограф Владимир Худовердиев" width="1023" height="1537">
+                </div>
+            </div>
+        </section>
+
+        <section class="ph-trust" id="brands" aria-label="Бренды и проекты">
+            <p>Работал с</p>
+            <div><span>Ozon</span><span>Black Star Burger</span><span>Яндекс Маркет</span><span>Руки Вверх! Бар</span><span>Фотостудия «Сюжетная Линия»</span></div>
+        </section>
+
+        <section class="ph-about" id="about">
+            <p class="ph-section-index">01 / Подход</p>
+            <h2>Не просто снимаю.<br><em>Вижу человека.</em></h2>
+            <div class="ph-about-copy">
+                <p class="ph-about-lead">На съемке соединяю опыт в контенте, внимание к человеку и спокойную работу с задачей. Мне важно, чтобы заказчик получил не просто красивые кадры, а живую серию, которой хочется пользоваться и возвращаться к ней.</p>
+                <div class="ph-approach-grid" aria-label="Как проходит съемка">
+                    <article><span>01</span><h3>Слышу задачу</h3><p>Перед съемкой уточняю, для чего нужны фотографии: личный архив, бренд, событие или продажи.</p></article>
+                    <article><span>02</span><h3>Веду в кадре</h3><p>Помогаю с образом, позированием и настроением, чтобы в кадре было спокойно и живо.</p></article>
+                    <article><span>03</span><h3>Собираю контент</h3><p>Отдаю серию, где есть портреты, детали и кадры, которые удобно использовать в соцсетях и материалах.</p></article>
+                </div>
+                <div class="ph-facts"><span><b>5</b> направлений</span><span><b>1</b> понятный процесс</span><span><b>∞</b> внимание к кадру</span></div>
+            </div>
+        </section>
+
+        <section class="ph-portfolio" id="portfolio">
+            <header class="ph-section-heading">
+                <div><p class="ph-section-index">02 / Портфолио</p><h2>Серии,<br><em>которые можно листать</em></h2></div>
+                <p>Каждая карточка — отдельный формат съемки. Листайте фотографии внутри карточек, а полный альбом можно открыть во ВКонтакте.</p>
+            </header>
+
+            <div class="ph-work-grid" aria-label="Серии портфолио">
+                {% for title, text, images in [
+                    ('Портретная', 'Живой человек, характер и спокойная работа с камерой.', ['portfolio/portfolio-078.jpg', 'portfolio/portfolio-096.jpg', 'portfolio/portfolio-100.jpg']),
+                    ('Свадебная', 'День целиком: близость, детали и кадры без ощущения постановки.', ['portfolio/portfolio-057.jpg', 'portfolio/portfolio-106.jpg', 'portfolio/portfolio-123.jpg']),
+                    ('Репортажная', 'События, движение и честные моменты, которые легко вспоминать.', ['portfolio/portfolio-113.jpg', 'portfolio/portfolio-114.jpg', 'portfolio/portfolio-119.jpg']),
+                    ('Брендовая', 'Контент для экспертов, команд и локальных проектов.', ['portfolio/portfolio-108.jpg', 'portfolio/portfolio-110.jpg', 'portfolio/portfolio-112.jpg']),
+                    ('Предметная', 'Аккуратные визуалы для товаров, деталей и презентаций.', ['portfolio/portfolio-058.jpg', 'portfolio/portfolio-062.jpg', 'portfolio/portfolio-102.jpg'])
+                ] %}
+                <article class="ph-work-card" data-photo-card>
+                    <div class="ph-work-media">
+                        {% for image in images %}
+                        <button class="ph-work-slide {{ 'is-active' if loop.first else '' }}" type="button" data-lightbox data-src="{{ url_for('static', filename='photo/' + image) }}" aria-label="Открыть фотографию: {{ title }}">
+                            <img src="{{ url_for('static', filename='photo/' + image) }}" alt="{{ title }}">
+                        </button>
+                        {% endfor %}
+                    </div>
+                    <span class="ph-work-number">{{ '%02d'|format(loop.index) }}</span>
+                    <div class="ph-work-copy">
+                        <h3>{{ title }}</h3>
+                        <p>{{ text }}</p>
+                        <div class="ph-work-controls" aria-label="Листать фотографии">
+                            <button type="button" data-card-prev aria-label="Предыдущая фотография">←</button>
+                            <span data-card-counter>01 / {{ '%02d'|format(images|length) }}</span>
+                            <button type="button" data-card-next aria-label="Следующая фотография">→</button>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+                <a class="ph-work-card ph-work-card-link" href="{{ url_for('photo_portfolio') }}">
+                    <span class="ph-work-number">06</span>
+                    <div>
+                        <p>Полная серия</p>
+                        <h3>Открыть полное портфолио</h3>
+                    </div>
+                    <b aria-hidden="true">↗</b>
+                </a>
+            </div>
+        </section>
+
+        <section class="ph-services" id="services">
+            <header>
+                <p class="ph-section-index">03 / Направления</p>
+                <div>
+                    <h2>Съемка под<br><em>вашу историю</em></h2>
+                    <p class="ph-services-lead">Форматы и состав съемок собраны из актуального VK Market: от короткой прогулки до студийной истории с образом, макияжем и арендой платья.</p>
+                </div>
+            </header>
+            <div class="ph-service-list">
+                <article>
+                    <span>01</span>
+                    <p class="ph-service-eyebrow">Ты, он и белое платье</p>
+                    <h3>Свадебная история</h3>
+                    <p class="ph-service-note">ЗАГС, прогулка или полный день с банкетом.</p>
+                    <ul>
+                        <li>60-120 снимков за час в цветокоррекции и легкой ретуши</li>
+                        <li>5 фотографий в детальной ретуши</li>
+                        <li>готовность до 21 дня, исходники по желанию</li>
+                    </ul>
+                    <strong>от 4 000 ₽/час</strong>
+                </article>
+                <article>
+                    <span>02</span>
+                    <p class="ph-service-eyebrow">Твоя фотосессия</p>
+                    <h3>Студийная съемка</h3>
+                    <p class="ph-service-note">Семейная, детская, беременность или личная съемка в студии.</p>
+                    <ul>
+                        <li>60 минут съемки, аренда студии уже включена</li>
+                        <li>до 4-5 участников, следующий участник + 500 ₽</li>
+                        <li>60-100 снимков и 5 кадров в ретуши до 14 дней</li>
+                    </ul>
+                    <strong>от 7 500 ₽</strong>
+                </article>
+                <article>
+                    <span>03</span>
+                    <p class="ph-service-eyebrow">Прогуляемся?</p>
+                    <h3>Прогулочная</h3>
+                    <p class="ph-service-note">Легкая съемка на улице для себя, пары или личного архива.</p>
+                    <ul>
+                        <li>60 минут съемки в выбранной локации</li>
+                        <li>60-100 снимков в цветокоррекции и легкой ретуши</li>
+                        <li>3 фотографии в ретуши, готовность до 14 дней</li>
+                    </ul>
+                    <strong>5 000 ₽</strong>
+                </article>
+                <article>
+                    <span>04</span>
+                    <p class="ph-service-eyebrow">Все сделаем за тебя</p>
+                    <h3>Полный образ</h3>
+                    <p class="ph-service-note">Студийная фотосессия, где образ собирается заранее.</p>
+                    <ul>
+                        <li>60 минут съемки и аренда студии</li>
+                        <li>укладка, макияж и аренда платья включены</li>
+                        <li>60-100 снимков и 5 кадров в ретуши до 14 дней</li>
+                    </ul>
+                    <strong>от 13 000 ₽</strong>
+                </article>
+                <article>
+                    <span>05</span>
+                    <p class="ph-service-eyebrow">Фото+видео</p>
+                    <h3>Два формата</h3>
+                    <p class="ph-service-note">Параллельная фото- и видеосъемка для события, бренда или личной истории.</p>
+                    <ul>
+                        <li>фотографии и видео в одном съемочном процессе</li>
+                        <li>сценарий, тайминг и объем обсуждаются индивидуально</li>
+                        <li>подходит для событий, контента и камерных историй</li>
+                    </ul>
+                    <strong>от 6 000 ₽</strong>
+                </article>
+                <article>
+                    <span>06</span>
+                    <p class="ph-service-eyebrow">Подарочный сертификат</p>
+                    <h3>Съемка в подарок</h3>
+                    <p class="ph-service-note">Готовый формат для тех, кому хочется подарить впечатление и красивые кадры.</p>
+                    <ul>
+                        <li>сертификат в подарочном конверте</li>
+                        <li>60 минут съемки, аренда студии включена</li>
+                        <li>60-100 снимков и 5 кадров в ретуши до 14 дней</li>
+                    </ul>
+                    <strong>от 7 500 ₽</strong>
+                </article>
+            </div>
+        </section>
+
+        <section class="ph-video" id="video">
+            <div class="ph-video-heading">
+                <p class="ph-section-index">04 / Видеосъемка</p>
+                <div>
+                    <h2>Видеосъемка<br><em>в ритме события</em></h2>
+                    <p>Короткие ролики, свадебные эпизоды, творческие съемки и коммерческий контент. Помогаю собрать понятный план, поймать живую атмосферу и сохранить движение кадра.</p>
+                </div>
+            </div>
+            <div class="ph-video-grid" aria-label="Форматы видеосъемки">
+                <article>
+                    <div class="ph-video-top"><span>01</span><strong>от 4 000 ₽/час</strong></div>
+                    <h3>Свадебная видеосъемка</h3>
+                    <p>История любви целиком: от трепетных моментов до живых эмоций дня.</p>
+                    <ul>
+                        <li>love story, предложение, видеопрогулка или свидание</li>
+                        <li>5 000 ₽/час для короткого формата</li>
+                        <li>4 000 ₽/час при заказе от 2 часов</li>
+                    </ul>
+                </article>
+                <article>
+                    <div class="ph-video-top"><span>02</span><strong>от 4 000 ₽/час</strong></div>
+                    <h3>Самый важный момент</h3>
+                    <p>Отдельные эпизоды свадебного дня, которые хочется сохранить навсегда.</p>
+                    <ul>
+                        <li>ЗАГС, выкуп, сборы жениха и невесты</li>
+                        <li>вынос торта, поздравления гостей и другие события</li>
+                        <li>план видеосъемки собирается под ваш день</li>
+                    </ul>
+                </article>
+                <article>
+                    <div class="ph-video-top"><span>03</span><strong>от 5 000 ₽/час</strong></div>
+                    <h3>Любой формат</h3>
+                    <p>Творческая видеосъемка от идеи и концепции до финального монтажа.</p>
+                    <ul>
+                        <li>горизонтальные и вертикальные ролики</li>
+                        <li>помощь с идеей, сценарием и визуальной подачей</li>
+                        <li>4 000 ₽/час при заказе от 2 часов</li>
+                    </ul>
+                </article>
+                <article>
+                    <div class="ph-video-top"><span>04</span><strong>от 6 000 ₽/час</strong></div>
+                    <h3>Коммерческая видеосъемка</h3>
+                    <p>Параллельная фото- и видеосъемка для брендов, событий и задач бизнеса.</p>
+                    <ul>
+                        <li>формат, объем и тайминг обсуждаются индивидуально</li>
+                        <li>подходит для контента, рекламы и презентаций</li>
+                        <li>консультация перед съемкой в личных сообщениях</li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+
+        <section class="ph-contact" id="contact">
+            <p class="ph-section-index">05 / Контакты</p>
+            <div><h2>Обсудим<br><em>съемку?</em></h2><p>Расскажите, что хотите сохранить в кадре. Отвечу во ВКонтакте и помогу выбрать формат, локацию и настроение.</p></div>
+            <div class="ph-contact-actions" aria-label="Способы связи">
+                <a class="ph-contact-card ph-contact-card-primary" href="#booking" data-booking-open><em>PH</em><span>Записаться на съемку</span><small>Заполнить короткую заявку</small><b>↘</b></a>
+                <a class="ph-contact-card" href="https://vk.com/ph.khudoverdiev" target="_blank" rel="noopener"><em>VK</em><span>Написать во ВКонтакте</span><small>Задать вопрос в сообщениях</small><b>↗</b></a>
+            </div>
+        </section>
+    </main>
+
+    <button class="ph-scroll-cue" type="button" aria-label="Перейти к следующему блоку" data-direction="down"><span>↓</span></button>
+
+    <footer class="ph-footer" id="ph-site-footer">
+        <a class="ph-brand" href="#top">PH<span>.</span></a>
+        <p>Владимир Худовердиев · Все права защищены</p>
+        <p>© 2026</p>
+    </footer>
+
+    <div class="ph-booking-modal" id="booking" aria-hidden="true">
+        <div class="ph-booking-backdrop" data-booking-close></div>
+        <form class="ph-booking-form" action="{{ url_for('message') }}" method="post" aria-labelledby="booking-title" data-booking-form>
+            <button class="ph-booking-close" type="button" data-booking-close aria-label="Закрыть форму">×</button>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="form_type" value="booking">
+            <div class="ph-booking-head">
+                <p class="ph-section-index">Заявка</p>
+                <h2 id="booking-title">Записаться<br><em>на съемку</em></h2>
+                <p>Оставьте детали, чтобы я сразу понял задачу, дату и формат. Заявка попадет в админ-панель как обращение.</p>
+            </div>
+            <div class="ph-booking-fields">
+                <label>
+                    <span>Имя</span>
+                    <input type="text" name="name" maxlength="80" autocomplete="name" required>
+                </label>
+                <label>
+                    <span>Контакт для ответа</span>
+                    <input type="text" name="contact" maxlength="120" autocomplete="email" placeholder="VK, Telegram или телефон" required>
+                </label>
+                <label>
+                    <span>Направление</span>
+                    <select name="shoot_type" required>
+                        <option value="">Выберите съемку</option>
+                        <option>Портретная фотосъемка</option>
+                        <option>Свадебная фотосъемка</option>
+                        <option>Студийная фотосъемка</option>
+                        <option>Прогулочная фотосъемка</option>
+                        <option>Коммерческая фотосъемка</option>
+                        <option>Видеосъемка</option>
+                        <option>Фото + видео</option>
+                        <option>Подарочный сертификат</option>
+                    </select>
+                </label>
+                <label>
+                    <span>Дата или период</span>
+                    <input type="text" name="shoot_date" maxlength="40" placeholder="Например: 24 августа или сентябрь">
+                </label>
+                <label>
+                    <span>Город / локация</span>
+                    <input type="text" name="shoot_location" maxlength="120" placeholder="Архангельск, Северодвинск, студия">
+                </label>
+                <label>
+                    <span>Формат</span>
+                    <select name="shoot_format">
+                        <option value="">Пока не знаю</option>
+                        <option>1 час</option>
+                        <option>2 часа</option>
+                        <option>От 2 часов</option>
+                        <option>Полный день</option>
+                        <option>Нужна консультация</option>
+                    </select>
+                </label>
+                <label>
+                    <span>Участники</span>
+                    <input type="text" name="people_count" maxlength="40" placeholder="1 человек, пара, семья, команда">
+                </label>
+                <label class="ph-booking-wide">
+                    <span>Что хотите снять</span>
+                    <textarea name="details" maxlength="600" placeholder="Расскажите про задачу, настроение, референсы или важные детали"></textarea>
+                </label>
+            </div>
+            <p class="ph-booking-status" data-booking-status aria-live="polite"></p>
+            <button class="ph-booking-submit" type="submit">Отправить заявку <span>↗</span></button>
+        </form>
+    </div>
+
+    <div class="ph-lightbox" id="ph-lightbox" aria-hidden="true">
+        <button type="button" data-lightbox-close aria-label="Закрыть фотографию">×</button>
+        <img alt="Открытая фотография">
+        <p>Нажмите Esc, чтобы закрыть</p>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/photo.js') }}?v=4" defer></script>
+</body>
+</html>

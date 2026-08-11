@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Админ-панель — KHUDOVERDIEV</title>
+    <meta name="theme-color" content="#5b3f31">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}?v=2" sizes="any">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}?v=2">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}?v=2">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=14">
+</head>
+<body class="admin-body{% if not authorized %} admin-login-body{% endif %}">
+    <main class="admin-page{% if not authorized %} admin-login-page{% endif %}">
+        {% if not authorized %}
+        <section class="login-stage" aria-labelledby="login-title">
+            <div class="login-side login-side-form">
+                <a class="login-close" href="{{ url_for('index') }}" aria-label="Закрыть">×</a>
+
+                <form class="login-panel" method="post">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <h1 id="login-title">Вход</h1>
+                    <label class="login-field">
+                        <span>Пароль</span>
+                        <input type="password" name="password" placeholder="Ваш пароль" autofocus>
+                    </label>
+                    {% if error %}
+                    <p class="login-error">{{ error }}</p>
+                    {% endif %}
+                    <button type="submit">Продолжить</button>
+                    <div class="login-divider" aria-hidden="true">
+                        <span></span>
+                        <b>Или</b>
+                        <span></span>
+                    </div>
+                    <a class="login-secondary" href="{{ url_for('index') }}">Вернуться на сайт</a>
+                </form>
+            </div>
+
+            <aside class="login-side login-side-preview" aria-hidden="true">
+                <div class="login-aesthetic-note">
+                    <span></span>
+                    <blockquote>
+                        <p>Фотография сохраняет тишину момента, чтобы к нему можно было вернуться позже.</p>
+                    </blockquote>
+                </div>
+            </aside>
+        </section>
+        {% else %}
+        <section class="admin-shell" data-admin-shell>
+            <header class="admin-header">
+                <div>
+                    <p class="admin-kicker">KHUDOVERDIEV</p>
+                    <h1>
+                        {% if active_admin_tab == 'clients' %}
+                        Страницы клиентов
+                        {% elif active_admin_tab == 'messages' %}
+                        Обращения
+                        {% else %}
+                        Статистика сайта
+                        {% endif %}
+                    </h1>
+                    {% if active_admin_tab in ['dashboard', 'messages'] %}
+                    <span class="admin-period">{{ period_label }}</span>
+                    {% endif %}
+                </div>
+                <a href="{{ url_for('admin_logout') }}">Выйти</a>
+            </header>
+
+            <nav class="admin-tabs" aria-label="Разделы админ-панели">
+                <a class="{{ 'is-active' if active_admin_tab == 'dashboard' else '' }}" href="{{ url_for('admin') }}">Обзор</a>
+                <a class="{{ 'is-active' if active_admin_tab == 'clients' else '' }}" href="{{ url_for('admin_clients') }}">Клиенты</a>
+                <a class="{{ 'is-active' if active_admin_tab == 'messages' else '' }}" href="{{ url_for('admin_messages') }}">Обращения</a>
+            </nav>
+
+            {% if active_admin_tab == 'dashboard' %}
+            <section class="stats-grid" aria-label="Статистика">
+                <article>
+                    <span>Посещения</span>
+                    <strong>{{ stats.visits }}</strong>
+                </article>
+                <article>
+                    <span>Уникальные посещения</span>
+                    <strong>{{ stats.unique_visits }}</strong>
+                </article>
+                <article>
+                    <span>Обращения</span>
+                    <strong id="messages-count">{{ stats.messages }}</strong>
+                </article>
+            </section>
+
+            <section class="admin-card">
+                <h2>Клики по соцсетям</h2>
+                {% if click_stats %}
+                <div class="click-list">
+                    {% for item in click_stats %}
+                    <div>
+                        <span>{{ item.social }}</span>
+                        <strong>{{ item.count }}</strong>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="empty">Кликов пока нет.</p>
+                {% endif %}
+            </section>
+            {% endif %}
+
+            {% if active_admin_tab == 'clients' %}
+            <section class="admin-card client-admin-card">
+                <div class="admin-card-heading">
+                    <div>
+                        <h2>Страницы клиентов</h2>
+                        <p>Создавайте персональные ссылки без хранения фотографий на сайте.</p>
+                    </div>
+                    <span>{{ photo_clients|length if photo_clients else 0 }}</span>
+                </div>
+
+                {% if client_error %}
+                <p class="login-error">{{ client_error }}</p>
+                {% endif %}
+
+                <div class="client-create-panel">
+                    <div class="client-create-intro">
+                        <span>Новая ссылка</span>
+                        <strong>Создать страницу клиента</strong>
+                        <p>Заполните только рабочие ссылки и текст. Безопасный публичный адрес создастся автоматически.</p>
+                    </div>
+                    <form class="client-form client-create-form" action="{{ url_for('admin_clients') }}" method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <label>
+                            <span>Имя клиента</span>
+                            <input type="text" name="client_name" maxlength="120" value="{{ client_form.client_name }}" required>
+                        </label>
+                        <div class="client-link-note">
+                            <span>Безопасная ссылка</span>
+                            <p>Случайный код без имени клиента появится после создания.</p>
+                        </div>
+                        <label class="client-form-wide">
+                            <span>Внешняя ссылка на фотографии</span>
+                            <input type="url" name="photo_link" maxlength="500" value="{{ client_form.photo_link }}" placeholder="https://drive.google.com/..." required>
+                        </label>
+                        <label>
+                            <span>Ссылка для отзыва</span>
+                            <input type="url" name="review_link" maxlength="500" value="{{ client_form.review_link }}" placeholder="https://...">
+                        </label>
+                        <label>
+                            <span>Скидка</span>
+                            <input type="text" name="discount_text" maxlength="160" value="{{ client_form.discount_text }}">
+                        </label>
+                        <label class="client-form-wide">
+                            <span>Текст на странице</span>
+                            <textarea name="message_text" maxlength="700">{{ client_form.message_text }}</textarea>
+                        </label>
+                        <div class="client-create-actions">
+                            <label class="client-switch">
+                                <input type="checkbox" name="is_active" value="1" {% if client_form.is_active %}checked{% endif %}>
+                                <span>Страница включена</span>
+                            </label>
+                            <button type="submit">Создать клиента</button>
+                        </div>
+                    </form>
+                </div>
+
+                {% if photo_clients %}
+                <div class="client-list">
+                    {% for client in photo_clients %}
+                    <details class="client-item">
+                        <summary>
+                            <span>
+                                <strong>{{ client.client_name }}</strong>
+                                <small>{{ photo_client_public_url(client.slug) }}</small>
+                            </span>
+                            <b class="{{ 'is-on' if client.is_active else 'is-off' }}">{{ 'Включена' if client.is_active else 'Выключена' }}</b>
+                        </summary>
+                        <form class="client-form" action="{{ url_for('update_photo_client', client_id=client.id) }}" method="post">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <label>
+                                <span>Имя клиента</span>
+                                <input type="text" name="client_name" maxlength="120" value="{{ client.client_name }}" required>
+                            </label>
+                            <div class="client-link-note">
+                                <span>Безопасная ссылка</span>
+                                <p>{{ photo_client_public_url(client.slug) }}</p>
+                            </div>
+                            <label class="client-form-wide">
+                                <span>Внешняя ссылка на фотографии</span>
+                                <input type="url" name="photo_link" maxlength="500" value="{{ client.photo_link }}" required>
+                            </label>
+                            <label class="client-form-wide">
+                                <span>Ссылка для отзыва</span>
+                                <input type="url" name="review_link" maxlength="500" value="{{ client.review_link or '' }}">
+                            </label>
+                            <label>
+                                <span>Скидка</span>
+                                <input type="text" name="discount_text" maxlength="160" value="{{ client.discount_text or '' }}">
+                            </label>
+                            <label class="client-switch">
+                                <input type="checkbox" name="is_active" value="1" {% if client.is_active %}checked{% endif %}>
+                                <span>Страница включена</span>
+                            </label>
+                            <label class="client-form-wide">
+                                <span>Текст на странице</span>
+                                <textarea name="message_text" maxlength="700">{{ client.message_text or '' }}</textarea>
+                            </label>
+                            <div class="client-form-actions">
+                                <button type="submit">Сохранить</button>
+                                <a href="{{ photo_client_public_url(client.slug) }}" target="_blank" rel="noopener">Открыть</a>
+                            </div>
+                        </form>
+                        <form class="client-rotate-form" action="{{ url_for('rotate_photo_client_link', client_id=client.id) }}" method="post">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit">Сменить ссылку</button>
+                        </form>
+                        <form class="client-delete-form" action="{{ url_for('delete_photo_client', client_id=client.id) }}" method="post">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit">Удалить клиента</button>
+                        </form>
+                    </details>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="empty">Клиентские страницы пока не созданы.</p>
+                {% endif %}
+            </section>
+            {% endif %}
+
+            {% if active_admin_tab == 'messages' %}
+            <section class="stats-grid message-source-grid" aria-label="Обращения по сайтам">
+                <article>
+                    <span>Всего обращений</span>
+                    <strong id="messages-count">{{ messages_total }}</strong>
+                </article>
+                {% for item in message_source_counts %}
+                <article>
+                    <span>{{ item.site_source }}</span>
+                    <strong>{{ item.count }}</strong>
+                </article>
+                {% endfor %}
+            </section>
+
+            <section class="admin-card message-admin-card">
+                <div class="admin-card-heading">
+                    <div>
+                        <h2>Обращения</h2>
+                        <p>Разделены по сайту, с которого человек отправил форму.</p>
+                    </div>
+                </div>
+                {% if messages_total %}
+                <div class="message-groups" id="message-list">
+                    {% for group in messages_by_source %}
+                    <section class="message-group" data-message-group>
+                        <div class="message-group-head">
+                            <h3>{{ group.source }}</h3>
+                            <span data-group-count>{{ group.count }}</span>
+                        </div>
+                        {% if group.messages %}
+                        <div class="message-list">
+                            {% for message in group.messages %}
+                            <article data-message-id="{{ message.id }}" data-message-name="{{ message.name|e }}" data-message-text="{{ message.text|e }}">
+                                <div class="message-head">
+                                    <strong>{{ message.name }}</strong>
+                                    <div class="message-actions">
+                                        <time>{{ message.created_at }}</time>
+                                        <button type="button" class="delete-trigger">Удалить</button>
+                                    </div>
+                                </div>
+                                {% if message.contact %}
+                                <span>{{ message.contact }}</span>
+                                {% endif %}
+                                <p>{{ message.text }}</p>
+                            </article>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="empty">Нет пока обращений.</p>
+                        {% endif %}
+                    </section>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="empty" id="message-list">Нет пока обращений.</p>
+                {% endif %}
+            </section>
+            {% endif %}
+        </section>
+
+        <div class="delete-modal" id="delete-modal" aria-hidden="true">
+            <div class="delete-backdrop" data-close-delete></div>
+            <div class="delete-card" role="dialog" aria-modal="true" aria-labelledby="delete-title">
+                <button type="button" class="delete-close" data-close-delete aria-label="Закрыть">×</button>
+                <h2 id="delete-title">Удалить обращение?</h2>
+                <p class="delete-preview" id="delete-preview"></p>
+                <div class="delete-actions">
+                    <button type="button" class="delete-cancel" data-close-delete>Отмена</button>
+                    <button type="button" class="delete-confirm" id="delete-confirm">Удалить</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const adminPage = document.querySelector('.admin-page');
+            const deleteModal = document.getElementById('delete-modal');
+            const deletePreview = document.getElementById('delete-preview');
+            const deleteConfirm = document.getElementById('delete-confirm');
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+            let deleteTarget = null;
+            let tabRequest = null;
+
+            function getAdminShell() {
+                return document.querySelector('[data-admin-shell]');
+            }
+
+            function getMessageList() {
+                return document.getElementById('message-list');
+            }
+
+            function getMessagesCount() {
+                return document.getElementById('messages-count');
+            }
+
+            function openDeleteModal(article) {
+                if (!article) return;
+                deleteTarget = article;
+                const name = article.dataset.messageName || 'Это обращение';
+                const text = article.dataset.messageText || '';
+                deletePreview.textContent = text ? `${name}: ${text}` : name;
+                document.body.classList.add('delete-open');
+                deleteModal.classList.add('is-visible');
+                deleteModal.setAttribute('aria-hidden', 'false');
+            }
+
+            function closeDeleteModal() {
+                deleteModal.classList.remove('is-visible');
+                deleteModal.setAttribute('aria-hidden', 'true');
+                document.body.classList.remove('delete-open');
+                deleteTarget = null;
+            }
+
+            function renderEmptyMessagesState() {
+                const messageList = getMessageList();
+                if (!messageList) return;
+                document.querySelectorAll('[data-message-group]').forEach((group) => {
+                    const groupCount = group.querySelectorAll('article').length;
+                    const badge = group.querySelector('[data-group-count]');
+                    if (badge) badge.textContent = String(groupCount);
+                    if (!group.querySelector('article') && !group.querySelector('.empty')) {
+                        group.insertAdjacentHTML('beforeend', '<p class="empty">Нет пока обращений.</p>');
+                    }
+                });
+                if (!messageList.querySelector('article')) {
+                    messageList.outerHTML = '<p class="empty" id="message-list">Нет пока обращений.</p>';
+                }
+            }
+
+            document.querySelectorAll('[data-close-delete]').forEach((button) => {
+                button.addEventListener('click', closeDeleteModal);
+            });
+
+            deleteConfirm.addEventListener('click', async () => {
+                if (!deleteTarget) return;
+                const id = deleteTarget.dataset.messageId;
+                const response = await fetch(`/st/messages/${id}/delete`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'fetch',
+                        'X-CSRF-Token': csrfToken,
+                    },
+                });
+                if (response.ok) {
+                    deleteTarget.remove();
+                    const messagesCount = getMessagesCount();
+                    if (messagesCount) {
+                        const current = parseInt(messagesCount.textContent || '0', 10);
+                        messagesCount.textContent = String(Math.max(0, current - 1));
+                    }
+                    renderEmptyMessagesState();
+                    closeDeleteModal();
+                }
+            });
+
+            document.addEventListener('click', (event) => {
+                const deleteButton = event.target.closest('.delete-trigger');
+                if (deleteButton) {
+                    openDeleteModal(deleteButton.closest('article'));
+                    return;
+                }
+
+                const tabLink = event.target.closest('.admin-tabs a');
+                if (!tabLink || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                const url = new URL(tabLink.href, window.location.href);
+                if (url.origin !== window.location.origin) return;
+                event.preventDefault();
+                loadAdminTab(url.href, true);
+            });
+
+            async function loadAdminTab(url, pushState) {
+                const shell = getAdminShell();
+                if (!shell) {
+                    window.location.href = url;
+                    return;
+                }
+                if (tabRequest) tabRequest.abort();
+                const controller = new AbortController();
+                tabRequest = controller;
+                adminPage.classList.add('is-switching-tab');
+                try {
+                    const response = await fetch(url, {
+                        credentials: 'same-origin',
+                        headers: { 'X-Requested-With': 'fetch' },
+                        signal: controller.signal,
+                    });
+                    if (!response.ok) {
+                        window.location.href = url;
+                        return;
+                    }
+                    const html = await response.text();
+                    const nextDocument = new DOMParser().parseFromString(html, 'text/html');
+                    const nextShell = nextDocument.querySelector('[data-admin-shell]');
+                    if (!nextShell) {
+                        window.location.href = url;
+                        return;
+                    }
+                    shell.innerHTML = nextShell.innerHTML;
+                    document.title = nextDocument.title;
+                    if (pushState) window.history.pushState({ adminTab: true }, '', url);
+                    closeDeleteModal();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } catch (error) {
+                    if (error.name !== 'AbortError') window.location.href = url;
+                } finally {
+                    if (tabRequest === controller) {
+                        tabRequest = null;
+                        requestAnimationFrame(() => adminPage.classList.remove('is-switching-tab'));
+                    }
+                }
+            }
+
+            window.addEventListener('popstate', () => {
+                loadAdminTab(window.location.href, false);
+            });
+
+            deleteModal.addEventListener('click', (event) => {
+                if (event.target === deleteModal) {
+                    closeDeleteModal();
+                }
+            });
+        </script>
+        {% endif %}
+    </main>
+</body>
+</html>

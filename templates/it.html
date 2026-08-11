@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>IT | Владимир Худовердиев</title>
+    <meta name="description" content="Разработка CRM-систем и веб-продуктов под реальные бизнес-процессы. Избранные кейсы Владимира Худовердиева.">
+    <meta name="theme-color" content="#f4f0e8">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='portfolio/vh-favicon.svg') }}?v=7">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/it.css') }}?v=69">
+</head>
+<body>
+    <a class="skip-link" href="#about">Перейти к содержанию</a>
+    <header class="site-header">
+        <a class="brand" href="#top" aria-label="В начало страницы">IT<span>.</span></a>
+        <nav aria-label="Основная навигация">
+            <a href="#about">Обо мне</a>
+            <a href="#projects">Кейсы</a>
+            <a href="#contact">Контакты</a>
+        </nav>
+        <button class="header-cta" type="button" data-open-contact>Обсудить проект <span>↗</span></button>
+    </header>
+
+    <main id="top">
+        <section class="hero" aria-labelledby="hero-title">
+            <div class="hero-grid">
+                <div class="hero-copy">
+                    <div class="code-console" aria-hidden="true">
+                        <div class="code-console-bar">
+                            <span class="console-dots"><i></i><i></i><i></i></span>
+                            <span>portfolio / product.py</span>
+                            <b>● LIVE</b>
+                        </div>
+                        <div class="code-console-line">
+                            <span class="line-number">01</span>
+                            <code><em>def</em> <strong>build_product</strong>(idea): <span>return</span> idea.to_solution()</code>
+                            <i class="console-caret"></i>
+                        </div>
+                        <div class="code-console-status"><span>✓</span> systems online <b>Python · Flask · Product</b></div>
+                    </div>
+                    <p class="eyebrow"><span></span> Разработчик цифровых продуктов</p>
+                    <h1 id="hero-title">Владимир<br><strong>Худовердиев</strong></h1>
+                    <p class="lead">Проектирую и создаю веб-системы, которые превращают сложные процессы в понятные рабочие инструменты.</p>
+                    <div class="hero-actions">
+                        <a class="button button-dark" href="#projects">Смотреть кейсы <span>↓</span></a>
+                    </div>
+                </div>
+                <div class="portrait-wrap">
+                    <div class="portrait-orbit" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+                    <div class="portrait-photo">
+                        <img src="{{ url_for('static', filename='portfolio/vladimir-user-cutout.png') }}?v=2" alt="Владимир Худовердиев" width="1874" height="2560">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="about" id="about">
+            <p class="section-index">01 / ОБО МНЕ</p>
+            <div class="about-copy">
+                <h2>Не просто <span class="about-code-highlight"><span>пишу</span><span>код</span></span>.<br><em>Разбираюсь в задаче.</em></h2>
+                <p>Создаю CRM-системы и веб-приложения вокруг реальных сценариев людей и бизнеса. Продумываю логику, интерфейс и архитектуру так, чтобы продуктом было удобно пользоваться каждый день.</p>
+            </div>
+            <div class="principles" aria-label="Принципы работы">
+                <article><span>01</span><h3>Системное мышление</h3><p>Вижу продукт целиком: от процесса и данных до интерфейса.</p></article>
+                <article><span>02</span><h3>Фокус на результате</h3><p>Автоматизация должна экономить время и снижать число ошибок.</p></article>
+                <article><span>03</span><h3>Развитие продукта</h3><p>Закладываю основу, которую можно расширять вместе с задачами.</p></article>
+            </div>
+        </section>
+
+        <section class="projects" id="projects">
+            <div class="projects-heading">
+                <div><p class="section-index">02 / ИЗБРАННЫЕ КЕЙСЫ</p><h2>Работы, которыми <br><em>я горжусь</em></h2></div>
+            </div>
+
+            <div class="project-showcase">
+                <article class="project project-peredacha">
+                    <div class="project-info">
+                        <span class="project-number">01</span>
+                        <div class="tags"><span>CRM</span><span>B2B</span><span>Автоматизация</span></div>
+                        <h3>CRM «Передача»</h3>
+                        <p>Передача квартир без хаоса.</p>
+                        <div class="project-actions">
+                            <button class="media-button" type="button" data-media="slides" data-source-pdf="{{ url_for('static', filename='portfolio/peredacha.pdf') }}" data-slides="{{ url_for('static', filename='portfolio/slides/peredacha/slide-1.png') }}|{{ url_for('static', filename='portfolio/slides/peredacha/slide-2.png') }}|{{ url_for('static', filename='portfolio/slides/peredacha/slide-3.png') }}" data-title="CRM «Передача»">Смотреть презентацию <span>↗</span></button>
+                            <button class="media-button secondary" type="button" data-media="video" data-video-index="0" data-src="{{ url_for('static', filename='portfolio/peredacha.mp4') }}" data-title="CRM «Передача»">Смотреть видео <span>▶</span></button>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="project project-shans">
+                    <div class="project-info">
+                        <span class="project-number">02</span>
+                        <div class="tags"><span>CRM</span><span>PWA</span><span>2FA</span></div>
+                        <h3>CRM Shans</h3>
+                        <p>Личный штаб для процессов.</p>
+                        <div class="project-actions">
+                            <button class="media-button" type="button" data-media="slides" data-source-pdf="{{ url_for('static', filename='portfolio/shans.pdf') }}" data-slides="{{ url_for('static', filename='portfolio/slides/shans/slide-1.png') }}|{{ url_for('static', filename='portfolio/slides/shans/slide-2.png') }}|{{ url_for('static', filename='portfolio/slides/shans/slide-3.png') }}" data-title="CRM Shans">Смотреть презентацию <span>↗</span></button>
+                            <button class="media-button secondary" type="button" data-media="video" data-video-index="1" data-src="{{ url_for('static', filename='portfolio/shans.mp4') }}" data-title="CRM Shans">Смотреть видео <span>▶</span></button>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="contact" id="contact">
+            <p class="section-index">03 / КОНТАКТЫ</p>
+            <div class="contact-content">
+                <h2>Есть задача?<br><em>Давайте обсудим.</em></h2>
+                <p>Расскажите, какой процесс нужно автоматизировать или какой продукт вы хотите запустить.</p>
+            </div>
+            <aside class="contact-panel" aria-label="Начать обсуждение проекта">
+                <div class="contact-panel-head">
+                    <span>Project intake</span>
+                    <b>online</b>
+                </div>
+                <h3>Соберём задачу в план</h3>
+                <ul>
+                    <li>разберём цель и сценарии</li>
+                    <li>оценим логику и интерфейс</li>
+                    <li>наметим первый рабочий шаг</li>
+                </ul>
+                <button class="contact-circle" type="button" data-open-contact aria-label="Открыть форму обсуждения проекта">
+                    <span>
+                        <span class="contact-circle-kicker">Старт обсуждения</span>
+                        <span class="contact-circle-title">Обсудить проект</span>
+                    </span>
+                    <b aria-hidden="true">↗</b>
+                </button>
+            </aside>
+        </section>
+    </main>
+
+    <button class="page-scroll-cue" type="button" aria-label="Перейти к следующему разделу" data-direction="down"><span>↓</span></button>
+
+    <footer id="site-footer">
+        <a class="brand" href="#top">IT<span>.</span></a>
+        <p>Владимир Худовердиев · Все права защищены.</p>
+        <div class="footer-meta"><p>© 2026</p></div>
+    </footer>
+
+    <div class="media-modal" id="media-modal" aria-hidden="true">
+        <div class="media-backdrop" data-close-media></div>
+        <section class="media-dialog" role="dialog" aria-modal="true" aria-labelledby="media-title">
+            <header>
+                <div class="media-heading"><h2 id="media-title"></h2></div>
+                <button type="button" data-close-media aria-label="Закрыть">×</button>
+            </header>
+            <div class="media-viewer">
+                <button class="media-nav media-prev" type="button" aria-label="Предыдущий слайд">←</button>
+                <div class="media-stage" id="media-stage"></div>
+                <button class="media-nav media-next" type="button" aria-label="Следующий слайд">→</button>
+            </div>
+            <footer class="media-controls">
+                <span class="media-counter" id="media-counter">01 / 03</span>
+                <div class="media-dots" id="media-dots" aria-label="Навигация по слайдам"></div>
+            </footer>
+        </section>
+    </div>
+
+    <div class="contact-modal" id="contact-modal" aria-hidden="true">
+        <div class="contact-backdrop" data-close-contact></div>
+        <section class="contact-dialog" role="dialog" aria-modal="true" aria-labelledby="contact-title">
+            <button class="contact-close" type="button" data-close-contact aria-label="Закрыть">×</button>
+            <div class="contact-dialog-copy">
+                <h2 id="contact-title">Расскажите<br><em>о вашей задаче</em></h2>
+                <p>Опишите идею или процесс, который нужно автоматизировать. Я изучу сообщение и свяжусь с вами по указанному контакту.</p>
+            </div>
+            <form class="project-form" id="project-form" action="{{ url_for('message') }}" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <label>
+                    <span>Ваше имя</span>
+                    <input type="text" name="name" maxlength="80" autocomplete="name" placeholder="Как к вам обращаться">
+                </label>
+                <label>
+                    <span>Контакт для связи</span>
+                    <input type="text" name="contact" maxlength="120" autocomplete="email" placeholder="Telegram, телефон или почта" required>
+                </label>
+                <label>
+                    <span>О проекте</span>
+                    <textarea name="text" maxlength="1000" placeholder="Что хотите создать или улучшить?" required></textarea>
+                </label>
+                <p class="project-form-error" id="project-form-error" role="alert"></p>
+                <button class="project-submit" type="submit"><span>Отправить сообщение</span><b>↗</b></button>
+            </form>
+            <div class="project-success" id="project-success" aria-hidden="true">
+                <span class="success-mark">✓</span>
+                <h2>Сообщение отправлено</h2>
+                <button type="button" data-close-contact>Вернуться на сайт</button>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const modal = document.getElementById('media-modal');
+        const stage = document.getElementById('media-stage');
+        const title = document.getElementById('media-title');
+        const mediaCounter = document.getElementById('media-counter');
+        const mediaDots = document.getElementById('media-dots');
+        const mediaPrev = modal.querySelector('.media-prev');
+        const mediaNext = modal.querySelector('.media-next');
+        const closeButton = modal.querySelector('header button');
+        const contactModal = document.getElementById('contact-modal');
+        const projectForm = document.getElementById('project-form');
+        const projectSuccess = document.getElementById('project-success');
+        const projectFormError = document.getElementById('project-form-error');
+        const siteHeader = document.querySelector('.site-header');
+        const sectionLinks = [...siteHeader.querySelectorAll('nav a[href^="#"]')];
+        const trackedSections = sectionLinks.map((link) => document.querySelector(link.getAttribute('href')));
+        const pageScrollCue = document.querySelector('.page-scroll-cue');
+        const scrollTargets = ['#about', '#projects', '#contact', '#site-footer']
+            .map((selector) => document.querySelector(selector))
+            .filter(Boolean);
+        let returnFocus = null;
+        let contactReturnFocus = null;
+        let mediaMode = 'slides';
+        let mediaItems = [];
+        let mediaIndex = 0;
+        let touchStartX = 0;
+
+        function updateHeader() {
+            siteHeader.classList.toggle('is-scrolled', window.scrollY > 80);
+            const scrollRange = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = scrollRange > 0 ? Math.min(1, window.scrollY / scrollRange) : 0;
+            siteHeader.style.setProperty('--scroll-progress', progress);
+            const footer = document.getElementById('site-footer');
+            const contact = document.getElementById('contact');
+            const footerVisible = footer && footer.getBoundingClientRect().top <= window.innerHeight - 80;
+            const contactReached = contact && contact.getBoundingClientRect().top <= window.innerHeight * 0.58;
+            const atBottom = scrollRange > 0 && (footerVisible || contactReached || window.scrollY >= scrollRange - 220);
+            pageScrollCue.classList.toggle('is-up', atBottom);
+            pageScrollCue.dataset.direction = atBottom ? 'up' : 'down';
+            pageScrollCue.querySelector('span').textContent = atBottom ? '↑' : '↓';
+            pageScrollCue.setAttribute('aria-label', atBottom ? 'Вернуться в начало страницы' : 'Перейти к следующему разделу');
+
+            const marker = window.scrollY + window.innerHeight * 0.34;
+            let activeIndex = -1;
+            trackedSections.forEach((section, index) => {
+                if (section && marker >= section.offsetTop) activeIndex = index;
+            });
+            sectionLinks.forEach((link, index) => {
+                if (index === activeIndex) link.setAttribute('aria-current', 'location');
+                else link.removeAttribute('aria-current');
+            });
+        }
+
+        updateHeader();
+        window.addEventListener('scroll', updateHeader, { passive: true });
+
+        pageScrollCue.addEventListener('click', () => {
+            if (pageScrollCue.dataset.direction === 'up') {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+
+            const current = window.scrollY + window.innerHeight * 0.28;
+            const target = scrollTargets.find((section) => section.offsetTop > current);
+            (target || document.getElementById('site-footer')).scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+
+        function closeMedia() {
+            modal.classList.remove('is-open');
+            modal.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('modal-open');
+            stage.replaceChildren();
+            if (returnFocus) returnFocus.focus();
+        }
+
+        const videoButtons = [...document.querySelectorAll('[data-media="video"]')];
+
+        function renderMedia() {
+            const total = mediaItems.length;
+            if (!total) return;
+            const item = mediaItems[mediaIndex];
+
+            if (mediaMode === 'slides') {
+                const image = document.createElement('img');
+                image.src = item;
+                image.alt = `${title.textContent}, слайд ${mediaIndex + 1} из ${total}`;
+                image.draggable = false;
+                stage.replaceChildren(image);
+            } else {
+                const video = document.createElement('video');
+                video.src = item.src;
+                video.controls = true;
+                video.autoplay = true;
+                video.playsInline = true;
+                video.preload = 'metadata';
+                stage.replaceChildren(video);
+                title.textContent = item.title;
+            }
+
+            mediaCounter.textContent = `${String(mediaIndex + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`;
+            mediaDots.replaceChildren(...mediaItems.map((_, index) => {
+                const dot = document.createElement('button');
+                dot.type = 'button';
+                dot.className = index === mediaIndex ? 'is-active' : '';
+                dot.setAttribute('aria-label', `Перейти к элементу ${index + 1}`);
+                dot.addEventListener('click', () => {
+                    mediaIndex = index;
+                    renderMedia();
+                });
+                return dot;
+            }));
+        }
+
+        function changeMedia(direction) {
+            if (mediaItems.length < 2) return;
+            mediaIndex = (mediaIndex + direction + mediaItems.length) % mediaItems.length;
+            renderMedia();
+        }
+
+        document.querySelectorAll('[data-media]').forEach((button) => {
+            button.addEventListener('click', () => {
+                returnFocus = button;
+                title.textContent = button.dataset.title;
+                mediaMode = button.dataset.media;
+                if (mediaMode === 'video') {
+                    mediaItems = videoButtons.map((item) => ({ src: item.dataset.src, title: item.dataset.title }));
+                    mediaIndex = Number(button.dataset.videoIndex || 0);
+                } else {
+                    mediaItems = button.dataset.slides.split('|');
+                    mediaIndex = 0;
+                }
+                renderMedia();
+                modal.classList.add('is-open');
+                modal.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('modal-open');
+                closeButton.focus();
+            });
+        });
+
+        mediaPrev.addEventListener('click', () => changeMedia(-1));
+        mediaNext.addEventListener('click', () => changeMedia(1));
+        stage.addEventListener('touchstart', (event) => {
+            touchStartX = event.changedTouches[0].clientX;
+        }, { passive: true });
+        stage.addEventListener('touchend', (event) => {
+            const distance = event.changedTouches[0].clientX - touchStartX;
+            if (Math.abs(distance) > 44) changeMedia(distance > 0 ? -1 : 1);
+        }, { passive: true });
+
+        modal.querySelectorAll('[data-close-media]').forEach((element) => element.addEventListener('click', closeMedia));
+
+        function openContact(event) {
+            contactReturnFocus = event.currentTarget;
+            projectForm.hidden = false;
+            projectSuccess.classList.remove('is-visible');
+            projectSuccess.setAttribute('aria-hidden', 'true');
+            projectFormError.textContent = '';
+            contactModal.classList.add('is-open');
+            contactModal.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('modal-open');
+            contactModal.querySelector('input[name="name"]').focus();
+        }
+
+        function closeContact() {
+            contactModal.classList.remove('is-open');
+            contactModal.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('modal-open');
+            if (contactReturnFocus) contactReturnFocus.focus();
+        }
+
+        document.querySelectorAll('[data-open-contact]').forEach((button) => button.addEventListener('click', openContact));
+        contactModal.querySelectorAll('[data-close-contact]').forEach((element) => element.addEventListener('click', closeContact));
+
+        projectForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const submitButton = projectForm.querySelector('button[type="submit"]');
+            const formData = new FormData(projectForm);
+            submitButton.disabled = true;
+            projectFormError.textContent = '';
+
+            try {
+                const response = await fetch(projectForm.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'fetch',
+                        'X-CSRF-Token': formData.get('csrf_token'),
+                    },
+                });
+                if (!response.ok) throw new Error('Request failed');
+                projectForm.reset();
+                projectForm.hidden = true;
+                projectSuccess.classList.add('is-visible');
+                projectSuccess.setAttribute('aria-hidden', 'false');
+                projectSuccess.querySelector('button').focus();
+            } catch (error) {
+                projectFormError.textContent = 'Не удалось отправить сообщение. Проверьте соединение и попробуйте ещё раз.';
+            } finally {
+                submitButton.disabled = false;
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && modal.classList.contains('is-open')) closeMedia();
+            if (event.key === 'ArrowLeft' && modal.classList.contains('is-open')) changeMedia(-1);
+            if (event.key === 'ArrowRight' && modal.classList.contains('is-open')) changeMedia(1);
+            if (event.key === 'Escape' && contactModal.classList.contains('is-open')) closeContact();
+        });
+    </script>
+</body>
+</html>
