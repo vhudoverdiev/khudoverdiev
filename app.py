@@ -9,7 +9,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 import uuid
 
-from flask import Flask, abort, make_response, redirect, render_template, request, session, url_for
+from flask import Flask, abort, jsonify, make_response, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash
 
 app = Flask(__name__)
@@ -539,6 +539,11 @@ def index():
         samesite="Lax",
     )
     return response
+
+
+@app.route("/health")
+def health():
+    return jsonify({"status": "ok"})
 
 
 @app.route("/portfolio")

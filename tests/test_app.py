@@ -1306,3 +1306,10 @@ def test_legacy_routes_redirect_to_current_admin_paths(client):
     assert client.get(site.LEGACY_ADMIN_PATH).headers["Location"] == site.ADMIN_PATH
     assert client.get("/admin").headers["Location"] == site.ADMIN_PATH
     assert client.get(f"{site.LEGACY_ADMIN_PATH}/logout").headers["Location"] == f"{site.ADMIN_PATH}/logout"
+
+
+def test_health_endpoint_reports_ok(client):
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.get_json() == {"status": "ok"}

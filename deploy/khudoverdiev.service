@@ -1,0 +1,16 @@
+[Unit]
+Description=Khudoverdiev Flask site
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/khudoverdiev
+EnvironmentFile=-/opt/khudoverdiev/.env
+Environment="PATH=/opt/khudoverdiev/venv/bin"
+ExecStart=/opt/khudoverdiev/venv/bin/gunicorn --workers 3 --timeout 120 --bind 127.0.0.1:8000 app:app
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
