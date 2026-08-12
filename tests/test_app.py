@@ -235,7 +235,7 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "IT | Владимир Худовердиев".encode() in portfolio.data
     assert b"portfolio/vh-favicon.svg" in portfolio.data
     assert b"vh-favicon.svg?v=7" in portfolio.data
-    assert b"css/it.css?v=78" in portfolio.data
+    assert b"css/it.css?v=80" in portfolio.data
     assert b"portfolio/vladimir-avatar-favicon.png" not in portfolio.data
     assert b"portfolio/vladimir-user-cutout.png" in portfolio.data
     assert b"class=\"portrait-photo\"" in portfolio.data
@@ -250,6 +250,12 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert b"class=\"ui-icon ui-icon-symbol ui-icon-play\"" in portfolio.data
     assert b"class=\"ui-icon ui-icon-symbol ui-icon-arrow-down\"" in portfolio.data
     assert b"class=\"mobile-action-console\"" in portfolio.data
+    assert b"class=\"mobile-console-bar\"" in portfolio.data
+    assert b"class=\"mobile-console-status\"" in portfolio.data
+    assert b"cases / launch.ts" in portfolio.data
+    assert b"scroll.down.to_cases()" in portfolio.data
+    assert b"class=\"about-mobile-line\"" in portfolio.data
+    assert b"class=\"about-mobile-copy\"" in portfolio.data
     for symbol in ("↗︎", "↓", "←", "→", "▶︎", "✓"):
         assert symbol.encode() in portfolio.data
     css = Path("static/css/it.css").read_text(encoding="utf-8")
@@ -285,14 +291,27 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "/* Mobile polish: one deliberate layout, not a squeezed desktop. */" in css
     assert ".hero {\n        min-height: 100svh;" in css
     assert ".hero::before {\n        pointer-events: none;" in css
-    assert ".hero-grid {\n        min-height: auto;" in css
+    assert ".hero-grid {\n        min-height: 100svh;" in css
+    assert "grid-template-rows: auto auto auto auto minmax(112px, 1fr) auto;" in css
     assert "grid-template-columns: minmax(0, 1fr) 118px;" not in css
     assert ".hero-copy {\n        display: contents;" in css
     assert ".hero h1 {\n        grid-column: 1;\n        grid-row: 3;" in css
     assert ".portrait-wrap {\n        display: none;" in css
     assert ".mobile-action-console {\n    display: none;" in css
     assert ".mobile-action-console {\n        grid-column: 1 / -1;\n        grid-row: 5;" in css
+    assert "height: calc(100% - 26px);" in css
+    assert "min-height: 126px;" in css
+    assert "align-self: start;" in css
+    assert "grid-template-rows: 30px repeat(8, minmax(29px, 1fr)) 30px;" in css
+    assert ".mobile-console-bar,\n    .mobile-console-status {" in css
+    assert ".mobile-console-bar + .mobile-code-line {\n        border-top: 0;" in css
+    assert "animation: console-in 800ms var(--ease-out) 120ms both;" in css
     assert ".hero-actions {\n        grid-column: 1 / -1;\n        grid-row: 6;" in css
+    assert "margin-top: 22px;" in css
+    assert ".about-mobile-line,\n    .about h2 em {\n        display: block;" in css
+    assert ".about-desktop-copy {\n        display: none;" in css
+    assert ".about-mobile-copy {\n        display: inline;" in css
+    assert ".about-code-highlight {\n        display: inline-flex;" in css
     assert ".about-copy > p {\n        max-width: 330px;\n        margin-top: 2px;\n        padding: 0;" in css
     assert ".principles {\n        display: grid;\n        grid-template-columns: 1fr;" in css
     principles_hover = re.search(r"\.principles article:hover \{(?P<body>.*?)\n\}", css, re.S)
@@ -304,7 +323,12 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "scroll-snap-type: x mandatory;" not in css
     assert ".media-button {\n        min-height: 54px;\n        padding: 0 12px 0 17px;\n        border-radius: 999px;" in css
     assert ".media-dialog {\n        width: calc(100vw - 20px);" in css
-    assert ".media-stage {\n        width: 100%;\n        height: auto;\n        max-height: calc(100svh - 140px);\n        aspect-ratio: 16 / 9;" in css
+    assert ".media-stage {\n        grid-column: 1 / -1;\n        grid-row: 1;" in css
+    assert "max-height: calc(100svh - 140px);" in css
+    assert ".media-viewer {\n        display: grid;\n        grid-template-columns: 1fr 1fr;\n        grid-template-rows: auto 42px;" in css
+    assert ".media-nav {\n        position: relative;\n        top: auto;" in css
+    assert ".media-prev {\n        grid-column: 1;\n        grid-row: 2;" in css
+    assert ".media-next {\n        grid-column: 2;\n        grid-row: 2;" in css
     assert ".contact-circle:hover" in css
     assert "background:\n        linear-gradient(90deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.9)),\n        #fff;" in css
     assert "radial-gradient(circle at 18% 26%" not in css
@@ -347,7 +371,7 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "default-src 'self'" in response.headers["Content-Security-Policy"]
     assert "frame-src https://vk.com https://vk.ru https://vkvideo.ru" in response.headers["Content-Security-Policy"]
     assert b"css/photo.css" in response.data
-    assert b"photo.css?v=25" in response.data
+    assert b"photo.css?v=31" in response.data
     assert b"js/photo.js" in response.data
     assert b"photo.js?v=7" in response.data
     assert "Архангельск, Северодвинск".encode() in response.data
@@ -398,7 +422,8 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "Яндекс Маркет".encode() in response.data
     assert "Руки Вверх! Бар".encode() in response.data
     assert "Фотостудия «Сюжетная Линия»".encode() in response.data
-    assert "Выберите формат под задачу".encode() in response.data
+    assert "Выберите формат под задачу".encode() not in response.data
+    assert b"class=\"ph-services-lead\"" not in response.data
     assert "актуального VK Market".encode() not in response.data
     assert "Ты, он и белое платье".encode() in response.data
     assert "Твоя фотосессия".encode() in response.data
@@ -421,6 +446,7 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "VK Клип".encode() in response.data
     assert "Видеосъемка".encode() in response.data
     assert "с живым дыханием".encode() in response.data
+    assert "Сохраняю движение, голос, атмосферу".encode() not in response.data
     assert "Свадебный фильм".encode() in response.data
     assert "Главный эпизод".encode() in response.data
     assert "Творческий ролик".encode() in response.data
@@ -447,7 +473,7 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
 
     assert response.status_code == 200
     assert b"css/photo.css" in response.data
-    assert b"photo.css?v=25" in response.data
+    assert b"photo.css?v=31" in response.data
     assert b"js/photo.js" in response.data
     assert b"photo.js?v=7" in response.data
     assert "Портфолио".encode() in response.data
@@ -476,7 +502,13 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert ".ph-hero {\n    position: relative;\n    box-sizing: border-box;" in css
     assert ".ph-trust {\n    position: relative;\n    box-sizing: border-box;" in css
     assert ".ph-hero-stage {\n        width: min(520px, 100%);\n        height: 520px;" in css
-    assert ".ph-hero-person {\n        height: 482px;\n        bottom: -54px;" in css
+    assert ".ph-hero-person {\n        height: 420px;\n        bottom: -54px;" in css
+    assert "height: 482px;" not in css
+    assert ".ph-about-copy {\n    position: relative;\n    z-index: 1;\n    align-self: start;" in css
+    assert ".ph-section-heading {\n    display: grid;\n    grid-template-columns: max-content minmax(320px, 390px);\n    justify-content: start;" in css
+    assert ".ph-video-heading {\n    position: relative;\n    z-index: 1;\n    display: grid;\n    grid-template-columns: 160px minmax(0, 1fr);\n    align-items: start;" in css
+    assert ".ph-contact {\n    min-height: 0;\n    display: grid;\n    grid-template-columns: 132px minmax(0, 1fr) 300px;\n    align-items: start;" in css
+    assert ".ph-contact .ph-section-index {\n    align-self: start;\n    margin: 0;" in css
     assert "min-height: calc(100svh - 150px);" in css
     assert ".ph-trust {\n        min-height: 150px;" in css
     assert ".ph-trust {\n        min-height: 0;\n        flex-direction: column;" in css

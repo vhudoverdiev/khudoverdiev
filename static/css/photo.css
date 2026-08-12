@@ -341,7 +341,7 @@ body.ph-modal-open .ph-scroll-cue {
     left: 50%;
     bottom: -74px;
     width: auto;
-    height: 562px;
+    height: 500px;
     max-height: none;
     display: block;
     object-fit: contain;
@@ -609,7 +609,7 @@ h2 em {
 .ph-about-copy {
     position: relative;
     z-index: 1;
-    align-self: end;
+    align-self: start;
     display: grid;
     gap: 28px;
 }
@@ -688,9 +688,10 @@ h2 em {
 }
 .ph-section-heading {
     display: grid;
-    grid-template-columns: 1fr 390px;
+    grid-template-columns: max-content minmax(320px, 390px);
+    justify-content: start;
     align-items: end;
-    gap: 80px;
+    gap: 44px;
     margin-bottom: 54px;
 }
 .ph-section-heading > p {
@@ -846,14 +847,6 @@ h2 em {
     margin-bottom: 60px;
 }
 .ph-services > header .ph-section-index { margin: 0; }
-.ph-services > header h2 { margin-bottom: 24px; }
-.ph-services-lead {
-    max-width: 620px;
-    margin: 0;
-    color: var(--ph-muted);
-    font-size: 17px;
-    line-height: 1.65;
-}
 .ph-service-list {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -964,10 +957,13 @@ h2 em {
     position: relative;
     z-index: 1;
     display: grid;
-    grid-template-columns: .42fr 1fr;
-    align-items: end;
-    gap: 48px;
+    grid-template-columns: 160px minmax(0, 1fr);
+    align-items: start;
+    gap: 54px;
     margin-bottom: 48px;
+}
+.ph-video-heading .ph-section-index {
+    margin: 0;
 }
 .ph-video-heading h2 {
     margin: 0;
@@ -975,13 +971,6 @@ h2 em {
     line-height: .96;
     font-weight: 850;
     letter-spacing: 0;
-}
-.ph-video-heading p:last-child {
-    max-width: 660px;
-    margin: 24px 0 0;
-    color: var(--ph-muted);
-    font-size: 17px;
-    line-height: 1.65;
 }
 .ph-video-showcase {
     position: relative;
@@ -1222,19 +1211,21 @@ h2 em {
     background: rgba(122, 89, 70, .46);
 }
 .ph-contact {
-    min-height: 560px;
+    min-height: 0;
     display: grid;
-    grid-template-columns: 160px minmax(0, 1fr) 310px;
-    align-items: center;
-    gap: 54px;
+    grid-template-columns: 132px minmax(0, 1fr) 300px;
+    align-items: start;
+    gap: 28px;
+    padding: 72px 0;
     border-top: 1px solid var(--ph-line);
 }
 .ph-contact .ph-section-index {
     align-self: start;
-    margin-top: 76px;
+    margin: 0;
 }
 .ph-contact > div > p {
     max-width: 530px;
+    margin: 20px 0 0;
     color: var(--ph-muted);
     font-size: 16px;
     line-height: 1.65;
@@ -1332,8 +1323,7 @@ h2 em {
     .ph-about,
     .ph-portfolio,
     .ph-services,
-    .ph-video,
-    .ph-contact {
+    .ph-video {
         min-height: 100vh;
         min-height: 100svh;
     }
@@ -1359,7 +1349,7 @@ h2 em {
     }
 
     .ph-hero-person {
-        height: 482px;
+        height: 420px;
         bottom: -54px;
     }
 
@@ -1836,8 +1826,8 @@ h2 em {
     }
 
     .ph-hero-person {
-        height: 520px;
-        bottom: -70px;
+        height: 450px;
+        bottom: -68px;
     }
 }
 
@@ -1894,9 +1884,9 @@ h2 em {
 
     .ph-hero-person {
         width: auto;
-        height: 405px;
+        height: 350px;
         max-width: none;
-        bottom: -54px;
+        bottom: -46px;
     }
 
     .ph-hero-stage::before {
@@ -2076,10 +2066,6 @@ h2 em {
         grid-column: 1;
     }
 
-    .ph-video-heading p:last-child {
-        font-size: 16px;
-    }
-
     .ph-video-showcase {
         gap: 14px;
         margin-bottom: 22px;
@@ -2165,7 +2151,7 @@ h2 em {
         min-height: 0;
         grid-template-columns: 1fr;
         gap: 32px;
-        padding: 78px 0;
+        padding: 58px 0;
     }
 
     .ph-contact .ph-section-index {
@@ -2223,7 +2209,7 @@ h2 em {
     }
 
     .ph-hero-person {
-        height: 340px;
+        height: 292px;
         bottom: -48px;
     }
 

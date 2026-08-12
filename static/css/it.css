@@ -842,6 +842,10 @@ footer {
     font-weight: 400;
 }
 
+.about-mobile-copy {
+    display: none;
+}
+
 .about-code-highlight {
     --code-accent: rgba(111, 146, 0, 0.9);
     position: relative;
@@ -2586,14 +2590,15 @@ footer p:last-child {
     }
 
     .hero-grid {
-        min-height: auto;
+        min-height: 100svh;
         width: calc(100% - 32px);
         grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto auto auto auto minmax(112px, 1fr) auto;
         align-content: start;
         align-items: center;
         column-gap: 10px;
         row-gap: 0;
-        padding: 94px 0 36px;
+        padding: 94px 0 calc(22px + env(safe-area-inset-bottom));
     }
 
     .hero-copy {
@@ -2665,8 +2670,14 @@ footer p:last-child {
         grid-column: 1 / -1;
         grid-row: 5;
         width: 100%;
-        margin-top: 18px;
+        height: calc(100% - 26px);
+        min-height: 126px;
+        align-self: start;
+        margin-top: 20px;
+        margin-bottom: 0;
         display: grid;
+        grid-template-rows: 30px repeat(8, minmax(29px, 1fr)) 30px;
+        align-content: stretch;
         gap: 0;
         overflow: hidden;
         border: 1px solid rgba(255, 255, 255, 0.12);
@@ -2677,10 +2688,52 @@ footer p:last-child {
         box-shadow: 0 18px 46px rgba(0, 0, 0, 0.18), inset 0 1px rgba(255, 255, 255, 0.05);
         color: rgba(255, 255, 255, 0.66);
         font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+        animation: console-in 800ms var(--ease-out) 120ms both;
+    }
+
+    .mobile-console-bar,
+    .mobile-console-status {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 30px;
+        padding: 0 12px;
+        font-size: 7px;
+        font-weight: 700;
+        letter-spacing: 0.78px;
+        text-transform: uppercase;
+    }
+
+    .mobile-console-bar {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.42);
+    }
+
+    .mobile-console-bar > b {
+        margin-left: auto;
+        color: var(--lime);
+        font-size: 7px;
+        letter-spacing: 1px;
+    }
+
+    .mobile-console-status {
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        background: rgba(255, 255, 255, 0.026);
+        color: rgba(255, 255, 255, 0.36);
+    }
+
+    .mobile-console-status > span {
+        color: var(--lime);
+    }
+
+    .mobile-console-status > b {
+        margin-left: auto;
+        color: rgba(255, 255, 255, 0.5);
+        font-weight: 700;
     }
 
     .mobile-code-line {
-        min-height: 32px;
+        min-height: 29px;
         display: flex;
         align-items: center;
         gap: 10px;
@@ -2693,7 +2746,7 @@ footer p:last-child {
         -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent);
     }
 
-    .mobile-code-line:first-child {
+    .mobile-console-bar + .mobile-code-line {
         border-top: 0;
     }
 
@@ -2715,7 +2768,7 @@ footer p:last-child {
     .hero-actions {
         grid-column: 1 / -1;
         grid-row: 6;
-        margin-top: 16px;
+        margin-top: 22px;
     }
 
     .button {
@@ -2792,7 +2845,22 @@ footer p:last-child {
         letter-spacing: -0.058em;
     }
 
+    .about-mobile-line,
+    .about h2 em {
+        display: block;
+    }
+
+    .about-desktop-copy {
+        display: none;
+    }
+
+    .about-mobile-copy {
+        display: inline;
+    }
+
     .about-code-highlight {
+        display: inline-flex;
+        width: max-content;
         font-size: 0.74em;
         letter-spacing: -0.045em;
     }
@@ -3035,7 +3103,9 @@ footer p:last-child {
 
     .media-viewer {
         display: grid;
-        grid-template-columns: minmax(0, 1fr);
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto 42px;
+        gap: 8px;
         align-items: center;
         aspect-ratio: auto;
         min-height: 0;
@@ -3043,11 +3113,42 @@ footer p:last-child {
     }
 
     .media-stage {
+        grid-column: 1 / -1;
+        grid-row: 1;
         width: 100%;
         height: auto;
         max-height: calc(100svh - 140px);
         aspect-ratio: 16 / 9;
         border-radius: 18px;
+    }
+
+    .media-nav {
+        position: relative;
+        top: auto;
+        width: 40px;
+        height: 40px;
+        transform: none;
+        background: #fff;
+        backdrop-filter: none;
+    }
+
+    .media-nav:hover {
+        transform: scale(1.04);
+    }
+
+    .media-prev {
+        grid-column: 1;
+        grid-row: 2;
+        left: auto;
+        justify-self: start;
+    }
+
+    .media-next {
+        grid-column: 2;
+        grid-row: 2;
+        right: auto;
+        justify-self: end;
+        margin-bottom: 0;
     }
 
     .media-controls {

@@ -7,7 +7,7 @@
     <meta name="description" content="Разработка CRM-систем и веб-продуктов под реальные бизнес-процессы. Избранные кейсы Владимира Худовердиева.">
     <meta name="theme-color" content="#f4f0e8">
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='portfolio/vh-favicon.svg') }}?v=7">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/it.css') }}?v=78">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/it.css') }}?v=80">
 </head>
 <body>
     <a class="skip-link" href="#about">Перейти к содержанию</a>
@@ -42,8 +42,20 @@
                     <h1 id="hero-title">Владимир<br><strong>Худовердиев</strong></h1>
                     <p class="lead">Проектирую и создаю веб-системы, которые превращают сложные процессы в понятные рабочие инструменты.</p>
                     <div class="mobile-action-console" aria-hidden="true">
+                        <div class="mobile-console-bar">
+                            <span class="console-dots"><i></i><i></i><i></i></span>
+                            <span>cases / launch.ts</span>
+                            <b>● READY</b>
+                        </div>
                         <div class="mobile-code-line"><span>02</span><code><em>const</em> cases = await portfolio.open()</code></div>
-                        <div class="mobile-code-line"><span>03</span><code><strong>return</strong> solution.with_result()</code></div>
+                        <div class="mobile-code-line"><span>03</span><code><em>const</em> brief = await client.describe()</code></div>
+                        <div class="mobile-code-line"><span>04</span><code><strong>map</strong>(process).to_clear_steps()</code></div>
+                        <div class="mobile-code-line"><span>05</span><code><strong>build</strong>.crm({ speed, control, ux })</code></div>
+                        <div class="mobile-code-line"><span>06</span><code><em>await</em> interface.test_on_mobile()</code></div>
+                        <div class="mobile-code-line"><span>07</span><code>deploy.when(result === useful)</code></div>
+                        <div class="mobile-code-line"><span>08</span><code><strong>return</strong> product.with_real_value()</code></div>
+                        <div class="mobile-code-line"><span>09</span><code>scroll.down.to_cases()</code></div>
+                        <div class="mobile-console-status"><span class="ui-icon ui-icon-symbol ui-icon-check" aria-hidden="true">✓</span> cases ready <b>tap to explore</b></div>
                     </div>
                     <div class="hero-actions">
                         <a class="button button-dark" href="#projects">Смотреть кейсы <span class="ui-icon ui-icon-symbol ui-icon-arrow-down" aria-hidden="true">↓</span></a>
@@ -61,7 +73,7 @@
         <section class="about" id="about">
             <p class="section-index">01 / ОБО МНЕ</p>
             <div class="about-copy">
-                <h2>Не просто <span class="about-code-highlight"><span>пишу</span><span>код</span></span>.<br><em>Разбираюсь в задаче.</em></h2>
+                <h2><span class="about-mobile-line">Не просто</span> <span class="about-code-highlight"><span>пишу</span><span>код</span></span>.<br><em><span class="about-desktop-copy">Разбираюсь в задаче.</span><span class="about-mobile-copy">Разбираю задачи.</span></em></h2>
                 <p>Создаю CRM-системы и веб-приложения вокруг реальных сценариев людей и бизнеса. Продумываю логику, интерфейс и архитектуру так, чтобы продуктом было удобно пользоваться каждый день.</p>
             </div>
             <div class="principles" aria-label="Принципы работы">
