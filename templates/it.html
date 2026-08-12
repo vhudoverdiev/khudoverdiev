@@ -7,7 +7,7 @@
     <meta name="description" content="Разработка CRM-систем и веб-продуктов под реальные бизнес-процессы. Избранные кейсы Владимира Худовердиева.">
     <meta name="theme-color" content="#f4f0e8">
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='portfolio/vh-favicon.svg') }}?v=7">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/it.css') }}?v=89">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/it.css') }}?v=90">
 </head>
 <body>
     <a class="skip-link" href="#about">Перейти к содержанию</a>
@@ -260,6 +260,11 @@
         let mediaItems = [];
         let mediaIndex = 0;
         let touchStartX = 0;
+        const mobileViewportState = {
+            width: 0,
+            orientation: '',
+            initialized: false,
+        };
 
         function isDesktopCanvas() {
             return window.matchMedia('(min-width: 500px)').matches;
@@ -273,11 +278,27 @@
             document.documentElement.style.setProperty('--desktop-scale', getDesktopScale().toFixed(5));
         }
 
-        function updateMobileViewport() {
+        function getViewportOrientation() {
+            if (window.screen && window.screen.orientation && window.screen.orientation.type) {
+                return window.screen.orientation.type;
+            }
+            return window.innerWidth > window.innerHeight ? 'landscape' : 'portrait';
+        }
+
+        function updateMobileViewport(force = false) {
             const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+            const viewportWidth = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+            const orientation = getViewportOrientation();
+            const widthChanged = Math.abs(viewportWidth - mobileViewportState.width) > 1;
+            const orientationChanged = orientation !== mobileViewportState.orientation;
+            if (!force && mobileViewportState.initialized && !widthChanged && !orientationChanged) return;
+
             const bottomSpace = Math.round(Math.min(59, Math.max(38, viewportHeight * 0.045)));
             document.documentElement.style.setProperty('--mobile-viewport-height', `${Math.round(viewportHeight)}px`);
             document.documentElement.style.setProperty('--mobile-hero-bottom-space', `calc(${bottomSpace}px + env(safe-area-inset-bottom))`);
+            mobileViewportState.width = viewportWidth;
+            mobileViewportState.orientation = orientation;
+            mobileViewportState.initialized = true;
         }
 
         function getScaledOffsetTop(element) {
@@ -318,7 +339,7 @@
         }
 
         updateDesktopScale();
-        updateMobileViewport();
+        updateMobileViewport(true);
         updateHeader();
         window.addEventListener('scroll', updateHeader, { passive: true });
         window.addEventListener('resize', () => {
@@ -327,7 +348,7 @@
             updateHeader();
         }, { passive: true });
         if (window.visualViewport) {
-            window.visualViewport.addEventListener('resize', updateMobileViewport, { passive: true });
+            window.visualViewport.addEventListener('resize', () => updateMobileViewport(), { passive: true });
         }
 
         document.querySelectorAll('a[href^="#"]').forEach((link) => {

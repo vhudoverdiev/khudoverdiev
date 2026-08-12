@@ -240,7 +240,7 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert b"portfolio/vh-favicon.svg" in portfolio.data
     assert b"vh-favicon.svg?v=7" in portfolio.data
     assert b'content="width=device-width, initial-scale=1, viewport-fit=cover"' in portfolio.data
-    assert b"css/it.css?v=89" in portfolio.data
+    assert b"css/it.css?v=90" in portfolio.data
     assert b'id="project-prompt"' in portfolio.data
     assert b"data-project-prompt-contact" in portfolio.data
     assert "30 секунд на сайте".encode() not in portfolio.data
@@ -316,9 +316,13 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     portfolio_text = portfolio.get_data(as_text=True)
     assert "desktopCanvasWidth = 1920" in portfolio_text
     assert "window.matchMedia('(min-width: 500px)')" in portfolio_text
-    assert "updateMobileViewport()" in portfolio_text
+    assert "const mobileViewportState = {" in portfolio_text
+    assert "updateMobileViewport(true)" in portfolio_text
     assert "visualViewport.height" in portfolio_text
+    assert "Math.abs(viewportWidth - mobileViewportState.width) > 1" in portfolio_text
+    assert "if (!force && mobileViewportState.initialized && !widthChanged && !orientationChanged) return;" in portfolio_text
     assert "Math.min(59, Math.max(38, viewportHeight * 0.045))" in portfolio_text
+    assert "visualViewport.addEventListener('resize', () => updateMobileViewport()" in portfolio_text
     assert "visualViewport.addEventListener('scroll', updateMobileViewport" not in portfolio_text
     assert "projectPromptDelay = 120000" in portfolio_text
     assert "window.setTimeout(showProjectPrompt, projectPromptDelay)" in portfolio_text
@@ -968,7 +972,7 @@ def test_admin_login_page_is_no_store_and_contains_csrf(client):
     assert b'name="csrf_token"' in response.data
     assert b'name="username"' in response.data
     assert b'autocomplete="username"' in response.data
-    assert b"css/styles.css?v=19" in response.data
+    assert b"css/styles.css?v=20" in response.data
     assert "<title>Админ-панель</title>".encode() in response.data
     assert "Админ-панель — KHUDOVERDIEV".encode() not in response.data
     assert "Фотография сохраняет тишину момента".encode() in response.data
@@ -1136,8 +1140,13 @@ def test_admin_dashboard_counts_only_recent_activity_and_orders_clicks(client, m
     assert b"<strong>4</strong>" in response.data
     assert b"<strong>2</strong>" in response.data
     assert b"<strong>1</strong>" in response.data
+    assert "Клики по ссылкам".encode() in response.data
+    assert "Переходы с khudoverdiev.ru".encode() in response.data
+    assert b"<small>khudoverdiev.ru</small>" in response.data
     assert b"Telegram" in response.data
-    assert response.data.index(b"Telegram") < response.data.index(b"VK")
+    assert response.data.index(b'<span class="click-item-main">Telegram') < response.data.index(
+        b'<span class="click-item-main">VK'
+    )
     assert 'href="/st/messages"'.encode() in response.data
     assert b"Recent" not in response.data
     assert b"Old" not in response.data
@@ -1198,7 +1207,7 @@ def test_admin_clients_tab_empty_state_is_separate_from_dashboard(client):
 
     assert response.status_code == 200
     assert "Клиентские страницы пока не созданы.".encode() in response.data
-    assert "Клики по соцсетям".encode() not in response.data
+    assert "Клики по ссылкам".encode() not in response.data
     assert 'class="message-admin-card"'.encode() not in response.data
 
 
@@ -1244,7 +1253,7 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
     assert "Запечатленные моменты".encode() in response.data
     assert "Готовая серия".encode() not in response.data
     assert "скидку 15%".encode() in response.data
-    assert b"css/styles.css?v=18" in response.data
+    assert b"css/styles.css?v=19" in response.data
     assert b"photo/portrait-cutout.png" in response.data
     assert b"class=\"client-photo-stage\"" in response.data
     assert b"img/profile-new.jpg" not in response.data
@@ -1258,6 +1267,9 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
     assert b"photo/mikhail-" not in response.data
     assert b'href="https://drive.google.com/photos"' in response.data
     assert b'href="https://vk.ru/reviews-190646738"' in response.data
+    assert b'href="https://ph.khudoverdiev.ru"' in response.data
+    assert "Страница фотографа".encode() in response.data
+    assert b"class=\"client-button client-button-tertiary\"" in response.data
     assert b"https://reviews.example/ivanova" not in response.data
     assert b"<form" not in response.data
     assert b'type="file"' not in response.data
