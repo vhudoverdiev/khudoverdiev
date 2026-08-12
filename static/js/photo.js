@@ -86,6 +86,139 @@
         if (shouldPlay) renderVideoPlayer();
     };
 
+    const closeCustomSelect = (customSelect, shouldFocus = false) => {
+        if (!customSelect) return;
+        const trigger = customSelect.querySelector("[data-custom-select-trigger]");
+        customSelect.classList.remove("is-open");
+        trigger?.setAttribute("aria-expanded", "false");
+        customSelect.querySelectorAll("[data-custom-select-option]").forEach((option) => {
+            option.tabIndex = -1;
+        });
+        if (shouldFocus) trigger?.focus();
+    };
+
+    const closeAllCustomSelects = (except = null) => {
+        document.querySelectorAll("[data-custom-select]").forEach((customSelect) => {
+            if (customSelect !== except) closeCustomSelect(customSelect);
+        });
+    };
+
+    const initCustomSelects = () => {
+        if (!bookingForm) return;
+        bookingForm.querySelectorAll(".ph-booking-fields select").forEach((select) => {
+            if (select.dataset.customSelectReady === "true") return;
+
+            const labelText = select.closest("label")?.querySelector("span")?.textContent?.trim() || "Выберите значение";
+            const customSelect = document.createElement("div");
+            const trigger = document.createElement("button");
+            const value = document.createElement("span");
+            const list = document.createElement("div");
+            const listId = `${select.name || "select"}-custom-list`;
+
+            customSelect.className = "ph-custom-select";
+            customSelect.dataset.customSelect = "";
+            trigger.type = "button";
+            trigger.className = "ph-custom-select-trigger";
+            trigger.dataset.customSelectTrigger = "";
+            trigger.setAttribute("aria-haspopup", "listbox");
+            trigger.setAttribute("aria-expanded", "false");
+            trigger.setAttribute("aria-controls", listId);
+            trigger.setAttribute("aria-label", labelText);
+            value.className = "ph-custom-select-value";
+            value.dataset.customSelectValue = "";
+            list.className = "ph-custom-select-list";
+            list.id = listId;
+            list.role = "listbox";
+            list.setAttribute("aria-label", labelText);
+
+            const optionButtons = [...select.options].map((option, index) => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "ph-custom-select-option";
+                button.dataset.customSelectOption = "";
+                button.role = "option";
+                button.tabIndex = -1;
+                button.textContent = option.textContent;
+                button.dataset.value = option.value;
+                button.addEventListener("click", () => {
+                    select.selectedIndex = index;
+                    select.dispatchEvent(new Event("change", { bubbles: true }));
+                    closeCustomSelect(customSelect, true);
+                });
+                list.append(button);
+                return button;
+            });
+
+            const updateCustomSelect = () => {
+                const selectedOption = select.options[select.selectedIndex] || select.options[0];
+                value.textContent = selectedOption?.textContent || "";
+                optionButtons.forEach((button, index) => {
+                    const isSelected = index === select.selectedIndex;
+                    button.classList.toggle("is-selected", isSelected);
+                    button.setAttribute("aria-selected", isSelected ? "true" : "false");
+                });
+            };
+
+            const openCustomSelect = () => {
+                closeAllCustomSelects(customSelect);
+                customSelect.classList.add("is-open");
+                trigger.setAttribute("aria-expanded", "true");
+                optionButtons.forEach((option) => {
+                    option.tabIndex = 0;
+                });
+                (optionButtons[select.selectedIndex] || optionButtons[0])?.focus();
+            };
+
+            trigger.append(value);
+            customSelect.append(trigger, list);
+            select.classList.add("ph-native-select");
+            select.dataset.customSelectReady = "true";
+            select.after(customSelect);
+            updateCustomSelect();
+
+            trigger.addEventListener("click", () => {
+                if (customSelect.classList.contains("is-open")) {
+                    closeCustomSelect(customSelect);
+                } else {
+                    openCustomSelect();
+                }
+            });
+
+            trigger.addEventListener("keydown", (event) => {
+                if (["Enter", " ", "ArrowDown", "ArrowUp"].includes(event.key)) {
+                    event.preventDefault();
+                    openCustomSelect();
+                }
+            });
+
+            list.addEventListener("keydown", (event) => {
+                const currentIndex = optionButtons.indexOf(document.activeElement);
+                if (event.key === "Escape") {
+                    event.preventDefault();
+                    closeCustomSelect(customSelect, true);
+                    return;
+                }
+                if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+                event.preventDefault();
+                const lastIndex = optionButtons.length - 1;
+                const nextIndex = event.key === "Home"
+                    ? 0
+                    : event.key === "End"
+                        ? lastIndex
+                        : event.key === "ArrowUp"
+                            ? Math.max(0, currentIndex - 1)
+                            : Math.min(lastIndex, currentIndex + 1);
+                optionButtons[nextIndex]?.focus();
+            });
+
+            select.addEventListener("change", updateCustomSelect);
+        });
+    };
+
+    document.querySelectorAll(".ph-booking-head > p:not(.ph-section-index)").forEach((paragraph) => {
+        paragraph.remove();
+    });
+
     document.querySelectorAll('.ph-header nav a[href$="#services"], .ph-header nav a[href="#services"]').forEach((link) => {
         if (link.textContent.trim() === "Съемки") link.textContent = "Фото";
     });
@@ -115,6 +248,11 @@
         });
         videoPlayButton?.addEventListener("click", renderVideoPlayer);
     }
+
+    initCustomSelects();
+    document.addEventListener("click", (event) => {
+        if (!event.target.closest("[data-custom-select]")) closeAllCustomSelects();
+    });
 
     document.querySelectorAll("[data-lightbox]").forEach((button) => {
         button.addEventListener("click", () => {
@@ -186,6 +324,11 @@
             }
 
             bookingForm.reset();
+            requestAnimationFrame(() => {
+                bookingForm.querySelectorAll(".ph-booking-fields select").forEach((select) => {
+                    select.dispatchEvent(new Event("change", { bubbles: true }));
+                });
+            });
             bookingForm.classList.add("is-sent");
             bookingStatus.textContent = "Заявка отправлена. Я свяжусь с вами.";
         } catch (error) {
@@ -196,6 +339,7 @@
     });
 
     document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeAllCustomSelects();
         if (event.key === "Escape" && lightbox?.classList.contains("is-open")) closeLightbox();
         if (event.key === "Escape" && bookingModal?.classList.contains("is-open")) closeBooking();
     });

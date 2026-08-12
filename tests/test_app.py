@@ -235,7 +235,11 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "IT | Владимир Худовердиев".encode() in portfolio.data
     assert b"portfolio/vh-favicon.svg" in portfolio.data
     assert b"vh-favicon.svg?v=7" in portfolio.data
-    assert b"css/it.css?v=80" in portfolio.data
+    assert b"css/it.css?v=84" in portfolio.data
+    assert b"class=\"desktop-scale-shell\"" in portfolio.data
+    assert b"class=\"desktop-scale-stage\"" in portfolio.data
+    assert b"class=\"rotate-lock\"" in portfolio.data
+    assert "Поверните телефон обратно".encode() in portfolio.data
     assert b"portfolio/vladimir-avatar-favicon.png" not in portfolio.data
     assert b"portfolio/vladimir-user-cutout.png" in portfolio.data
     assert b"class=\"portrait-photo\"" in portfolio.data
@@ -268,7 +272,13 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "--desktop-width: 1320px;" in css
     assert "--desktop-canvas-width: 1920px;" in css
     assert "--desktop-canvas-height: 1080px;" in css
-    assert "min-width: var(--desktop-canvas-width);" in css
+    assert "--desktop-scale: 1;" in css
+    assert "--mobile-viewport-height: 100svh;" in css
+    assert "--mobile-hero-bottom-space: calc(76px + env(safe-area-inset-bottom));" in css
+    assert ".desktop-scale-stage {\n        width: var(--desktop-canvas-width);" in css
+    assert "zoom: var(--desktop-scale);" in css
+    assert "min-width: var(--desktop-canvas-width);" not in css
+    assert "overflow-x: auto;" not in css
     assert "min-height: var(--desktop-canvas-height);" in css
     assert "clamp(" not in css
     assert "orbit-breathe" not in css
@@ -283,15 +293,37 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     portrait_hover = re.search(r"\.portrait-wrap:hover \.portrait-photo img \{(?P<body>.*?)\n\}", css, re.S)
     assert portrait_hover is not None
     assert "translateY(" not in portrait_hover.group("body")
-    assert "@media (min-width: 901px)" in css
-    assert "@media (max-width: 900px)" in css
+    assert "@media (min-width: 500px)" in css
+    assert "@media (max-width: 499px)" in css
+    assert "@media (min-width: 901px)" not in css
+    assert "@media (max-width: 900px)" not in css
     width_media_queries = re.findall(r"@media\s*\((?:min|max)-width:[^)]+\)", css)
-    assert width_media_queries == ["@media (min-width: 901px)", "@media (max-width: 900px)"]
+    assert width_media_queries == [
+        "@media (min-width: 500px)",
+        "@media (max-width: 499px)",
+        "@media (max-width: 499px)",
+    ]
     assert "body {\n        min-width: 0;\n        overflow-x: hidden;" in css
+    portfolio_text = portfolio.get_data(as_text=True)
+    assert "desktopCanvasWidth = 1920" in portfolio_text
+    assert "window.matchMedia('(min-width: 500px)')" in portfolio_text
+    assert "updateMobileViewport()" in portfolio_text
+    assert "visualViewport.height" in portfolio_text
+    assert "Math.min(118, Math.max(76, viewportHeight * 0.09))" in portfolio_text
+    assert "getScaledOffsetTop(element)" in portfolio_text
+    assert "scrollToScaledTarget(target || document.getElementById('site-footer'))" in portfolio_text
     assert "/* Mobile polish: one deliberate layout, not a squeezed desktop. */" in css
-    assert ".hero {\n        min-height: 100svh;" in css
+    assert ".hero {\n        min-height: var(--mobile-viewport-height);" in css
     assert ".hero::before {\n        pointer-events: none;" in css
-    assert ".hero-grid {\n        min-height: 100svh;" in css
+    assert ".hero-grid {\n        min-height: var(--mobile-viewport-height);" in css
+    assert "padding: 94px 0 var(--mobile-hero-bottom-space);" in css
+    assert "@media (max-width: 499px) and (max-height: 820px)" in css
+    assert "grid-template-rows: auto auto auto auto minmax(152px, 1fr) auto;" in css
+    assert ".mobile-action-console {\n        height: calc(100% - 18px);\n        min-height: 184px;" in css
+    assert "grid-template-rows: 26px repeat(8, minmax(18px, 1fr)) 26px;" in css
+    assert "@media (orientation: landscape) and (max-height: 499px) and (pointer: coarse)" in css
+    assert ".rotate-lock {\n        position: fixed;\n        z-index: 9999;" in css
+    assert ".desktop-scale-shell,\n    .page-scroll-cue,\n    .media-modal,\n    .contact-modal {\n        visibility: hidden;" in css
     assert "grid-template-rows: auto auto auto auto minmax(112px, 1fr) auto;" in css
     assert "grid-template-columns: minmax(0, 1fr) 118px;" not in css
     assert ".hero-copy {\n        display: contents;" in css
@@ -371,9 +403,9 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "default-src 'self'" in response.headers["Content-Security-Policy"]
     assert "frame-src https://vk.com https://vk.ru https://vkvideo.ru" in response.headers["Content-Security-Policy"]
     assert b"css/photo.css" in response.data
-    assert b"photo.css?v=31" in response.data
+    assert b"photo.css?v=37" in response.data
     assert b"js/photo.js" in response.data
-    assert b"photo.js?v=7" in response.data
+    assert b"photo.js?v=9" in response.data
     assert "Архангельск, Северодвинск".encode() in response.data
     assert b"photo/ph-favicon.ico" in response.data
     assert b"photo/ph-favicon.svg" in response.data
@@ -408,6 +440,7 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "Стоимость съемок".encode() not in response.data
     assert b'data-booking-open' in response.data
     assert b'data-booking-form' in response.data
+    assert "Оставьте детали, чтобы я сразу понял".encode() not in response.data
     assert b'name="form_type" value="booking"' in response.data
     assert b'name="shoot_type"' in response.data
     assert b'name="shoot_date"' in response.data
@@ -473,9 +506,9 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
 
     assert response.status_code == 200
     assert b"css/photo.css" in response.data
-    assert b"photo.css?v=31" in response.data
+    assert b"photo.css?v=37" in response.data
     assert b"js/photo.js" in response.data
-    assert b"photo.js?v=7" in response.data
+    assert b"photo.js?v=9" in response.data
     assert "Портфолио".encode() in response.data
     assert "126 фотографий".encode() not in response.data
     assert "Собрал сюда все снимки из альбома ВКонтакте".encode() not in response.data
@@ -502,12 +535,29 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert ".ph-hero {\n    position: relative;\n    box-sizing: border-box;" in css
     assert ".ph-trust {\n    position: relative;\n    box-sizing: border-box;" in css
     assert ".ph-hero-stage {\n        width: min(520px, 100%);\n        height: 520px;" in css
-    assert ".ph-hero-person {\n        height: 420px;\n        bottom: -54px;" in css
+    assert ".ph-hero-person {\n        height: 430px;\n        bottom: -64px;" in css
     assert "height: 482px;" not in css
+    assert ".ph-booking-fields select {\n    appearance: none;" in css
+    assert "padding-right: 48px;" in css
+    assert ".ph-custom-select-trigger {\n    position: relative;\n    width: 100%;" in css
+    assert ".ph-custom-select-list {\n    position: absolute;" in css
+    assert ".ph-custom-select-option.is-selected {" in css
+    assert ".ph-booking-head p:last-child" not in css
+    js = Path("static/js/photo.js").read_text(encoding="utf-8")
+    assert "initCustomSelects" in js
+    assert 'value.className = "ph-custom-select-value";' in js
+    assert "data-custom-select-option" in js
+    assert ".ph-booking-head > p:not(.ph-section-index)" in js
     assert ".ph-about-copy {\n    position: relative;\n    z-index: 1;\n    align-self: start;" in css
+    assert ".ph-hero,\n    .ph-about,\n    .ph-portfolio" not in css
+    assert ".ph-about {\n        align-content: start;\n        padding-top: 112px;\n        padding-bottom: 48px;" in css
     assert ".ph-section-heading {\n    display: grid;\n    grid-template-columns: max-content minmax(320px, 390px);\n    justify-content: start;" in css
-    assert ".ph-video-heading {\n    position: relative;\n    z-index: 1;\n    display: grid;\n    grid-template-columns: 160px minmax(0, 1fr);\n    align-items: start;" in css
-    assert ".ph-contact {\n    min-height: 0;\n    display: grid;\n    grid-template-columns: 132px minmax(0, 1fr) 300px;\n    align-items: start;" in css
+    assert ".ph-services > header {\n    display: grid;\n    grid-template-columns: minmax(0, 1fr);\n    align-items: start;\n    gap: 18px;" in css
+    assert ".ph-video-heading {\n    position: relative;\n    z-index: 1;\n    display: grid;\n    grid-template-columns: minmax(0, 1fr);\n    align-items: start;\n    gap: 18px;" in css
+    assert ".ph-contact {\n    min-height: 0;\n    display: grid;\n    grid-template-columns: minmax(0, 1fr) 300px;\n    align-items: start;" in css
+    assert ".ph-contact > div:not(.ph-contact-actions) {\n    grid-column: 1;" in css
+    assert ".ph-contact-actions {\n    grid-column: 2;\n    grid-row: 1 / span 2;" in css
+    assert ".ph-contact {\n        padding-top: 96px;\n        padding-bottom: 48px;" in css
     assert ".ph-contact .ph-section-index {\n    align-self: start;\n    margin: 0;" in css
     assert "min-height: calc(100svh - 150px);" in css
     assert ".ph-trust {\n        min-height: 150px;" in css
@@ -837,6 +887,9 @@ def test_admin_login_page_is_no_store_and_contains_csrf(client):
     assert response.status_code == 200
     assert response.headers["Cache-Control"] == "no-store, max-age=0"
     assert b'name="csrf_token"' in response.data
+    assert "<title>Админ-панель</title>".encode() in response.data
+    assert "Админ-панель — KHUDOVERDIEV".encode() not in response.data
+    assert "Фотография сохраняет тишину момента".encode() in response.data
 
 
 def test_admin_aliases_are_no_store_even_when_redirecting(client):
@@ -966,6 +1019,8 @@ def test_admin_dashboard_counts_only_recent_activity_and_orders_clicks(client, m
 
     assert response.status_code == 200
     assert b'data-admin-shell' in response.data
+    assert "Админ-панель".encode() in response.data
+    assert "KHUDOVERDIEV</p>".encode() not in response.data
     assert b"loadAdminTab" in response.data
     assert b"<strong>1</strong>" in response.data
     assert b"Telegram" in response.data

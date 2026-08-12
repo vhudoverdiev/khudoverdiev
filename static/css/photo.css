@@ -339,9 +339,9 @@ body.ph-modal-open .ph-scroll-cue {
     z-index: 2;
     position: absolute;
     left: 50%;
-    bottom: -74px;
+    bottom: -89px;
     width: auto;
-    height: 500px;
+    height: 515px;
     max-height: none;
     display: block;
     object-fit: contain;
@@ -841,9 +841,9 @@ h2 em {
 
 .ph-services > header {
     display: grid;
-    grid-template-columns: 160px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
     align-items: start;
-    gap: 54px;
+    gap: 18px;
     margin-bottom: 60px;
 }
 .ph-services > header .ph-section-index { margin: 0; }
@@ -957,9 +957,9 @@ h2 em {
     position: relative;
     z-index: 1;
     display: grid;
-    grid-template-columns: 160px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
     align-items: start;
-    gap: 54px;
+    gap: 18px;
     margin-bottom: 48px;
 }
 .ph-video-heading .ph-section-index {
@@ -1213,15 +1213,19 @@ h2 em {
 .ph-contact {
     min-height: 0;
     display: grid;
-    grid-template-columns: 132px minmax(0, 1fr) 300px;
+    grid-template-columns: minmax(0, 1fr) 300px;
     align-items: start;
-    gap: 28px;
-    padding: 72px 0;
+    column-gap: 42px;
+    row-gap: 18px;
+    padding: 72px 0 44px;
     border-top: 1px solid var(--ph-line);
 }
 .ph-contact .ph-section-index {
     align-self: start;
     margin: 0;
+}
+.ph-contact > div:not(.ph-contact-actions) {
+    grid-column: 1;
 }
 .ph-contact > div > p {
     max-width: 530px;
@@ -1231,6 +1235,8 @@ h2 em {
     line-height: 1.65;
 }
 .ph-contact-actions {
+    grid-column: 2;
+    grid-row: 1 / span 2;
     display: grid;
     gap: 9px;
 }
@@ -1320,7 +1326,6 @@ h2 em {
 
 @media (min-width: 1180px) and (min-height: 680px) {
     .ph-hero,
-    .ph-about,
     .ph-portfolio,
     .ph-services,
     .ph-video {
@@ -1349,8 +1354,8 @@ h2 em {
     }
 
     .ph-hero-person {
-        height: 420px;
-        bottom: -54px;
+        height: 430px;
+        bottom: -64px;
     }
 
     .ph-trust {
@@ -1360,9 +1365,9 @@ h2 em {
     }
 
     .ph-about {
-        align-content: center;
-        padding-top: 120px;
-        padding-bottom: 104px;
+        align-content: start;
+        padding-top: 112px;
+        padding-bottom: 48px;
     }
 
     .ph-portfolio,
@@ -1374,7 +1379,7 @@ h2 em {
 
     .ph-contact {
         padding-top: 96px;
-        padding-bottom: 96px;
+        padding-bottom: 48px;
     }
 }
 .ph-contact-card span,
@@ -1447,10 +1452,10 @@ h2 em {
     position: relative;
     z-index: 1;
     width: min(880px, 100%);
-    max-height: calc(100vh - 56px);
+    max-height: calc(100vh - 32px);
     display: grid;
-    gap: 22px;
-    padding: 34px;
+    gap: 16px;
+    padding: 30px;
     overflow: auto;
     border: 1px solid rgba(91, 63, 49, .18);
     border-radius: 28px;
@@ -1482,29 +1487,24 @@ h2 em {
     max-width: 620px;
 }
 .ph-booking-head .ph-section-index {
-    margin-bottom: 18px;
+    margin-bottom: 14px;
 }
 .ph-booking-head h2 {
     margin: 0;
-    font-size: 54px;
+    font-size: 50px;
     line-height: .98;
-}
-.ph-booking-head p:last-child {
-    margin: 20px 0 0;
-    color: var(--ph-muted);
-    font-size: 16px;
-    line-height: 1.62;
 }
 .ph-booking-fields {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
+    gap: 12px;
 }
 .ph-booking-fields label {
+    position: relative;
     display: grid;
     gap: 8px;
 }
-.ph-booking-fields span {
+.ph-booking-fields label > span {
     color: var(--ph-cocoa);
     font-size: 11px;
     font-weight: 900;
@@ -1524,10 +1524,177 @@ h2 em {
     outline: none;
     transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
 }
+.ph-booking-fields select {
+    appearance: none;
+    padding-right: 48px;
+    background:
+        linear-gradient(45deg, transparent 50%, var(--ph-cocoa) 50%) right 22px center / 7px 7px no-repeat,
+        linear-gradient(135deg, var(--ph-cocoa) 50%, transparent 50%) right 16px center / 7px 7px no-repeat,
+        linear-gradient(180deg, rgba(255, 255, 255, .92), rgba(247, 240, 232, .78));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .68);
+    cursor: pointer;
+}
+.ph-booking-fields select option {
+    background: #fffaf3;
+    color: var(--ph-ink);
+}
 .ph-booking-fields input,
 .ph-booking-fields select {
     height: 54px;
     padding: 0 16px;
+}
+.ph-booking-fields select {
+    padding-right: 48px;
+}
+.ph-native-select {
+    position: absolute;
+    width: 1px !important;
+    height: 1px !important;
+    opacity: 0;
+    pointer-events: none;
+}
+.ph-custom-select {
+    position: relative;
+    z-index: 1;
+}
+.ph-custom-select.is-open {
+    z-index: 18;
+}
+.ph-custom-select-trigger {
+    position: relative;
+    width: 100%;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 0 58px 0 18px;
+    border: 1px solid rgba(91, 63, 49, .18);
+    border-radius: 18px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, .94), rgba(247, 240, 232, .76)),
+        #fffaf3;
+    color: var(--ph-ink);
+    font: inherit;
+    font-size: 15px;
+    text-align: left;
+    cursor: pointer;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .72);
+    transition: border-color .18s ease, box-shadow .18s ease, background .18s ease, transform .18s ease;
+}
+.ph-custom-select-trigger > span {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--ph-ink);
+    font-size: 15px;
+    font-weight: 650;
+    letter-spacing: 0;
+    text-overflow: ellipsis;
+    text-transform: none;
+    white-space: nowrap;
+}
+.ph-custom-select-trigger::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 27px;
+    z-index: 1;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid var(--ph-cocoa);
+    border-bottom: 2px solid var(--ph-cocoa);
+    transform: translateY(-62%) rotate(45deg);
+    transition: transform .18s ease;
+    pointer-events: none;
+}
+.ph-custom-select-trigger::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(91, 63, 49, .1);
+    transform: translateY(-50%);
+    transition: transform .18s ease, background .18s ease;
+    pointer-events: none;
+}
+.ph-custom-select-trigger:hover,
+.ph-custom-select-trigger:focus-visible,
+.ph-custom-select.is-open .ph-custom-select-trigger {
+    border-color: rgba(91, 63, 49, .36);
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(122, 89, 70, .1), inset 0 1px 0 rgba(255, 255, 255, .78);
+}
+.ph-custom-select.is-open .ph-custom-select-trigger::after {
+    background: rgba(91, 63, 49, .16);
+    transform: translateY(-50%);
+}
+.ph-custom-select.is-open .ph-custom-select-trigger::before {
+    transform: translateY(-30%) rotate(225deg);
+}
+.ph-custom-select-list {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 8px);
+    max-height: 232px;
+    display: grid;
+    gap: 4px;
+    padding: 7px;
+    overflow: auto;
+    border: 1px solid rgba(91, 63, 49, .18);
+    border-radius: 20px;
+    background: #fffaf3;
+    box-shadow: 0 28px 76px rgba(44, 33, 26, .24);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px) scale(.98);
+    transform-origin: top center;
+    pointer-events: none;
+    transition: opacity .18s ease, transform .18s ease, visibility .18s ease;
+}
+.ph-custom-select.is-open .ph-custom-select-list {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+.ph-custom-select-option {
+    min-height: 38px;
+    padding: 0 13px;
+    border: 0;
+    border-radius: 14px;
+    background: transparent;
+    color: var(--ph-ink);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 650;
+    text-align: left;
+    cursor: pointer;
+    transition: background .16s ease, color .16s ease, transform .16s ease;
+}
+.ph-custom-select-option:hover,
+.ph-custom-select-option:focus-visible {
+    background: rgba(122, 89, 70, .1);
+    outline: none;
+}
+.ph-custom-select-option.is-selected {
+    background:
+        linear-gradient(135deg, rgba(91, 63, 49, .98), rgba(122, 89, 70, .94)),
+        var(--ph-coffee);
+    color: #fffaf3;
+    font-weight: 850;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18);
+}
+.ph-custom-select-list::-webkit-scrollbar {
+    width: 10px;
+}
+.ph-custom-select-list::-webkit-scrollbar-thumb {
+    border: 3px solid rgba(255, 250, 243, .96);
+    border-radius: 999px;
+    background: rgba(91, 63, 49, .28);
 }
 .ph-booking-fields textarea {
     min-height: 118px;
@@ -1826,8 +1993,8 @@ h2 em {
     }
 
     .ph-hero-person {
-        height: 450px;
-        bottom: -68px;
+        height: 462px;
+        bottom: -80px;
     }
 }
 
@@ -1884,9 +2051,9 @@ h2 em {
 
     .ph-hero-person {
         width: auto;
-        height: 350px;
+        height: 360px;
         max-width: none;
-        bottom: -46px;
+        bottom: -56px;
     }
 
     .ph-hero-stage::before {
@@ -1983,9 +2150,9 @@ h2 em {
     }
 
     .ph-booking-form {
-        max-height: calc(100vh - 28px);
-        gap: 18px;
-        padding: 26px 18px 20px;
+        max-height: calc(100vh - 20px);
+        gap: 14px;
+        padding: 24px 18px 18px;
         border-radius: 24px;
     }
 
@@ -1995,7 +2162,7 @@ h2 em {
     }
 
     .ph-booking-head h2 {
-        font-size: 40px;
+        font-size: 38px;
     }
 
     .ph-booking-fields {
@@ -2151,7 +2318,7 @@ h2 em {
         min-height: 0;
         grid-template-columns: 1fr;
         gap: 32px;
-        padding: 58px 0;
+        padding: 58px 0 42px;
     }
 
     .ph-contact .ph-section-index {
@@ -2159,6 +2326,8 @@ h2 em {
     }
 
     .ph-contact-actions {
+        grid-column: 1;
+        grid-row: auto;
         gap: 12px;
     }
 
@@ -2209,8 +2378,8 @@ h2 em {
     }
 
     .ph-hero-person {
-        height: 292px;
-        bottom: -48px;
+        height: 300px;
+        bottom: -56px;
     }
 
     .ph-trust div {

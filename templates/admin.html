@@ -4,12 +4,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Админ-панель — KHUDOVERDIEV</title>
+    <title>Админ-панель</title>
     <meta name="theme-color" content="#5b3f31">
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}?v=2" sizes="any">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}?v=2">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}?v=2">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=14">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=15">
 </head>
 <body class="admin-body{% if not authorized %} admin-login-body{% endif %}">
     <main class="admin-page{% if not authorized %} admin-login-page{% endif %}">
@@ -51,7 +51,7 @@
         <section class="admin-shell" data-admin-shell>
             <header class="admin-header">
                 <div>
-                    <p class="admin-kicker">KHUDOVERDIEV</p>
+                    <p class="admin-kicker">Админ-панель</p>
                     <h1>
                         {% if active_admin_tab == 'clients' %}
                         Страницы клиентов

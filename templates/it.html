@@ -7,22 +7,31 @@
     <meta name="description" content="Разработка CRM-систем и веб-продуктов под реальные бизнес-процессы. Избранные кейсы Владимира Худовердиева.">
     <meta name="theme-color" content="#f4f0e8">
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='portfolio/vh-favicon.svg') }}?v=7">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/it.css') }}?v=80">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/it.css') }}?v=84">
 </head>
 <body>
     <a class="skip-link" href="#about">Перейти к содержанию</a>
-    <header class="site-header">
-        <a class="brand" href="#top" aria-label="В начало страницы">IT<span>.</span></a>
-        <nav aria-label="Основная навигация">
-            <a href="#about">Обо мне</a>
-            <a href="#projects">Кейсы</a>
-            <a href="#contact">Контакты</a>
-        </nav>
-        <button class="header-cta" type="button" data-open-contact>Обсудить проект <span class="ui-icon ui-icon-symbol ui-icon-arrow-up-right" aria-hidden="true">↗︎</span></button>
-    </header>
+    <div class="rotate-lock" role="status" aria-live="polite">
+        <div class="rotate-lock-card">
+            <span class="rotate-lock-icon ui-icon ui-icon-symbol" aria-hidden="true">↺</span>
+            <h2>Поверните телефон обратно</h2>
+            <p>Вертикальная ориентация сохранит аккуратный вид страницы.</p>
+        </div>
+    </div>
+    <div class="desktop-scale-shell">
+        <div class="desktop-scale-stage">
+            <header class="site-header">
+                <a class="brand" href="#top" aria-label="В начало страницы">IT<span>.</span></a>
+                <nav aria-label="Основная навигация">
+                    <a href="#about">Обо мне</a>
+                    <a href="#projects">Кейсы</a>
+                    <a href="#contact">Контакты</a>
+                </nav>
+                <button class="header-cta" type="button" data-open-contact>Обсудить проект <span class="ui-icon ui-icon-symbol ui-icon-arrow-up-right" aria-hidden="true">↗︎</span></button>
+            </header>
 
-    <main id="top">
-        <section class="hero" aria-labelledby="hero-title">
+            <main id="top">
+                <section class="hero" aria-labelledby="hero-title">
             <div class="hero-grid">
                 <div class="hero-copy">
                     <div class="code-console" aria-hidden="true">
@@ -68,9 +77,9 @@
                     </div>
                 </div>
             </div>
-        </section>
+                </section>
 
-        <section class="about" id="about">
+                <section class="about" id="about">
             <p class="section-index">01 / ОБО МНЕ</p>
             <div class="about-copy">
                 <h2><span class="about-mobile-line">Не просто</span> <span class="about-code-highlight"><span>пишу</span><span>код</span></span>.<br><em><span class="about-desktop-copy">Разбираюсь в задаче.</span><span class="about-mobile-copy">Разбираю задачи.</span></em></h2>
@@ -81,9 +90,9 @@
                 <article><span>02</span><h3>Фокус на результате</h3><p>Автоматизация должна экономить время и снижать число ошибок.</p></article>
                 <article><span>03</span><h3>Развитие продукта</h3><p>Закладываю основу, которую можно расширять вместе с задачами.</p></article>
             </div>
-        </section>
+                </section>
 
-        <section class="projects" id="projects">
+                <section class="projects" id="projects">
             <div class="projects-heading">
                 <div><p class="section-index">02 / ИЗБРАННЫЕ КЕЙСЫ</p><h2>Работы, которыми <br><em>я горжусь</em></h2></div>
             </div>
@@ -115,9 +124,9 @@
                     </div>
                 </article>
             </div>
-        </section>
+                </section>
 
-        <section class="contact" id="contact">
+                <section class="contact" id="contact">
             <p class="section-index">03 / КОНТАКТЫ</p>
             <div class="contact-content">
                 <h2>Есть задача?<br><em>Давайте обсудим.</em></h2>
@@ -142,16 +151,18 @@
                     <b class="ui-icon ui-icon-symbol ui-icon-arrow-up-right" aria-hidden="true">↗︎</b>
                 </button>
             </aside>
-        </section>
-    </main>
+                </section>
+            </main>
+
+            <footer id="site-footer">
+                <a class="brand" href="#top">IT<span>.</span></a>
+                <p>Владимир Худовердиев · Все права защищены.</p>
+                <div class="footer-meta"><p>© 2026</p></div>
+            </footer>
+        </div>
+    </div>
 
     <button class="page-scroll-cue" type="button" aria-label="Перейти к следующему разделу" data-direction="down"><span class="ui-icon ui-icon-symbol ui-icon-arrow-down" aria-hidden="true">↓</span></button>
-
-    <footer id="site-footer">
-        <a class="brand" href="#top">IT<span>.</span></a>
-        <p>Владимир Худовердиев · Все права защищены.</p>
-        <div class="footer-meta"><p>© 2026</p></div>
-    </footer>
 
     <div class="media-modal" id="media-modal" aria-hidden="true">
         <div class="media-backdrop" data-close-media></div>
@@ -225,12 +236,40 @@
         const scrollTargets = ['#about', '#projects', '#contact', '#site-footer']
             .map((selector) => document.querySelector(selector))
             .filter(Boolean);
+        const desktopCanvasWidth = 1920;
         let returnFocus = null;
         let contactReturnFocus = null;
         let mediaMode = 'slides';
         let mediaItems = [];
         let mediaIndex = 0;
         let touchStartX = 0;
+
+        function isDesktopCanvas() {
+            return window.matchMedia('(min-width: 500px)').matches;
+        }
+
+        function getDesktopScale() {
+            return isDesktopCanvas() ? Math.min(1, window.innerWidth / desktopCanvasWidth) : 1;
+        }
+
+        function updateDesktopScale() {
+            document.documentElement.style.setProperty('--desktop-scale', getDesktopScale().toFixed(5));
+        }
+
+        function updateMobileViewport() {
+            const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+            const bottomSpace = Math.round(Math.min(118, Math.max(76, viewportHeight * 0.09)));
+            document.documentElement.style.setProperty('--mobile-viewport-height', `${Math.round(viewportHeight)}px`);
+            document.documentElement.style.setProperty('--mobile-hero-bottom-space', `calc(${bottomSpace}px + env(safe-area-inset-bottom))`);
+        }
+
+        function getScaledOffsetTop(element) {
+            return isDesktopCanvas() ? element.offsetTop * getDesktopScale() : element.offsetTop;
+        }
+
+        function scrollToScaledTarget(element, behavior = 'smooth') {
+            window.scrollTo({ top: getScaledOffsetTop(element), behavior });
+        }
 
         function updateHeader() {
             siteHeader.classList.toggle('is-scrolled', window.scrollY > 80);
@@ -253,7 +292,7 @@
             const marker = window.scrollY + window.innerHeight * 0.34;
             let activeIndex = -1;
             trackedSections.forEach((section, index) => {
-                if (section && marker >= section.offsetTop) activeIndex = index;
+                if (section && marker >= getScaledOffsetTop(section)) activeIndex = index;
             });
             sectionLinks.forEach((link, index) => {
                 if (index === activeIndex) link.setAttribute('aria-current', 'location');
@@ -261,8 +300,30 @@
             });
         }
 
+        updateDesktopScale();
+        updateMobileViewport();
         updateHeader();
         window.addEventListener('scroll', updateHeader, { passive: true });
+        window.addEventListener('resize', () => {
+            updateDesktopScale();
+            updateMobileViewport();
+            updateHeader();
+        }, { passive: true });
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', updateMobileViewport, { passive: true });
+            window.visualViewport.addEventListener('scroll', updateMobileViewport, { passive: true });
+        }
+
+        document.querySelectorAll('a[href^="#"]').forEach((link) => {
+            link.addEventListener('click', (event) => {
+                const selector = link.getAttribute('href');
+                const target = selector === '#top' ? document.getElementById('top') : document.querySelector(selector);
+                if (!target) return;
+                event.preventDefault();
+                scrollToScaledTarget(target);
+                history.replaceState(null, '', selector);
+            });
+        });
 
         pageScrollCue.addEventListener('click', () => {
             if (pageScrollCue.dataset.direction === 'up') {
@@ -271,8 +332,8 @@
             }
 
             const current = window.scrollY + window.innerHeight * 0.28;
-            const target = scrollTargets.find((section) => section.offsetTop > current);
-            (target || document.getElementById('site-footer')).scrollIntoView({ behavior: 'smooth', block: 'start' });
+            const target = scrollTargets.find((section) => getScaledOffsetTop(section) > current);
+            scrollToScaledTarget(target || document.getElementById('site-footer'));
         });
 
         function closeMedia() {
