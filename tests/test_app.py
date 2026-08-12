@@ -250,7 +250,7 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert b"portfolio/vh-favicon.svg" in portfolio.data
     assert b"vh-favicon.svg?v=7" in portfolio.data
     assert b'content="width=device-width, initial-scale=1, viewport-fit=cover"' in portfolio.data
-    assert b"css/it.css?v=95" in portfolio.data
+    assert b"css/it.css?v=96" in portfolio.data
     assert b'id="project-prompt"' in portfolio.data
     assert b'class="project-prompt-close"' in portfolio.data
     assert b'data-close-project-prompt' in portfolio.data
@@ -295,10 +295,9 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "--desktop-canvas-width: 1920px;" in css
     assert "--desktop-canvas-height: 1080px;" in css
     assert "--desktop-scale: 1;" in css
-    assert "--mobile-viewport-height: 100svh;" in css
     assert "--mobile-hero-bg: #070907;" in css
     assert "--mobile-hero-bottom-space: calc(38px + env(safe-area-inset-bottom));" in css
-    assert "--mobile-console-height: min(354px, 38svh);" in css
+    assert "--mobile-console-height: 320px;" in css
     assert ".desktop-scale-stage {\n        width: var(--desktop-canvas-width);" in css
     assert "zoom: var(--desktop-scale);" in css
     assert "translate: 0 -68px;" in css
@@ -325,7 +324,6 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     width_media_queries = re.findall(r"@media\s*\((?:min|max)-width:[^)]+\)", css)
     assert width_media_queries == [
         "@media (min-width: 500px)",
-        "@media (max-width: 499px)",
         "@media (max-width: 499px)",
     ]
     assert "body {\n        min-width: 0;\n        overflow-x: hidden;" in css
@@ -360,17 +358,18 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "getScaledOffsetTop(element)" in portfolio_text
     assert "scrollToScaledTarget(target || document.getElementById('site-footer'))" in portfolio_text
     assert "/* Mobile polish: one deliberate layout, not a squeezed desktop. */" in css
-    assert ".hero {\n        min-height: var(--mobile-viewport-height);" in css
+    assert "--mobile-viewport-height" not in css
+    assert ".hero {\n        min-height: 0;" in css
     assert "background: var(--mobile-hero-bg);" in css
     assert ".hero::before {\n        display: none;" in css
-    assert ".hero-grid {\n        min-height: var(--mobile-viewport-height);" in css
+    assert ".hero-grid {\n        min-height: 0;" in css
     assert "padding: 116px 0 var(--mobile-hero-bottom-space);" in css
     assert "transition:\n            background 180ms ease,\n            border-color 180ms ease,\n            box-shadow 180ms ease;" in css
-    assert "@media (max-width: 499px) and (max-height: 820px)" in css
+    assert "@media (max-width: 499px) and (max-height: 820px)" not in css
     assert "grid-template-rows: auto auto auto auto minmax(152px, 1fr) auto;" not in css
-    assert "padding-top: 96px;" in css
-    assert ".mobile-action-console {\n        height: min(320px, 40svh);\n        min-height: 0;" in css
-    assert "grid-template-rows: 26px repeat(8, minmax(18px, 1fr)) 26px;" in css
+    assert "padding-top: 96px;" not in css
+    assert "height: min(320px, 40svh);" not in css
+    assert "grid-template-rows: 26px repeat(8, minmax(18px, 1fr)) 26px;" not in css
     assert "@media (orientation: landscape) and (max-height: 499px) and (pointer: coarse)" in css
     assert ".rotate-lock {\n        position: fixed;\n        z-index: 9999;" in css
     rotate_lock = re.search(r"\.rotate-lock \{(?P<body>.*?)\n    \}", css, re.S)
@@ -442,6 +441,21 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
         assert f"/go/{social_name}".encode() not in portfolio.data
     assert b'class="taplink-body"' in taplink.data
     assert "CRM «Передача»".encode() not in taplink.data
+
+
+def test_it_mobile_hero_height_does_not_follow_browser_viewport(client):
+    client.get("/", base_url="http://it.khudoverdiev.ru")
+    css = Path("static/css/it.css").read_text(encoding="utf-8")
+
+    mobile_css = re.search(r"@media \(max-width: 499px\) \{(?P<body>.*?)\n\}", css, re.S)
+    assert mobile_css is not None
+    assert "--mobile-viewport-height" not in css
+    assert "--mobile-console-height: 320px;" in css
+    assert ".hero {\n        min-height: 0;" in css
+    assert ".hero-grid {\n        min-height: 0;" in css
+    assert "min-height: var(--mobile-viewport-height)" not in css
+    assert "height: min(320px, 40svh);" not in css
+    assert "@media (max-width: 499px) and (max-height:" not in css
 
 
 def test_it_portfolio_keeps_security_headers_and_records_visit(client):
@@ -1325,11 +1339,24 @@ def test_admin_login_page_is_no_store_and_contains_csrf(client):
     assert "Фотография сохраняет тишину момента".encode() in response.data
     css = Path("static/css/styles.css").read_text(encoding="utf-8")
     assert "rgba(255, 255, 255, 0.74)" in css
-    assert "height: min(920px, calc(100svh - 60px));" in css
-    assert ".admin-content {\n    min-height: 0;" in css
-    assert "overflow-y: auto;" in css
+    assert "height: min(920px, calc(100svh - 60px));" not in css
+    assert "min-height: min(720px, calc(100svh - 60px));" in css
+    assert ".admin-content {\n    display: grid;" in css
+    assert "overflow-y: visible;" in css
     assert '.login-aesthetic-note blockquote::after {\n    content: none;' in css
     assert '.login-aesthetic-note p::after {\n    content: "\\00BB";' in css
+
+
+def test_admin_dashboard_layout_allows_long_content_to_extend_page_without_inner_clipping():
+    css = Path("static/css/styles.css").read_text(encoding="utf-8")
+
+    assert ".admin-page {\n    min-height: 100svh;" in css
+    assert "overflow: visible;" in css
+    assert "grid-template-rows: auto auto auto;" in css
+    assert ".click-list div {\n    display: flex;" in css
+    assert "min-width: 0;" in css
+    assert ".click-list strong {\n    flex: 0 0 auto;" in css
+    assert ".click-list span {\n    min-width: 0;\n    overflow-wrap: anywhere;" in css
 
 
 def test_admin_aliases_are_no_store_even_when_redirecting(client):

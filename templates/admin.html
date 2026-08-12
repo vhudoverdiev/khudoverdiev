@@ -177,10 +177,6 @@
                                     <input type="url" name="photo_link" maxlength="500" value="{{ client_form.photo_link }}" placeholder="https://drive.google.com/..." required>
                                 </div>
                             </label>
-                            <label>
-                                <span>Ссылка для отзыва</span>
-                                <input type="url" name="review_link" maxlength="500" value="{{ client_form.review_link }}" placeholder="https://...">
-                            </label>
                             <div class="client-discount-controls">
                                 <label>
                                     <span>Скидка</span>
@@ -238,10 +234,6 @@
                                         <i aria-hidden="true"></i>
                                         <input type="url" name="photo_link" maxlength="500" value="{{ client.photo_link }}" required>
                                     </div>
-                                </label>
-                                <label class="client-form-wide">
-                                    <span>Ссылка для отзыва</span>
-                                    <input type="url" name="review_link" maxlength="500" value="{{ client.review_link or '' }}">
                                 </label>
                                 <div class="client-discount-controls">
                                     <label>
