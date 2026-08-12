@@ -13,11 +13,15 @@
     const bookingNudge = document.querySelector("[data-booking-nudge]");
     const bookingNudgeOpen = bookingNudge?.querySelector("[data-booking-nudge-open]");
     const bookingNudgeClose = bookingNudge?.querySelector("[data-booking-nudge-close]");
-    const scrollTargets = ["#about", "#portfolio", "#services", "#video", "#contact", "#ph-site-footer"]
+    const reviewsModal = document.querySelector("[data-reviews-modal]");
+    const reviewsOpenButtons = [...document.querySelectorAll("[data-reviews-open]")];
+    const reviewsCloseButtons = [...document.querySelectorAll("[data-reviews-close]")];
+    const scrollTargets = ["#about", "#portfolio", "#services", "#video", "#reviews", "#contact", "#ph-site-footer"]
         .map((selector) => document.querySelector(selector))
         .filter(Boolean);
     let lastTrigger = null;
     let lastBookingTrigger = null;
+    let lastReviewsTrigger = null;
     let bookingNudgeDismissed = false;
 
     const updateScrollCue = () => {
@@ -62,6 +66,23 @@
         bookingModal.setAttribute("aria-hidden", "true");
         document.body.classList.remove("ph-modal-open");
         lastBookingTrigger?.focus();
+    };
+
+    const openReviews = (trigger) => {
+        if (!reviewsModal) return;
+        lastReviewsTrigger = trigger || document.activeElement;
+        reviewsModal.classList.add("is-open");
+        reviewsModal.setAttribute("aria-hidden", "false");
+        document.body.classList.add("ph-modal-open");
+        reviewsModal.querySelector("[data-reviews-close]")?.focus();
+    };
+
+    const closeReviews = () => {
+        if (!reviewsModal) return;
+        reviewsModal.classList.remove("is-open");
+        reviewsModal.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("ph-modal-open");
+        lastReviewsTrigger?.focus();
     };
 
     const renderVideoPlayer = () => {
@@ -302,13 +323,21 @@
         button.addEventListener("click", closeBooking);
     });
 
+    reviewsOpenButtons.forEach((button) => {
+        button.addEventListener("click", () => openReviews(button));
+    });
+
+    reviewsCloseButtons.forEach((button) => {
+        button.addEventListener("click", closeReviews);
+    });
+
     bookingNudgeOpen?.addEventListener("click", () => {
         closeBookingNudge();
         openBooking(bookingNudgeOpen);
     });
     bookingNudgeClose?.addEventListener("click", closeBookingNudge);
     if (bookingNudge) {
-        window.setTimeout(showBookingNudge, 30000);
+        window.setTimeout(showBookingNudge, 120000);
     }
 
     scrollCue?.addEventListener("click", () => {
@@ -369,6 +398,7 @@
         if (event.key === "Escape") closeAllCustomSelects();
         if (event.key === "Escape" && lightbox?.classList.contains("is-open")) closeLightbox();
         if (event.key === "Escape" && bookingModal?.classList.contains("is-open")) closeBooking();
+        if (event.key === "Escape" && reviewsModal?.classList.contains("is-open")) closeReviews();
     });
 
     if (window.location.hash === "#booking") {

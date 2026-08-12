@@ -7,7 +7,7 @@
     <meta name="description" content="Разработка CRM-систем и веб-продуктов под реальные бизнес-процессы. Избранные кейсы Владимира Худовердиева.">
     <meta name="theme-color" content="#f4f0e8">
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='portfolio/vh-favicon.svg') }}?v=7">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/it.css') }}?v=88">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/it.css') }}?v=89">
 </head>
 <body>
     <a class="skip-link" href="#about">Перейти к содержанию</a>
@@ -187,7 +187,6 @@
         <div class="project-prompt-backdrop" data-close-project-prompt></div>
         <section class="project-prompt-card" role="dialog" aria-modal="true" aria-labelledby="project-prompt-title">
             <button class="project-prompt-close" type="button" data-close-project-prompt aria-label="Закрыть">×</button>
-            <p class="project-prompt-kicker">30 секунд на сайте</p>
             <h2 id="project-prompt-title">У вас есть проект?</h2>
             <p>Расскажите, что нужно автоматизировать или запустить. Я посмотрю задачу и предложу понятный первый шаг.</p>
             <button class="project-prompt-primary" type="button" data-project-prompt-contact>
@@ -253,7 +252,7 @@
             .map((selector) => document.querySelector(selector))
             .filter(Boolean);
         const desktopCanvasWidth = 1920;
-        const projectPromptDelay = 30000;
+        const projectPromptDelay = 120000;
         let returnFocus = null;
         let contactReturnFocus = null;
         let projectPromptDismissed = false;

@@ -261,64 +261,98 @@ body.ph-modal-open .ph-scroll-cue {
 }
 .ph-booking-nudge {
     position: fixed;
-    right: max(26px, env(safe-area-inset-right));
-    bottom: max(92px, calc(76px + env(safe-area-inset-bottom)));
+    inset: 0;
     z-index: 24;
-    width: min(320px, calc(100vw - 36px));
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100svh;
     display: grid;
+    place-items: center;
     gap: 14px;
-    padding: 18px;
-    border: 1px solid rgba(255, 250, 243, .3);
-    border-radius: 24px;
-    background:
-        linear-gradient(145deg, rgba(255, 250, 243, .92), rgba(231, 220, 209, .78)),
-        #fffaf3;
+    padding: 24px;
+    background: rgba(34, 29, 25, .3);
+    backdrop-filter: blur(18px) saturate(.9);
     color: var(--ph-ink);
-    box-shadow: 0 26px 74px rgba(23, 18, 15, .28);
     opacity: 0;
-    transform: translateY(16px) scale(.96);
     pointer-events: none;
     transition: opacity .28s ease, transform .28s var(--ph-ease);
 }
 .ph-booking-nudge.is-visible {
     opacity: 1;
-    transform: translateY(0) scale(1);
     pointer-events: auto;
 }
+.ph-booking-nudge::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 42%, rgba(255, 250, 243, .2), transparent 54%);
+    pointer-events: none;
+}
+.ph-booking-nudge > p,
+.ph-booking-nudge > button {
+    position: relative;
+    z-index: 1;
+}
 .ph-booking-nudge p {
-    max-width: 13ch;
+    width: min(460px, calc(100vw - 48px));
     margin: 0;
-    font-size: 24px;
+    display: grid;
+    gap: 18px;
+    padding: 48px 56px 122px;
+    border: 1px solid rgba(255, 250, 243, .52);
+    border-radius: 28px;
+    background:
+        linear-gradient(145deg, rgba(255, 250, 243, .96), rgba(231, 220, 209, .84)),
+        #fffaf3;
+    box-shadow: 0 34px 90px rgba(23, 18, 15, .28);
+    font-size: 0;
+    text-align: left;
+}
+.ph-booking-nudge p strong {
+    max-width: 10ch;
+    display: block;
+    color: var(--ph-ink);
+    font-size: 38px;
     font-weight: 850;
-    line-height: 1.05;
+    line-height: 1;
+}
+.ph-booking-nudge p small {
+    max-width: 310px;
+    display: block;
+    color: var(--ph-muted);
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.55;
 }
 .ph-booking-nudge > button:not(.ph-booking-nudge-close) {
-    min-height: 48px;
+    margin-top: -104px;
+    min-height: 50px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
-    padding: 0 18px;
+    padding: 0 22px;
     border: 0;
     border-radius: 999px;
     background: var(--ph-ink);
     color: #fffaf3;
     font: inherit;
-    font-size: 14px;
-    font-weight: 850;
+    font-size: 15px;
+    font-weight: 900;
     cursor: pointer;
 }
 .ph-booking-nudge-close {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 32px;
-    height: 32px;
+    top: calc(50% - 178px);
+    left: calc(50% + 152px);
+    z-index: 2;
+    width: 38px;
+    height: 38px;
     display: grid;
     place-items: center;
     border: 1px solid rgba(91, 63, 49, .12);
     border-radius: 50%;
-    background: rgba(255, 255, 255, .62);
+    background: rgba(255, 255, 255, .78);
     color: var(--ph-ink);
     font: inherit;
     font-size: 20px;
@@ -631,6 +665,7 @@ body.ph-modal-open .ph-booking-nudge {
 .ph-about,
 .ph-portfolio,
 .ph-services,
+.ph-reviews,
 .ph-contact,
 .ph-footer {
     width: min(1240px, calc(100% - 56px));
@@ -664,6 +699,7 @@ body.ph-modal-open .ph-booking-nudge {
 .ph-about h2,
 .ph-section-heading h2,
 .ph-services h2,
+.ph-reviews h2,
 .ph-contact h2 {
     margin: 0;
     font-size: 62px;
@@ -1002,8 +1038,9 @@ h2 em {
     padding-top: 10px;
     color: var(--ph-ink);
     font-family: Georgia, "Times New Roman", serif;
-    font-size: 30px;
+    font-size: 27px;
     font-weight: 400;
+    line-height: 1.08;
 }
 .ph-video {
     position: relative;
@@ -1235,9 +1272,10 @@ h2 em {
     font-weight: 900;
 }
 .ph-video-top strong {
+    max-width: 190px;
     color: var(--ph-coffee);
     font-family: Georgia, "Times New Roman", serif;
-    font-size: 19px;
+    font-size: 17px;
     font-weight: 400;
     line-height: 1.1;
     text-align: right;
@@ -1279,6 +1317,332 @@ h2 em {
     height: 6px;
     border-radius: 50%;
     background: rgba(122, 89, 70, .46);
+}
+.ph-reviews {
+    position: relative;
+    padding: 82px 0 88px;
+    border-top: 1px solid var(--ph-line);
+}
+.ph-reviews::before {
+    content: "";
+    position: absolute;
+    top: 56px;
+    right: 6%;
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(122, 89, 70, .1), transparent 68%);
+    pointer-events: none;
+}
+.ph-reviews-heading {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 18px;
+    margin-bottom: 34px;
+}
+.ph-reviews-heading .ph-section-index {
+    grid-column: 1 / -1;
+    margin: 0;
+}
+.ph-review-all-button {
+    min-height: 54px;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 22px;
+    border: 1px solid rgba(91, 63, 49, .18);
+    border-radius: 999px;
+    background: rgba(255, 250, 243, .78);
+    color: var(--ph-ink);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 18px 42px rgba(44, 33, 26, .08);
+    transition: transform .25s var(--ph-ease), background .25s ease;
+}
+.ph-review-all-button:hover {
+    transform: translateY(-2px);
+    background: #fffaf3;
+}
+.ph-review-layout {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+    gap: 16px;
+}
+.ph-review-feature {
+    min-height: 506px;
+    display: grid;
+    align-content: space-between;
+    gap: 24px;
+    padding: 34px;
+    border: 1px solid rgba(255, 250, 243, .18);
+    border-radius: 28px;
+    background:
+        radial-gradient(circle at 90% 10%, rgba(255, 250, 243, .16), transparent 36%),
+        linear-gradient(145deg, rgba(91, 63, 49, .96), rgba(39, 30, 25, .96)),
+        var(--ph-ink);
+    color: #fffaf3;
+    box-shadow: 0 30px 80px rgba(44, 33, 26, .16);
+}
+.ph-review-feature span {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #fffaf3;
+    color: var(--ph-coffee);
+    font-size: 12px;
+    font-weight: 900;
+}
+.ph-review-feature blockquote {
+    margin: 0;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 39px;
+    font-weight: 400;
+    line-height: 1.08;
+}
+.ph-review-feature p {
+    max-width: 320px;
+    margin: 0;
+    color: rgba(255, 250, 243, .72);
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+.ph-review-grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+.ph-review-grid article {
+    min-height: 245px;
+    display: grid;
+    align-content: space-between;
+    gap: 18px;
+    padding: 24px;
+    border: 1px solid rgba(44, 33, 26, .14);
+    border-radius: 24px;
+    background:
+        linear-gradient(145deg, rgba(255, 250, 243, .92), rgba(231, 220, 209, .68)),
+        rgba(255, 255, 255, .54);
+    color: var(--ph-ink);
+    box-shadow: 0 22px 52px rgba(44, 33, 26, .07);
+}
+.ph-review-grid article span {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--ph-ink);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 900;
+}
+.ph-review-grid h3 {
+    margin: 0;
+    font-size: 27px;
+    line-height: 1.05;
+}
+.ph-review-grid p {
+    margin: 0;
+    color: var(--ph-muted);
+    font-size: 15px;
+    line-height: 1.58;
+}
+.ph-review-actions {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-top: 16px;
+}
+.ph-review-link {
+    position: relative;
+    min-height: 104px;
+    width: min(360px, 100%);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 58px;
+    align-items: end;
+    gap: 14px;
+    padding: 22px;
+    overflow: hidden;
+    border: 0;
+    border-radius: 24px;
+    text-decoration: none;
+    background:
+        radial-gradient(circle at 100% 0, rgba(255, 250, 243, .2), transparent 38%),
+        linear-gradient(145deg, rgba(91, 63, 49, .96), rgba(122, 89, 70, .9)),
+        var(--ph-coffee);
+    color: #fffaf3;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    box-shadow: 0 22px 52px rgba(44, 33, 26, .1);
+    transition: transform .35s var(--ph-ease), box-shadow .25s ease;
+}
+.ph-review-link:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 34px 78px rgba(44, 33, 26, .14);
+}
+.ph-review-link span {
+    grid-column: 1 / -1;
+    color: rgba(255, 250, 243, .74);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+.ph-review-link strong {
+    font-size: 25px;
+    line-height: 1.03;
+}
+.ph-review-link b {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+    width: 58px;
+    height: 58px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #fffaf3;
+    color: var(--ph-coffee);
+    font-size: 22px;
+}
+.ph-review-source {
+    color: var(--ph-muted);
+    font-size: 14px;
+    font-weight: 850;
+    text-decoration: none;
+}
+.ph-review-source:hover {
+    color: var(--ph-ink);
+}
+.ph-reviews-modal {
+    position: fixed;
+    z-index: 1000;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 28px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .24s ease;
+}
+.ph-reviews-modal.is-open {
+    opacity: 1;
+    pointer-events: auto;
+}
+.ph-reviews-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(24, 20, 17, .68);
+    backdrop-filter: blur(16px) saturate(.9);
+}
+.ph-reviews-dialog {
+    position: relative;
+    z-index: 1;
+    width: min(920px, calc(100vw - 42px));
+    max-height: min(820px, calc(100vh - 42px));
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 24px;
+    padding: 32px;
+    overflow: hidden;
+    border: 1px solid rgba(91, 63, 49, .14);
+    border-radius: 30px;
+    background:
+        radial-gradient(circle at 100% 0, rgba(122, 89, 70, .12), transparent 34%),
+        linear-gradient(145deg, rgba(255, 250, 243, .98), rgba(237, 230, 221, .94)),
+        #fffaf3;
+    box-shadow: 0 34px 100px rgba(23, 18, 15, .32);
+}
+.ph-reviews-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 2;
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(91, 63, 49, .14);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .72);
+    color: var(--ph-ink);
+    font: inherit;
+    font-size: 24px;
+    cursor: pointer;
+}
+.ph-reviews-dialog-head {
+    display: grid;
+    gap: 16px;
+    padding-right: 70px;
+}
+.ph-reviews-dialog-head .ph-section-index {
+    margin: 0;
+}
+.ph-reviews-dialog-head h2 {
+    margin: 0;
+    font-size: 54px;
+    line-height: .98;
+}
+.ph-reviews-dialog-head a {
+    width: max-content;
+    color: var(--ph-coffee);
+    font-size: 14px;
+    font-weight: 900;
+    text-decoration: none;
+}
+.ph-reviews-list {
+    display: grid;
+    gap: 12px;
+    overflow: auto;
+    padding-right: 4px;
+}
+.ph-reviews-list article {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 16px;
+    padding: 18px;
+    border: 1px solid rgba(44, 33, 26, .12);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, .52);
+}
+.ph-reviews-list article > span {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--ph-ink);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 900;
+}
+.ph-reviews-list h3 {
+    margin: 0 0 8px;
+    font-size: 22px;
+    line-height: 1.1;
+}
+.ph-reviews-list p {
+    margin: 0;
+    color: var(--ph-muted);
+    font-size: 15px;
+    line-height: 1.55;
 }
 .ph-contact {
     min-height: 0;
@@ -1398,7 +1762,8 @@ h2 em {
     .ph-hero,
     .ph-portfolio,
     .ph-services,
-    .ph-video {
+    .ph-video,
+    .ph-reviews {
         min-height: 100vh;
         min-height: 100svh;
     }
@@ -1442,7 +1807,8 @@ h2 em {
 
     .ph-portfolio,
     .ph-services,
-    .ph-video {
+    .ph-video,
+    .ph-reviews {
         padding-top: 112px;
         padding-bottom: 112px;
     }
@@ -1993,6 +2359,7 @@ h2 em {
     .ph-portfolio,
     .ph-services,
     .ph-video,
+    .ph-reviews,
     .ph-contact,
     .ph-footer,
     .ph-full-hero,
@@ -2044,8 +2411,20 @@ h2 em {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .ph-review-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .ph-video-showcase {
         grid-template-columns: 1fr;
+    }
+
+    .ph-review-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .ph-review-feature {
+        min-height: 360px;
     }
 
     .ph-video-player,
@@ -2162,6 +2541,7 @@ h2 em {
     .ph-portfolio,
     .ph-services,
     .ph-video,
+    .ph-reviews,
     .ph-contact,
     .ph-footer,
     .ph-full-hero,
@@ -2251,8 +2631,26 @@ h2 em {
     }
 
     .ph-booking-nudge {
-        right: max(14px, env(safe-area-inset-right));
-        bottom: max(78px, calc(68px + env(safe-area-inset-bottom)));
+        padding: 18px;
+    }
+
+    .ph-booking-nudge p {
+        width: min(360px, calc(100vw - 36px));
+        padding: 44px 28px 126px;
+    }
+
+    .ph-booking-nudge p strong {
+        font-size: 32px;
+    }
+
+    .ph-booking-nudge p small {
+        max-width: 280px;
+        font-size: 14px;
+    }
+
+    .ph-booking-nudge-close {
+        top: calc(50% - 178px);
+        left: calc(50% + 126px);
     }
 
     .ph-about {
@@ -2264,6 +2662,7 @@ h2 em {
     .ph-section-heading h2,
     .ph-services h2,
     .ph-video-heading h2,
+    .ph-reviews h2,
     .ph-contact h2 {
         font-size: 42px;
         line-height: 1;
@@ -2292,16 +2691,23 @@ h2 em {
 
     .ph-portfolio,
     .ph-services,
-    .ph-video {
+    .ph-video,
+    .ph-reviews {
         padding: 78px 0;
     }
 
     .ph-section-heading,
     .ph-services > header,
-    .ph-video-heading {
+    .ph-video-heading,
+    .ph-reviews-heading {
         grid-template-columns: 1fr;
         gap: 28px;
         margin-bottom: 38px;
+    }
+
+    .ph-review-all-button {
+        width: 100%;
+        justify-content: space-between;
     }
 
     .ph-services > header > div {
@@ -2387,6 +2793,75 @@ h2 em {
     .ph-video-grid article {
         min-height: 0;
         padding: 22px;
+    }
+
+    .ph-review-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .ph-review-feature {
+        min-height: 0;
+        padding: 26px;
+    }
+
+    .ph-review-feature blockquote {
+        font-size: 30px;
+    }
+
+    .ph-review-grid article {
+        min-height: 0;
+        padding: 22px;
+    }
+
+    .ph-review-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .ph-review-link {
+        width: 100%;
+    }
+
+    .ph-review-source {
+        text-align: center;
+    }
+
+    .ph-reviews-modal {
+        padding: 14px;
+        place-items: end center;
+    }
+
+    .ph-reviews-dialog {
+        width: 100%;
+        max-height: calc(100vh - 20px);
+        gap: 18px;
+        padding: 24px 18px 18px;
+        border-radius: 24px;
+    }
+
+    .ph-reviews-close {
+        top: 12px;
+        right: 12px;
+    }
+
+    .ph-reviews-dialog-head {
+        padding-right: 50px;
+    }
+
+    .ph-reviews-dialog-head h2 {
+        font-size: 38px;
+    }
+
+    .ph-reviews-list article {
+        grid-template-columns: 36px minmax(0, 1fr);
+        gap: 12px;
+        padding: 14px;
+    }
+
+    .ph-reviews-list article > span {
+        width: 36px;
+        height: 36px;
     }
 
     .ph-contact {

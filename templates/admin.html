@@ -9,7 +9,7 @@
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}?v=2" sizes="any">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}?v=2">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}?v=2">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=15">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=19">
 </head>
 <body class="admin-body{% if not authorized %} admin-login-body{% endif %}">
     <main class="admin-page{% if not authorized %} admin-login-page{% endif %}">
@@ -69,7 +69,7 @@
                     <span class="admin-period">{{ period_label }}</span>
                     {% endif %}
                 </div>
-                <a href="{{ url_for('admin_logout') }}">Выйти</a>
+                <a href="{{ url_for('admin_logout') }}"><span aria-hidden="true">↪</span> Выйти</a>
             </header>
 
             <nav class="admin-tabs" aria-label="Разделы админ-панели">
@@ -146,12 +146,15 @@
                         <span>Новая ссылка</span>
                         <strong>Создать страницу клиента</strong>
                         <p>Заполните только рабочие ссылки и текст. Безопасный публичный адрес создастся автоматически.</p>
+                        <div class="client-create-visual" aria-hidden="true">
+                            <i></i>
+                        </div>
                     </div>
                     <form class="client-form client-create-form" action="{{ url_for('admin_clients') }}" method="post">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <label>
                             <span>Имя клиента</span>
-                            <input type="text" name="client_name" maxlength="120" value="{{ client_form.client_name }}" required>
+                            <input type="text" name="client_name" maxlength="120" value="{{ client_form.client_name }}" placeholder="Введите имя клиента" required>
                         </label>
                         <div class="client-link-note">
                             <span>Безопасная ссылка</span>
@@ -159,16 +162,25 @@
                         </div>
                         <label class="client-form-wide">
                             <span>Внешняя ссылка на фотографии</span>
-                            <input type="url" name="photo_link" maxlength="500" value="{{ client_form.photo_link }}" placeholder="https://drive.google.com/..." required>
+                            <div class="client-url-field">
+                                <i aria-hidden="true"></i>
+                                <input type="url" name="photo_link" maxlength="500" value="{{ client_form.photo_link }}" placeholder="https://drive.google.com/..." required>
+                            </div>
                         </label>
                         <label>
                             <span>Ссылка для отзыва</span>
                             <input type="url" name="review_link" maxlength="500" value="{{ client_form.review_link }}" placeholder="https://...">
                         </label>
-                        <label>
-                            <span>Скидка</span>
-                            <input type="text" name="discount_text" maxlength="160" value="{{ client_form.discount_text }}">
-                        </label>
+                        <div class="client-discount-controls">
+                            <label>
+                                <span>Скидка</span>
+                                <input type="text" name="discount_text" maxlength="160" value="{{ client_form.discount_text }}">
+                            </label>
+                            <label class="client-switch client-discount-toggle">
+                                <input type="checkbox" name="has_discount" value="1" {% if client_form.has_discount %}checked{% endif %}>
+                                <span>Дать скидку</span>
+                            </label>
+                        </div>
                         <label class="client-form-wide">
                             <span>Текст на странице</span>
                             <textarea name="message_text" maxlength="700">{{ client_form.message_text }}</textarea>
@@ -198,7 +210,7 @@
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <label>
                                 <span>Имя клиента</span>
-                                <input type="text" name="client_name" maxlength="120" value="{{ client.client_name }}" required>
+                                <input type="text" name="client_name" maxlength="120" value="{{ client.client_name }}" placeholder="Введите имя клиента" required>
                             </label>
                             <div class="client-link-note">
                                 <span>Безопасная ссылка</span>
@@ -206,16 +218,25 @@
                             </div>
                             <label class="client-form-wide">
                                 <span>Внешняя ссылка на фотографии</span>
-                                <input type="url" name="photo_link" maxlength="500" value="{{ client.photo_link }}" required>
+                                <div class="client-url-field">
+                                    <i aria-hidden="true"></i>
+                                    <input type="url" name="photo_link" maxlength="500" value="{{ client.photo_link }}" required>
+                                </div>
                             </label>
                             <label class="client-form-wide">
                                 <span>Ссылка для отзыва</span>
                                 <input type="url" name="review_link" maxlength="500" value="{{ client.review_link or '' }}">
                             </label>
-                            <label>
-                                <span>Скидка</span>
-                                <input type="text" name="discount_text" maxlength="160" value="{{ client.discount_text or '' }}">
-                            </label>
+                            <div class="client-discount-controls">
+                                <label>
+                                    <span>Скидка</span>
+                                    <input type="text" name="discount_text" maxlength="160" value="{{ client.discount_text or '' }}">
+                                </label>
+                                <label class="client-switch client-discount-toggle">
+                                    <input type="checkbox" name="has_discount" value="1" {% if client.discount_text %}checked{% endif %}>
+                                    <span>Дать скидку</span>
+                                </label>
+                            </div>
                             <label class="client-switch">
                                 <input type="checkbox" name="is_active" value="1" {% if client.is_active %}checked{% endif %}>
                                 <span>Страница включена</span>

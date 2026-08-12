@@ -35,6 +35,7 @@ BRANCH_HOSTS = {
 }
 WWW_HOST = f"www.{BRANCH_HOSTS['root']}"
 PHOTO_CLIENT_BASE_URL = f"https://{BRANCH_HOSTS['ph']}"
+PHOTO_REVIEW_URL = "https://vk.ru/reviews-190646738"
 PHOTO_PORTFOLIO_IMAGE_ORDER = [
     38,
     39,
@@ -503,12 +504,14 @@ def get_photo_clients():
 def build_photo_client_payload(form):
     photo_link = clean_external_url(form.get("photo_link"))
     review_link = clean_external_url(form.get("review_link")) if form.get("review_link") else ""
+    has_discount = form.get("has_discount") == "1"
     payload = {
         "client_name": clean_text(form.get("client_name"), 120),
         "photo_link": photo_link,
         "review_link": review_link,
-        "discount_text": clean_text(form.get("discount_text"), 160),
+        "discount_text": clean_text(form.get("discount_text"), 160) if has_discount else "",
         "message_text": clean_text(form.get("message_text"), 700),
+        "has_discount": 1 if has_discount else 0,
         "is_active": 1 if form.get("is_active") == "1" else 0,
     }
     errors = []
@@ -527,6 +530,7 @@ def photo_client_form_defaults(payload=None):
         "photo_link": "",
         "review_link": "",
         "discount_text": "10%",
+        "has_discount": 1,
         "message_text": "Мне было очень приятно работать с вами. Ниже вы найдете ссылку на готовые фотографии.",
         "is_active": 1,
     }
@@ -590,7 +594,7 @@ def admin_dashboard_context(**extra):
 def admin_messages_context(**extra):
     cutoff = cutoff_30_days()
     with get_db() as db:
-        source_counts = db.execute(
+        source_count_rows = db.execute(
             """
             SELECT site_source, COUNT(*) AS count
             FROM messages
@@ -598,9 +602,10 @@ def admin_messages_context(**extra):
             GROUP BY site_source
             ORDER BY
                 CASE site_source
-                    WHEN 'khudoverdiev.ru' THEN 0
-                    WHEN 'it.khudoverdiev.ru' THEN 1
-                    ELSE 2
+                    WHEN 'ph.khudoverdiev.ru' THEN 0
+                    WHEN 'khudoverdiev.ru' THEN 1
+                    WHEN 'it.khudoverdiev.ru' THEN 2
+                    ELSE 3
                 END,
                 site_source
             """,
@@ -613,9 +618,10 @@ def admin_messages_context(**extra):
             WHERE created_at >= ?
             ORDER BY
                 CASE site_source
-                    WHEN 'khudoverdiev.ru' THEN 0
-                    WHEN 'it.khudoverdiev.ru' THEN 1
-                    ELSE 2
+                    WHEN 'ph.khudoverdiev.ru' THEN 0
+                    WHEN 'khudoverdiev.ru' THEN 1
+                    WHEN 'it.khudoverdiev.ru' THEN 2
+                    ELSE 3
                 END,
                 site_source,
                 id DESC
@@ -623,11 +629,17 @@ def admin_messages_context(**extra):
             (cutoff,),
         ).fetchall()
 
+    fixed_sources = [source for source, _label in DASHBOARD_SITE_SOURCES]
+    source_count_map = {row["site_source"]: row["count"] for row in source_count_rows}
+    source_counts = [{"site_source": source, "count": source_count_map.get(source, 0)} for source in fixed_sources]
+    extra_count_sources = sorted(set(source_count_map) - set(fixed_sources))
+    source_counts.extend({"site_source": source, "count": source_count_map[source]} for source in extra_count_sources)
+
     messages_by_source = []
-    for source in ("khudoverdiev.ru", "it.khudoverdiev.ru"):
+    for source in fixed_sources:
         source_messages = [message for message in messages if message["site_source"] == source]
         messages_by_source.append({"source": source, "messages": source_messages, "count": len(source_messages)})
-    extra_sources = sorted({message["site_source"] for message in messages} - {"khudoverdiev.ru", "it.khudoverdiev.ru"})
+    extra_sources = sorted({message["site_source"] for message in messages} - set(fixed_sources))
     for source in extra_sources:
         source_messages = [message for message in messages if message["site_source"] == source]
         messages_by_source.append({"source": source, "messages": source_messages, "count": len(source_messages)})
@@ -767,7 +779,7 @@ def photo_client(slug):
         return render_template("client_unavailable.html", direct_visit=False), 404
     client_data = dict(client)
     client_data["photo_link"] = photo_link
-    client_data["review_link"] = clean_external_url(client["review_link"]) if client["review_link"] else ""
+    client_data["review_link"] = PHOTO_REVIEW_URL
     return render_template("client_photos.html", client=client_data)
 
 

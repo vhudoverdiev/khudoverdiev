@@ -240,9 +240,10 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert b"portfolio/vh-favicon.svg" in portfolio.data
     assert b"vh-favicon.svg?v=7" in portfolio.data
     assert b'content="width=device-width, initial-scale=1, viewport-fit=cover"' in portfolio.data
-    assert b"css/it.css?v=88" in portfolio.data
+    assert b"css/it.css?v=89" in portfolio.data
     assert b'id="project-prompt"' in portfolio.data
     assert b"data-project-prompt-contact" in portfolio.data
+    assert "30 секунд на сайте".encode() not in portfolio.data
     assert b"class=\"desktop-scale-shell\"" in portfolio.data
     assert b"class=\"desktop-scale-stage\"" in portfolio.data
     assert b"class=\"rotate-lock\"" in portfolio.data
@@ -319,11 +320,15 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "visualViewport.height" in portfolio_text
     assert "Math.min(59, Math.max(38, viewportHeight * 0.045))" in portfolio_text
     assert "visualViewport.addEventListener('scroll', updateMobileViewport" not in portfolio_text
-    assert "projectPromptDelay = 30000" in portfolio_text
+    assert "projectPromptDelay = 120000" in portfolio_text
     assert "window.setTimeout(showProjectPrompt, projectPromptDelay)" in portfolio_text
     assert "projectPromptContact.addEventListener('click', openContact)" in portfolio_text
     assert "project-prompt-backdrop" in css
     assert "backdrop-filter: blur(18px) saturate(0.86);" in css
+    assert ".project-prompt-kicker" not in css
+    assert ".project-prompt-primary {\n    min-height: 58px;" in css
+    assert "border-radius: 6px;\n    background: var(--ink);\n    color: #fff;" in css
+    assert ".project-prompt-primary .ui-icon {\n    color: #fff;" in css
     assert "getScaledOffsetTop(element)" in portfolio_text
     assert "scrollToScaledTarget(target || document.getElementById('site-footer'))" in portfolio_text
     assert "/* Mobile polish: one deliberate layout, not a squeezed desktop. */" in css
@@ -422,9 +427,9 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "default-src 'self'" in response.headers["Content-Security-Policy"]
     assert "frame-src https://vk.com https://vk.ru https://vkvideo.ru" in response.headers["Content-Security-Policy"]
     assert b"css/photo.css" in response.data
-    assert b"photo.css?v=39" in response.data
+    assert b"photo.css?v=44" in response.data
     assert b"js/photo.js" in response.data
-    assert b"photo.js?v=10" in response.data
+    assert b"photo.js?v=14" in response.data
     assert "Архангельск, Северодвинск".encode() in response.data
     assert b"photo/ph-favicon.ico" in response.data
     assert b"photo/ph-favicon.svg" in response.data
@@ -434,6 +439,7 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert b">IT<span" not in response.data
     assert '<a href="#services">Фото</a>'.encode() in response.data
     assert '<a href="#services">Съемки</a>'.encode() not in response.data
+    assert '<a href="#reviews">Отзывы</a>'.encode() in response.data
     assert b"photo/portrait-cutout.png" in response.data
     assert b"class=\"ph-portrait-orbit\"" in response.data
     assert b"class=\"ph-hero-collage\"" not in response.data
@@ -464,7 +470,11 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert b'data-booking-nudge' in response.data
     assert b'data-booking-nudge-open' in response.data
     assert "Желаете записаться на съемку?".encode() in response.data
-    assert "Узнать подробности".encode() in response.data
+    assert "Оставьте короткую заявку".encode() in response.data
+    assert "Записаться".encode() in response.data
+    assert "У вас есть проект?".encode() not in response.data
+    assert "Связаться".encode() not in response.data
+    assert "Узнать подробности".encode() not in response.data
     assert "Оставьте детали, чтобы я сразу понял".encode() not in response.data
     assert b'name="form_type" value="booking"' in response.data
     assert b'name="shoot_type"' in response.data
@@ -488,7 +498,8 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "Все сделаем за тебя".encode() in response.data
     assert "Фото+видео".encode() in response.data
     assert "Подарочный сертификат".encode() in response.data
-    assert "от 4 000 ₽/час".encode() in response.data
+    assert "4 000 ₽/час при заказе от 4х часов".encode() in response.data
+    assert "от 4 000 ₽/час".encode() not in response.data
     assert "от 13 000 ₽".encode() in response.data
     assert b"https://vk.ru/market-190646738?screen=group" not in response.data
     assert "Дополнительно можно заказать".encode() not in response.data
@@ -511,13 +522,29 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "Контент для бренда".encode() in response.data
     assert "от 5 000 ₽/час".encode() in response.data
     assert "от 6 000 ₽/час".encode() in response.data
-    assert "4 000 ₽/час при заказе от 4 часов".encode() in response.data
+    assert "4 000 ₽/час при заказе от 4х часов".encode() in response.data
     assert "4 000 ₽/час при заказе от 2 часов".encode() not in response.data
-    assert "От 4 часов".encode() in response.data
+    assert "От 4х часов".encode() in response.data
     assert "От 2 часов".encode() not in response.data
     assert b"https://vk.ru/v.khudoverdiev" not in response.data
     assert "Быстрый ответ во VK".encode() not in response.data
     assert "Открыть видеосъемку во VK".encode() not in response.data
+    assert b'id="reviews"' in response.data
+    assert "05 / Отзывы".encode() in response.data
+    assert "После съемки".encode() in response.data
+    assert "остается доверие".encode() in response.data
+    assert b'class="ph-review-feature"' in response.data
+    assert b'data-reviews-open' in response.data
+    assert b'data-reviews-modal' in response.data
+    assert b'data-reviews-close' in response.data
+    assert "Посмотреть все".encode() in response.data
+    assert "Все отзывы".encode() in response.data
+    assert "Открыть отзывы во ВКонтакте".encode() in response.data
+    assert "Все отзывы".encode() in response.data
+    assert "клиентов".encode() in response.data
+    assert "Фото и видео".encode() in response.data
+    assert b"https://vk.ru/reviews-190646738" in response.data
+    assert "06 / Контакты".encode() in response.data
     assert "Открыть полное портфолио".encode() in response.data
     assert "Владимир Худовердиев · Все права защищены".encode() in response.data
     assert b'href="#gallery"' not in response.data
@@ -535,9 +562,9 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
 
     assert response.status_code == 200
     assert b"css/photo.css" in response.data
-    assert b"photo.css?v=39" in response.data
+    assert b"photo.css?v=44" in response.data
     assert b"js/photo.js" in response.data
-    assert b"photo.js?v=10" in response.data
+    assert b"photo.js?v=14" in response.data
     assert "Портфолио".encode() in response.data
     assert "126 фотографий".encode() not in response.data
     assert "Собрал сюда все снимки из альбома ВКонтакте".encode() not in response.data
@@ -554,6 +581,7 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert b">PH<span>.</span></a>" in response.data
     assert '<a href="/#services">Фото</a>'.encode() in response.data
     assert '<a href="/#video">Видео</a>'.encode() in response.data
+    assert '<a href="/#reviews">Отзывы</a>'.encode() in response.data
     assert '<a href="/#services">Съемки</a>'.encode() not in response.data
     assert b"vkuserphoto.ru" not in response.data
     assert "visitor_id=" in response.headers["Set-Cookie"]
@@ -573,13 +601,24 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert ".ph-custom-select-list {\n    position: absolute;" in css
     assert ".ph-custom-select-option.is-selected {" in css
     assert ".ph-booking-nudge {\n    position: fixed;" in css
+    assert "inset: 0;" in css
+    assert "place-items: center;" in css
+    assert "backdrop-filter: blur(18px) saturate(.9);" in css
     assert ".ph-booking-nudge.is-visible {" in css
+    assert ".ph-reviews {\n    position: relative;" in css
+    assert ".ph-review-layout {\n    position: relative;" in css
+    assert ".ph-review-feature {\n    min-height: 506px;" in css
+    assert ".ph-review-grid {\n    position: relative;" in css
+    assert ".ph-review-link {\n    position: relative;" in css
+    assert ".ph-reviews-modal {\n    position: fixed;" in css
+    assert ".ph-reviews-modal.is-open {" in css
+    assert ".ph-reviews-list {\n    display: grid;" in css
     assert ".ph-booking-head p:last-child" not in css
     js = Path("static/js/photo.js").read_text(encoding="utf-8")
     assert "initCustomSelects" in js
     assert 'value.className = "ph-custom-select-value";' in js
     assert "data-custom-select-option" in js
-    assert "window.setTimeout(showBookingNudge, 30000);" in js
+    assert "window.setTimeout(showBookingNudge, 120000);" in js
     assert "data-booking-nudge-open" in js
     assert ".ph-booking-head > p:not(.ph-section-index)" in js
     assert ".ph-about-copy {\n    position: relative;\n    z-index: 1;\n    align-self: start;" in css
@@ -604,6 +643,10 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert "break-inside: avoid" not in css
     js = Path("static/js/photo.js").read_text(encoding="utf-8")
     assert "portfolio-100.jpg" in js
+    assert '"#reviews"' in js
+    assert "openReviews" in js
+    assert "closeReviews" in js
+    assert "data-reviews-open" in js
     assert 'link.textContent = "Фото";' in js
 
 
@@ -925,10 +968,12 @@ def test_admin_login_page_is_no_store_and_contains_csrf(client):
     assert b'name="csrf_token"' in response.data
     assert b'name="username"' in response.data
     assert b'autocomplete="username"' in response.data
+    assert b"css/styles.css?v=19" in response.data
     assert "<title>Админ-панель</title>".encode() in response.data
     assert "Админ-панель — KHUDOVERDIEV".encode() not in response.data
     assert "Фотография сохраняет тишину момента".encode() in response.data
     css = Path("static/css/styles.css").read_text(encoding="utf-8")
+    assert "rgba(255, 255, 255, 0.74)" in css
     assert '.login-aesthetic-note blockquote::after {\n    content: none;' in css
     assert '.login-aesthetic-note p::after {\n    content: "\\00BB";' in css
 
@@ -1085,8 +1130,8 @@ def test_admin_dashboard_counts_only_recent_activity_and_orders_clicks(client, m
     assert "ph.khudoverdiev".encode() in response.data
     assert "khudoverdiev".encode() in response.data
     assert "it.khudoverdiev".encode() in response.data
-    assert response.data.index("ph.khudoverdiev".encode()) < response.data.index("khudoverdiev".encode())
-    assert response.data.index("khudoverdiev".encode()) < response.data.index("it.khudoverdiev".encode())
+    assert response.data.index(b"<span>ph.khudoverdiev</span>") < response.data.index(b"<span>khudoverdiev</span>")
+    assert response.data.index(b"<span>khudoverdiev</span>") < response.data.index(b"<span>it.khudoverdiev</span>")
     assert "Заявки".encode() in response.data
     assert b"<strong>4</strong>" in response.data
     assert b"<strong>2</strong>" in response.data
@@ -1126,6 +1171,10 @@ def test_admin_clients_tab_lists_photo_clients_and_creation_form_without_file_st
     assert 'href="/st"'.encode() in response.data
     assert 'href="/st/clients"'.encode() in response.data
     assert b'name="photo_link"' in response.data
+    assert b'name="has_discount"' in response.data
+    assert "Дать скидку".encode() in response.data
+    assert b"class=\"client-create-visual\"" in response.data
+    assert b"class=\"client-url-field\"" in response.data
     assert b'name="slug"' not in response.data
     assert b"https://drive.google.com/photos" in response.data
     assert b"https://ph.khudoverdiev.ru/client/ivanova-2026" in response.data
@@ -1172,8 +1221,13 @@ def test_admin_messages_tab_groups_recent_messages_by_source(client, monkeypatch
 
     assert response.status_code == 200
     assert b'id="messages-count">2</strong>' in response.data
+    assert b"ph.khudoverdiev.ru" in response.data
     assert b"khudoverdiev.ru" in response.data
     assert b"it.khudoverdiev.ru" in response.data
+    assert response.data.index(b"<h3>ph.khudoverdiev.ru</h3>") < response.data.index(b"<h3>khudoverdiev.ru</h3>")
+    assert response.data.index(b"<h3>khudoverdiev.ru</h3>") < response.data.index(b"<h3>it.khudoverdiev.ru</h3>")
+    assert b"<span data-group-count>0</span>" in response.data
+    assert "Нет пока обращений.".encode() in response.data
     assert b"Root lead" in response.data
     assert b"IT lead" in response.data
     assert b"Old lead" not in response.data
@@ -1187,7 +1241,10 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
     assert response.status_code == 200
     assert "Спасибо за съемку,".encode() in response.data
     assert "Алина!".encode() in response.data
+    assert "Запечатленные моменты".encode() in response.data
+    assert "Готовая серия".encode() not in response.data
     assert "скидку 15%".encode() in response.data
+    assert b"css/styles.css?v=18" in response.data
     assert b"photo/portrait-cutout.png" in response.data
     assert b"class=\"client-photo-stage\"" in response.data
     assert b"img/profile-new.jpg" not in response.data
@@ -1200,9 +1257,21 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
     assert b"portfolio/vh-favicon.svg" not in response.data
     assert b"photo/mikhail-" not in response.data
     assert b'href="https://drive.google.com/photos"' in response.data
-    assert b'href="https://reviews.example/ivanova"' in response.data
+    assert b'href="https://vk.ru/reviews-190646738"' in response.data
+    assert b"https://reviews.example/ivanova" not in response.data
     assert b"<form" not in response.data
     assert b'type="file"' not in response.data
+
+
+def test_photo_client_page_hides_discount_when_admin_disables_it(client):
+    insert_photo_client(slug="no-discount-client", discount_text="")
+
+    response = client.get("/client/no-discount-client", base_url="http://ph.khudoverdiev.ru")
+
+    assert response.status_code == 200
+    assert "Благодарность".encode() not in response.data
+    assert "на следующую съемку".encode() not in response.data
+    assert b'class="client-discount"' not in response.data
 
 
 def test_old_phh_client_page_is_not_part_of_project(client):
@@ -1266,6 +1335,7 @@ def test_photo_client_admin_creates_unique_external_redirect_page(client):
             "photo_link": "https://disk.yandex.ru/d/client",
             "review_link": "https://example.com/review",
             "discount_text": "20%",
+            "has_discount": "1",
             "message_text": "Фотографии готовы.",
             "is_active": "1",
         },
@@ -1281,6 +1351,34 @@ def test_photo_client_admin_creates_unique_external_redirect_page(client):
     assert created.status_code == 200
     assert b"https://disk.yandex.ru/d/client" in created.data
     assert client.get("/client/ivanova-2026").status_code == 404
+
+
+def test_photo_client_admin_can_create_page_without_discount(client):
+    login_as_admin(client)
+    with client.session_transaction() as session:
+        csrf = session["_csrf_token"]
+
+    response = client.post(
+        f"{site.ADMIN_PATH}/clients",
+        data={
+            "csrf_token": csrf,
+            "client_name": "No Discount",
+            "photo_link": "https://disk.yandex.ru/d/no-discount",
+            "review_link": "",
+            "discount_text": "10%",
+            "message_text": "Фотографии готовы.",
+            "is_active": "1",
+        },
+    )
+
+    assert response.status_code == 302
+    rows = db_rows("photo_clients")
+    assert rows[0]["discount_text"] == ""
+    created = client.get(f"/client/{rows[0]['slug']}")
+    assert created.status_code == 200
+    assert "Благодарность".encode() not in created.data
+    assert b'class="client-discount"' not in created.data
+    assert b'href="https://vk.ru/reviews-190646738"' in created.data
 
 
 def test_photo_client_admin_ignores_submitted_slug_and_rejects_unsafe_external_links(client):
@@ -1333,6 +1431,7 @@ def test_photo_client_admin_updates_and_deletes_client_records(client):
             "photo_link": "https://dropbox.com/s/new",
             "review_link": "",
             "discount_text": "подарок",
+            "has_discount": "1",
             "message_text": "Новая ссылка готова.",
         },
     )

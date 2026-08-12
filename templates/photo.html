@@ -10,7 +10,7 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='photo/ph-favicon.ico') }}?v=1">
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='photo/ph-favicon.svg') }}?v=5">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='photo/ph-favicon.png') }}?v=2">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/photo.css') }}?v=39">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/photo.css') }}?v=44">
 </head>
 <body>
     <a class="ph-skip" href="#portfolio">Перейти к портфолио</a>
@@ -21,6 +21,7 @@
             <a href="#portfolio">Портфолио</a>
             <a href="#services">Фото</a>
             <a href="#video">Видео</a>
+            <a href="#reviews">Отзывы</a>
             <a href="#contact">Контакты</a>
         </nav>
         <a class="ph-header-cta" href="#booking" data-booking-open>Записаться <span>↘</span></a>
@@ -121,7 +122,7 @@
                         <li>5 фотографий в детальной ретуши</li>
                         <li>готовность до 21 дня, исходники по желанию</li>
                     </ul>
-                    <strong>от 4 000 ₽/час</strong>
+                    <strong>4 000 ₽/час при заказе от 4х часов</strong>
                 </article>
                 <article>
                     <span>02</span>
@@ -226,17 +227,17 @@
 
             <div class="ph-video-grid" aria-label="Форматы видеосъемки">
                 <article>
-                    <div class="ph-video-top"><span>01</span><strong>от 4 000 ₽/час</strong></div>
+                    <div class="ph-video-top"><span>01</span><strong>4 000 ₽/час при заказе от 4х часов</strong></div>
                     <h3>Свадебный фильм</h3>
                     <p>Нежная история дня: люди, детали, движение и моменты, которые хочется пересматривать.</p>
                     <ul>
                         <li>love story, предложение, видеопрогулка или свидание</li>
                         <li>5 000 ₽/час для короткого формата</li>
-                        <li>4 000 ₽/час при заказе от 4 часов</li>
+                        <li>4 000 ₽/час при заказе от 4х часов</li>
                     </ul>
                 </article>
                 <article>
-                    <div class="ph-video-top"><span>02</span><strong>от 4 000 ₽/час</strong></div>
+                    <div class="ph-video-top"><span>02</span><strong>4 000 ₽/час при заказе от 4х часов</strong></div>
                     <h3>Главный эпизод</h3>
                     <p>Короткая съемка одного события: церемония, сборы, поздравления или другой важный момент.</p>
                     <ul>
@@ -252,7 +253,7 @@
                     <ul>
                         <li>горизонтальные и вертикальные ролики</li>
                         <li>помощь с идеей, сценарием и визуальной подачей</li>
-                        <li>4 000 ₽/час при заказе от 4 часов</li>
+                        <li>4 000 ₽/час при заказе от 4х часов</li>
                     </ul>
                 </article>
                 <article>
@@ -268,8 +269,48 @@
             </div>
         </section>
 
+        {% set ph_reviews = [
+            ('Портретная съемка', 'Съемка прошла спокойно и легко. Было понятно, как встать, куда смотреть и что делать в кадре.'),
+            ('Свадебная история', 'В кадрах остался не только сам день, но и настроение: близкие люди, детали и живые эмоции без лишней постановки.'),
+            ('Брендовый контент', 'Получились фотографии, которые удобно сразу использовать для соцсетей, афиш и рабочих материалов.'),
+            ('Репортаж', 'Моменты пойманы честно: движение, реакции людей и атмосфера события выглядят живыми.'),
+            ('Студийная съемка', 'Все было организовано заранее: образ, свет, локация и спокойный темп работы.'),
+            ('Семейная серия', 'Даже тем, кто обычно смущается камеры, было комфортно. В результате получились теплые и естественные фотографии.'),
+            ('Предметная съемка', 'Аккуратные кадры с вниманием к деталям, фактуре и тому, как продукт будет смотреться в публикациях.'),
+            ('Фото и видео', 'Удобно, когда один процесс закрывает сразу два формата: фотографии и короткие ролики в одном настроении.')
+        ] %}
+        <section class="ph-reviews" id="reviews">
+            <header class="ph-reviews-heading">
+                <p class="ph-section-index">05 / Отзывы</p>
+                <div>
+                    <h2>После съемки<br><em>остается доверие</em></h2>
+                </div>
+                <button class="ph-review-all-button" type="button" data-reviews-open>Посмотреть все <span>↘</span></button>
+            </header>
+            <div class="ph-review-layout" aria-label="Отзывы клиентов">
+                <article class="ph-review-feature">
+                    <span>VK</span>
+                    <blockquote>{{ ph_reviews[0][1] }}</blockquote>
+                    <p>{{ ph_reviews[0][0] }}</p>
+                </article>
+                <div class="ph-review-grid">
+                {% for title, text in ph_reviews[1:5] %}
+                <article>
+                    <span>VK</span>
+                    <h3>{{ title }}</h3>
+                    <p>{{ text }}</p>
+                </article>
+                {% endfor %}
+                </div>
+            </div>
+            <div class="ph-review-actions">
+                <button class="ph-review-link" type="button" data-reviews-open><span>Все отзывы</span><strong>Посмотреть все</strong><b aria-hidden="true">↘</b></button>
+                <a class="ph-review-source" href="https://vk.ru/reviews-190646738" target="_blank" rel="noopener">Открыть отзывы во ВКонтакте <span>↗</span></a>
+            </div>
+        </section>
+
         <section class="ph-contact" id="contact">
-            <p class="ph-section-index">05 / Контакты</p>
+            <p class="ph-section-index">06 / Контакты</p>
             <div><h2>Обсудим<br><em>съемку?</em></h2><p>Расскажите, что хотите сохранить в кадре. Отвечу во ВКонтакте и помогу выбрать формат, локацию и настроение.</p></div>
             <div class="ph-contact-actions" aria-label="Способы связи">
                 <a class="ph-contact-card ph-contact-card-primary" href="#booking" data-booking-open><em>PH</em><span>Записаться на съемку</span><small>Заполнить короткую заявку</small><b>↘</b></a>
@@ -282,8 +323,8 @@
 
     <div class="ph-booking-nudge" data-booking-nudge aria-hidden="true">
         <button class="ph-booking-nudge-close" type="button" aria-label="Закрыть уведомление" data-booking-nudge-close>×</button>
-        <p>У вас есть проект?</p>
-        <button type="button" data-booking-nudge-open>Связаться <span>↘</span></button>
+        <p><strong>Желаете записаться на съемку?</strong><small>Оставьте короткую заявку, и я помогу выбрать формат, дату и настроение будущей серии.</small></p>
+        <button type="button" data-booking-nudge-open>Записаться <span>↘</span></button>
     </div>
 
     <footer class="ph-footer" id="ph-site-footer">
@@ -339,7 +380,7 @@
                         <option value="">Пока не знаю</option>
                         <option>1 час</option>
                         <option>2 часа</option>
-                        <option>От 4 часов</option>
+                        <option>От 4х часов</option>
                         <option>Полный день</option>
                         <option>Нужна консультация</option>
                     </select>
@@ -358,12 +399,35 @@
         </form>
     </div>
 
+    <div class="ph-reviews-modal" data-reviews-modal aria-hidden="true">
+        <div class="ph-reviews-backdrop" data-reviews-close></div>
+        <section class="ph-reviews-dialog" aria-labelledby="reviews-modal-title" role="dialog" aria-modal="true">
+            <button class="ph-reviews-close" type="button" data-reviews-close aria-label="Закрыть отзывы">×</button>
+            <div class="ph-reviews-dialog-head">
+                <p class="ph-section-index">Отзывы</p>
+                <h2 id="reviews-modal-title">Все отзывы<br><em>клиентов</em></h2>
+                <a href="https://vk.ru/reviews-190646738" target="_blank" rel="noopener">Открыть VK <span>↗</span></a>
+            </div>
+            <div class="ph-reviews-list">
+                {% for title, text in ph_reviews %}
+                <article>
+                    <span>{{ '%02d'|format(loop.index) }}</span>
+                    <div>
+                        <h3>{{ title }}</h3>
+                        <p>{{ text }}</p>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+
     <div class="ph-lightbox" id="ph-lightbox" aria-hidden="true">
         <button type="button" data-lightbox-close aria-label="Закрыть фотографию">×</button>
         <img alt="Открытая фотография">
         <p>Нажмите Esc, чтобы закрыть</p>
     </div>
 
-    <script src="{{ url_for('static', filename='js/photo.js') }}?v=10" defer></script>
+    <script src="{{ url_for('static', filename='js/photo.js') }}?v=14" defer></script>
 </body>
 </html>
