@@ -13,6 +13,7 @@
     --desktop-canvas-height: 1080px;
     --desktop-scale: 1;
     --mobile-viewport-height: 100svh;
+    --mobile-hero-bg: #070907;
     --mobile-hero-bottom-space: calc(38px + env(safe-area-inset-bottom));
     --mobile-console-height: min(354px, 38svh);
     --rotate-lock-bg: #070907;
@@ -2755,10 +2756,11 @@ footer p:last-child {
 
     .hero {
         min-height: var(--mobile-viewport-height);
+        background: var(--mobile-hero-bg);
     }
 
     .hero::before {
-        pointer-events: none;
+        display: none;
     }
 
     .hero-grid {

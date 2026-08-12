@@ -7,7 +7,7 @@
     <meta name="description" content="Разработка CRM-систем и веб-продуктов под реальные бизнес-процессы. Избранные кейсы Владимира Худовердиева.">
     <meta name="theme-color" content="#f4f0e8">
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='portfolio/vh-favicon.svg') }}?v=7">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/it.css') }}?v=94">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/it.css') }}?v=95">
 </head>
 <body>
     <a class="skip-link" href="#about">Перейти к содержанию</a>
@@ -206,6 +206,7 @@
             </div>
             <form class="project-form" id="project-form" action="{{ url_for('message') }}" method="post">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="form_type" value="project">
                 <label>
                     <span>Ваше имя</span>
                     <input type="text" name="name" maxlength="80" autocomplete="name" placeholder="Как к вам обращаться">
@@ -491,14 +492,21 @@
                         'X-CSRF-Token': formData.get('csrf_token'),
                     },
                 });
-                if (!response.ok) throw new Error('Request failed');
+                if (!response.ok) {
+                    let errorMessage = 'Не удалось отправить сообщение. Проверьте соединение и попробуйте ещё раз.';
+                    try {
+                        const payload = await response.json();
+                        if (payload && payload.error) errorMessage = payload.error;
+                    } catch (error) {}
+                    throw new Error(errorMessage);
+                }
                 projectForm.reset();
                 projectForm.hidden = true;
                 projectSuccess.classList.add('is-visible');
                 projectSuccess.setAttribute('aria-hidden', 'false');
                 projectSuccess.querySelector('button').focus();
             } catch (error) {
-                projectFormError.textContent = 'Не удалось отправить сообщение. Проверьте соединение и попробуйте ещё раз.';
+                projectFormError.textContent = error.message || 'Не удалось отправить сообщение. Проверьте соединение и попробуйте ещё раз.';
             } finally {
                 submitButton.disabled = false;
             }

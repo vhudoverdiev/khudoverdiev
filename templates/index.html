@@ -11,7 +11,7 @@
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}?v=2">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=4">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=5">
 </head>
 <body class="taplink-body">
     <input class="modal-toggle" type="checkbox" id="message-toggle">
@@ -75,6 +75,7 @@
             <input type="text" name="contact" placeholder="Контакт: Telegram, телефон или почта" maxlength="120">
             <textarea name="text" placeholder="Сообщение" maxlength="1000" required></textarea>
             <button type="submit">Отправить</button>
+            <p class="message-form-error" id="message-form-error" role="alert"></p>
         </form>
     </div>
 
@@ -94,6 +95,7 @@
         const successModal = document.getElementById('success-modal');
         const successClose = document.getElementById('success-close');
         const messageToggle = document.getElementById('message-toggle');
+        const formError = document.getElementById('message-form-error');
 
         function hideSuccess() {
             successModal.classList.remove('is-visible');
@@ -108,19 +110,35 @@
         form.addEventListener('submit', async (event) => {
             event.preventDefault();
             const formData = new FormData(form);
-            const response = await fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'fetch',
-                    'X-CSRF-Token': formData.get('csrf_token'),
-                },
-            });
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            formError.textContent = '';
 
-            if (response.ok) {
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'fetch',
+                        'X-CSRF-Token': formData.get('csrf_token'),
+                    },
+                });
+
+                if (!response.ok) {
+                    let errorMessage = 'Не удалось отправить сообщение. Проверьте соединение и попробуйте ещё раз.';
+                    try {
+                        const payload = await response.json();
+                        if (payload && payload.error) errorMessage = payload.error;
+                    } catch (error) {}
+                    throw new Error(errorMessage);
+                }
                 form.reset();
                 messageToggle.checked = false;
                 showSuccess();
+            } catch (error) {
+                formError.textContent = error.message || 'Не удалось отправить сообщение. Проверьте соединение и попробуйте ещё раз.';
+            } finally {
+                submitButton.disabled = false;
             }
         });
 

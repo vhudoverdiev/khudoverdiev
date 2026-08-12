@@ -9,7 +9,7 @@
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}?v=2" sizes="any">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}?v=2">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}?v=2">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=21">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=26">
 </head>
 <body class="admin-body{% if not authorized %} admin-login-body{% endif %}">
     <main class="admin-page{% if not authorized %} admin-login-page{% endif %}">
@@ -58,7 +58,7 @@
                     <p class="admin-kicker">Админ-панель</p>
                     <h1>
                         {% if active_admin_tab == 'clients' %}
-                        Страницы клиентов
+                        Клиенты
                         {% elif active_admin_tab == 'messages' %}
                         Обращения
                         {% else %}
@@ -78,6 +78,7 @@
                 <a class="{{ 'is-active' if active_admin_tab == 'messages' else '' }}" href="{{ url_for('admin_messages') }}">Обращения</a>
             </nav>
 
+            <div class="admin-content" data-admin-content>
             {% if active_admin_tab == 'dashboard' %}
             <section class="stats-grid" aria-label="Статистика">
                 <article>
@@ -134,141 +135,165 @@
 
             {% if active_admin_tab == 'clients' %}
             <section class="admin-card client-admin-card">
-                <div class="admin-card-heading">
-                    <div>
-                        <h2>Страницы клиентов</h2>
-                        <p>Создавайте персональные ссылки без хранения фотографий на сайте.</p>
-                    </div>
-                    <span>{{ photo_clients|length if photo_clients else 0 }}</span>
-                </div>
-
                 {% if client_error %}
                 <p class="login-error">{{ client_error }}</p>
                 {% endif %}
 
-                <div class="client-create-panel">
-                    <div class="client-create-intro">
-                        <span>Новая ссылка</span>
-                        <strong>Создать страницу клиента</strong>
-                        <p>Заполните только рабочие ссылки и текст. Безопасный публичный адрес создастся автоматически.</p>
-                        <div class="client-create-visual" aria-hidden="true">
-                            <i></i>
-                        </div>
-                    </div>
-                    <form class="client-form client-create-form" action="{{ url_for('admin_clients') }}" method="post">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <label>
-                            <span>Имя клиента</span>
-                            <input type="text" name="client_name" maxlength="120" value="{{ client_form.client_name }}" placeholder="Введите имя клиента" required>
-                        </label>
-                        <div class="client-link-note">
-                            <span>Безопасная ссылка</span>
-                            <p>Случайный код без имени клиента появится после создания.</p>
-                        </div>
-                        <label class="client-form-wide">
-                            <span>Внешняя ссылка на фотографии</span>
-                            <div class="client-url-field">
-                                <i aria-hidden="true"></i>
-                                <input type="url" name="photo_link" maxlength="500" value="{{ client_form.photo_link }}" placeholder="https://drive.google.com/..." required>
-                            </div>
-                        </label>
-                        <label>
-                            <span>Ссылка для отзыва</span>
-                            <input type="url" name="review_link" maxlength="500" value="{{ client_form.review_link }}" placeholder="https://...">
-                        </label>
-                        <div class="client-discount-controls">
-                            <label>
-                                <span>Скидка</span>
-                                <input type="text" name="discount_text" maxlength="160" value="{{ client_form.discount_text }}">
-                            </label>
-                            <label class="client-switch client-discount-toggle">
-                                <input type="checkbox" name="has_discount" value="1" {% if client_form.has_discount %}checked{% endif %}>
-                                <span>Дать скидку</span>
-                            </label>
-                        </div>
-                        <label class="client-form-wide">
-                            <span>Текст на странице</span>
-                            <textarea name="message_text" maxlength="700">{{ client_form.message_text }}</textarea>
-                        </label>
-                        <div class="client-create-actions">
-                            <label class="client-switch">
-                                <input type="checkbox" name="is_active" value="1" {% if client_form.is_active %}checked{% endif %}>
-                                <span>Страница включена</span>
-                            </label>
-                            <button type="submit">Создать клиента</button>
-                        </div>
-                    </form>
+                <div class="client-subtabs" role="tablist" aria-label="Разделы клиентских ссылок">
+                    <button type="button" class="is-active" role="tab" aria-selected="true" data-client-subtab="create" aria-controls="client-panel-create">Создание</button>
+                    <button type="button" role="tab" aria-selected="false" data-client-subtab="links" aria-controls="client-panel-links">
+                        Все ссылки
+                        <span id="photo-clients-count">{{ photo_clients|length if photo_clients else 0 }}</span>
+                    </button>
+                    <button type="button" role="tab" aria-selected="false" data-client-subtab="archive" aria-controls="client-panel-archive">
+                        Архив
+                        <span id="client-archive-count">{{ archived_photo_clients|length if archived_photo_clients else 0 }}</span>
+                    </button>
                 </div>
 
-                {% if photo_clients %}
-                <div class="client-list">
-                    {% for client in photo_clients %}
-                    <details class="client-item">
-                        <summary>
-                            <span>
-                                <strong>{{ client.client_name }}</strong>
-                                <small>{{ photo_client_public_url(client.slug) }}</small>
-                            </span>
-                            <b class="{{ 'is-on' if client.is_active else 'is-off' }}">{{ 'Включена' if client.is_active else 'Выключена' }}</b>
-                        </summary>
-                        <form class="client-form" action="{{ url_for('update_photo_client', client_id=client.id) }}" method="post">
+                <section class="client-panel is-active" id="client-panel-create" data-client-panel="create" role="tabpanel">
+                    <div class="client-create-panel">
+                        <div class="client-create-intro">
+                            <span>Новая ссылка</span>
+                            <strong>Создать страницу клиента</strong>
+                            <div class="client-create-visual" aria-hidden="true">
+                                <i></i>
+                            </div>
+                        </div>
+                        <form class="client-form client-create-form" action="{{ url_for('admin_clients') }}" method="post">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <label>
                                 <span>Имя клиента</span>
-                                <input type="text" name="client_name" maxlength="120" value="{{ client.client_name }}" placeholder="Введите имя клиента" required>
+                                <input type="text" name="client_name" maxlength="120" value="{{ client_form.client_name }}" placeholder="Введите имя клиента" required>
                             </label>
                             <div class="client-link-note">
-                                <span>Безопасная ссылка</span>
-                                <p>{{ photo_client_public_url(client.slug) }}</p>
+                                <span>Ссылка</span>
+                                <p>Случайный код без имени клиента появится после создания.</p>
                             </div>
                             <label class="client-form-wide">
                                 <span>Внешняя ссылка на фотографии</span>
                                 <div class="client-url-field">
                                     <i aria-hidden="true"></i>
-                                    <input type="url" name="photo_link" maxlength="500" value="{{ client.photo_link }}" required>
+                                    <input type="url" name="photo_link" maxlength="500" value="{{ client_form.photo_link }}" placeholder="https://drive.google.com/..." required>
                                 </div>
                             </label>
-                            <label class="client-form-wide">
+                            <label>
                                 <span>Ссылка для отзыва</span>
-                                <input type="url" name="review_link" maxlength="500" value="{{ client.review_link or '' }}">
+                                <input type="url" name="review_link" maxlength="500" value="{{ client_form.review_link }}" placeholder="https://...">
                             </label>
                             <div class="client-discount-controls">
                                 <label>
                                     <span>Скидка</span>
-                                    <input type="text" name="discount_text" maxlength="160" value="{{ client.discount_text or '' }}">
+                                    <input type="text" name="discount_text" maxlength="160" value="{{ client_form.discount_text }}">
                                 </label>
                                 <label class="client-switch client-discount-toggle">
-                                    <input type="checkbox" name="has_discount" value="1" {% if client.discount_text %}checked{% endif %}>
+                                    <input type="checkbox" name="has_discount" value="1" {% if client_form.has_discount %}checked{% endif %}>
                                     <span>Дать скидку</span>
                                 </label>
                             </div>
-                            <label class="client-switch">
-                                <input type="checkbox" name="is_active" value="1" {% if client.is_active %}checked{% endif %}>
-                                <span>Страница включена</span>
-                            </label>
                             <label class="client-form-wide">
                                 <span>Текст на странице</span>
-                                <textarea name="message_text" maxlength="700">{{ client.message_text or '' }}</textarea>
+                                <textarea name="message_text" maxlength="700">{{ client_form.message_text }}</textarea>
                             </label>
-                            <div class="client-form-actions">
-                                <button type="submit">Сохранить</button>
-                                <a href="{{ photo_client_public_url(client.slug) }}" target="_blank" rel="noopener">Открыть</a>
+                            <div class="client-create-actions">
+                                <label class="client-switch">
+                                    <input type="checkbox" name="is_active" value="1" {% if client_form.is_active %}checked{% endif %}>
+                                    <span>Страница включена</span>
+                                </label>
+                                <button type="submit">Создать клиента</button>
                             </div>
                         </form>
-                        <form class="client-rotate-form" action="{{ url_for('rotate_photo_client_link', client_id=client.id) }}" method="post">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit">Сменить ссылку</button>
-                        </form>
-                        <form class="client-delete-form" action="{{ url_for('delete_photo_client', client_id=client.id) }}" method="post">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit">Удалить клиента</button>
-                        </form>
-                    </details>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <p class="empty">Клиентские страницы пока не созданы.</p>
-                {% endif %}
+                    </div>
+                </section>
+
+                <section class="client-panel" id="client-panel-links" data-client-panel="links" role="tabpanel" hidden>
+                    {% if photo_clients %}
+                    <div class="client-list">
+                        {% for client in photo_clients %}
+                        <details class="client-item">
+                            <summary>
+                                <span>
+                                    <strong>{{ client.client_name }}</strong>
+                                    <small data-client-summary-link>{{ photo_client_public_url(client.slug) }}</small>
+                                </span>
+                                <b class="{{ 'is-on' if client.is_active else 'is-off' }}">{{ 'Включена' if client.is_active else 'Выключена' }}</b>
+                            </summary>
+                            <form class="client-form" action="{{ url_for('update_photo_client', client_id=client.id) }}" method="post">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <label>
+                                    <span>Имя клиента</span>
+                                    <input type="text" name="client_name" maxlength="120" value="{{ client.client_name }}" placeholder="Введите имя клиента" required>
+                                </label>
+                                <div class="client-link-note client-link-note-actions" data-client-link-note>
+                                    <span>Ссылка</span>
+                                    <p data-client-url>{{ photo_client_public_url(client.slug) }}</p>
+                                    <div class="client-link-actions">
+                                        <button type="button" class="client-link-action is-copy" data-copy-client-link>Скопировать ссылку</button>
+                                        <button type="button" class="client-link-action is-rotate" data-rotate-client-link data-rotate-url="{{ url_for('rotate_photo_client_link', client_id=client.id) }}">Сменить</button>
+                                    </div>
+                                </div>
+                                <label class="client-form-wide">
+                                    <span>Внешняя ссылка на фотографии</span>
+                                    <div class="client-url-field">
+                                        <i aria-hidden="true"></i>
+                                        <input type="url" name="photo_link" maxlength="500" value="{{ client.photo_link }}" required>
+                                    </div>
+                                </label>
+                                <label class="client-form-wide">
+                                    <span>Ссылка для отзыва</span>
+                                    <input type="url" name="review_link" maxlength="500" value="{{ client.review_link or '' }}">
+                                </label>
+                                <div class="client-discount-controls">
+                                    <label>
+                                        <span>Скидка</span>
+                                        <input type="text" name="discount_text" maxlength="160" value="{{ client.discount_text or '' }}">
+                                    </label>
+                                    <label class="client-switch client-discount-toggle">
+                                        <input type="checkbox" name="has_discount" value="1" {% if client.discount_text %}checked{% endif %}>
+                                        <span>Дать скидку</span>
+                                    </label>
+                                </div>
+                                <label class="client-switch">
+                                    <input type="checkbox" name="is_active" value="1" {% if client.is_active %}checked{% endif %}>
+                                    <span>Страница включена</span>
+                                </label>
+                                <label class="client-form-wide">
+                                    <span>Текст на странице</span>
+                                    <textarea name="message_text" maxlength="700">{{ client.message_text or '' }}</textarea>
+                                </label>
+                                <div class="client-form-actions">
+                                    <button type="submit">Сохранить</button>
+                                </div>
+                            </form>
+                            <form class="client-delete-form" action="{{ url_for('delete_photo_client', client_id=client.id) }}" method="post" data-client-delete-form data-client-name="{{ client.client_name|e }}" data-client-url="{{ photo_client_public_url(client.slug) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="button" data-client-delete-trigger>Удалить</button>
+                            </form>
+                        </details>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="empty">Клиентские страницы пока не созданы.</p>
+                    {% endif %}
+                </section>
+
+                <section class="client-panel" id="client-panel-archive" data-client-panel="archive" role="tabpanel" hidden>
+                    <div class="client-archive" id="client-archive" aria-label="Архив клиентских ссылок">
+                        <div class="client-archive-list" id="client-archive-list">
+                        {% if archived_photo_clients %}
+                            {% for client in archived_photo_clients %}
+                            <article class="client-archive-item">
+                                <strong>{{ client.client_name }}</strong>
+                                <small>{{ photo_client_public_url(client.slug) }}</small>
+                                <time>{{ client.archived_at }}</time>
+                            </article>
+                            {% endfor %}
+                        {% else %}
+                            <p class="empty" id="client-archive-empty">Архив пока пуст.</p>
+                        {% endif %}
+                        </div>
+                    </div>
+                </section>
             </section>
             {% endif %}
 
@@ -330,6 +355,7 @@
                 {% endif %}
             </section>
             {% endif %}
+            </div>
         </section>
 
         <div class="delete-modal" id="delete-modal" aria-hidden="true">
@@ -348,10 +374,12 @@
         <script>
             const adminPage = document.querySelector('.admin-page');
             const deleteModal = document.getElementById('delete-modal');
+            const deleteTitle = document.getElementById('delete-title');
             const deletePreview = document.getElementById('delete-preview');
             const deleteConfirm = document.getElementById('delete-confirm');
             const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
             let deleteTarget = null;
+            let deleteMode = 'message';
             let tabRequest = null;
 
             function getAdminShell() {
@@ -369,9 +397,24 @@
             function openDeleteModal(article) {
                 if (!article) return;
                 deleteTarget = article;
+                deleteMode = 'message';
+                deleteTitle.textContent = 'Удалить обращение?';
                 const name = article.dataset.messageName || 'Это обращение';
                 const text = article.dataset.messageText || '';
                 deletePreview.textContent = text ? `${name}: ${text}` : name;
+                document.body.classList.add('delete-open');
+                deleteModal.classList.add('is-visible');
+                deleteModal.setAttribute('aria-hidden', 'false');
+            }
+
+            function openClientDeleteModal(form) {
+                if (!form) return;
+                deleteTarget = form;
+                deleteMode = 'client';
+                deleteTitle.textContent = 'Удалить ссылку?';
+                const name = form.dataset.clientName || 'Клиентская ссылка';
+                const url = form.dataset.clientUrl || '';
+                deletePreview.textContent = url ? `${name}: ${url}` : name;
                 document.body.classList.add('delete-open');
                 deleteModal.classList.add('is-visible');
                 deleteModal.setAttribute('aria-hidden', 'false');
@@ -382,6 +425,7 @@
                 deleteModal.setAttribute('aria-hidden', 'true');
                 document.body.classList.remove('delete-open');
                 deleteTarget = null;
+                deleteMode = 'message';
             }
 
             function renderEmptyMessagesState() {
@@ -400,12 +444,110 @@
                 }
             }
 
+            function renderEmptyClientState() {
+                const clientList = document.querySelector('.client-list');
+                if (!clientList) return;
+                if (!clientList.querySelector('.client-item')) {
+                    clientList.outerHTML = '<p class="empty">Клиентские страницы пока не созданы.</p>';
+                }
+            }
+
+            function activateClientPanel(name) {
+                document.querySelectorAll('[data-client-subtab]').forEach((button) => {
+                    const isActive = button.dataset.clientSubtab === name;
+                    button.classList.toggle('is-active', isActive);
+                    button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                });
+                document.querySelectorAll('[data-client-panel]').forEach((panel) => {
+                    const isActive = panel.dataset.clientPanel === name;
+                    panel.classList.toggle('is-active', isActive);
+                    panel.hidden = !isActive;
+                });
+            }
+
+            function addArchivedClient(payload) {
+                const archiveList = document.getElementById('client-archive-list');
+                if (!archiveList) return;
+                const empty = document.getElementById('client-archive-empty');
+                if (empty) empty.remove();
+                const item = document.createElement('article');
+                item.className = 'client-archive-item';
+                const name = document.createElement('strong');
+                name.textContent = payload.client_name || 'Клиент';
+                const url = document.createElement('small');
+                url.textContent = payload.url || '';
+                const time = document.createElement('time');
+                time.textContent = payload.archived_at || '';
+                item.append(name, url, time);
+                archiveList.prepend(item);
+                const archiveCount = document.getElementById('client-archive-count');
+                if (archiveCount) archiveCount.textContent = String(parseInt(archiveCount.textContent || '0', 10) + 1);
+            }
+
+            async function copyText(value) {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(value);
+                    return;
+                }
+                const field = document.createElement('textarea');
+                field.value = value;
+                field.setAttribute('readonly', '');
+                field.style.position = 'fixed';
+                field.style.top = '-1000px';
+                document.body.appendChild(field);
+                field.select();
+                const copied = document.execCommand('copy');
+                field.remove();
+                if (!copied) throw new Error('copy failed');
+            }
+
+            function setClientLink(note, url) {
+                const item = note.closest('.client-item');
+                const urlNode = note.querySelector('[data-client-url]');
+                const summaryLink = item ? item.querySelector('[data-client-summary-link]') : null;
+                if (urlNode) urlNode.textContent = url;
+                if (summaryLink) summaryLink.textContent = url;
+            }
+
+            function setButtonState(button, text) {
+                button.textContent = text;
+                window.setTimeout(() => {
+                    button.textContent = button.dataset.defaultText || text;
+                    button.disabled = false;
+                }, 1400);
+            }
+
             document.querySelectorAll('[data-close-delete]').forEach((button) => {
                 button.addEventListener('click', closeDeleteModal);
             });
 
             deleteConfirm.addEventListener('click', async () => {
                 if (!deleteTarget) return;
+                if (deleteMode === 'client') {
+                    const item = deleteTarget.closest('.client-item');
+                    const response = await fetch(deleteTarget.action, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'X-Requested-With': 'fetch',
+                            'X-CSRF-Token': csrfToken,
+                        },
+                    });
+                    if (response.ok) {
+                        const payload = await response.json();
+                        if (item) item.remove();
+                        const clientsCount = document.getElementById('photo-clients-count');
+                        if (clientsCount) {
+                            const current = parseInt(clientsCount.textContent || '0', 10);
+                            clientsCount.textContent = String(Math.max(0, current - 1));
+                        }
+                        addArchivedClient(payload);
+                        renderEmptyClientState();
+                        activateClientPanel('archive');
+                        closeDeleteModal();
+                    }
+                    return;
+                }
                 const id = deleteTarget.dataset.messageId;
                 const response = await fetch(`/st/messages/${id}/delete`, {
                     method: 'POST',
@@ -430,6 +572,58 @@
                 const deleteButton = event.target.closest('.delete-trigger');
                 if (deleteButton) {
                     openDeleteModal(deleteButton.closest('article'));
+                    return;
+                }
+
+                const clientSubtab = event.target.closest('[data-client-subtab]');
+                if (clientSubtab) {
+                    activateClientPanel(clientSubtab.dataset.clientSubtab);
+                    return;
+                }
+
+                const clientDeleteButton = event.target.closest('[data-client-delete-trigger]');
+                if (clientDeleteButton) {
+                    openClientDeleteModal(clientDeleteButton.closest('[data-client-delete-form]'));
+                    return;
+                }
+
+                const copyButton = event.target.closest('[data-copy-client-link]');
+                if (copyButton) {
+                    const note = copyButton.closest('[data-client-link-note]');
+                    const url = note?.querySelector('[data-client-url]')?.textContent?.trim();
+                    if (!url) return;
+                    copyButton.dataset.defaultText ||= copyButton.textContent;
+                    copyButton.disabled = true;
+                    copyText(url)
+                        .then(() => setButtonState(copyButton, 'Скопировано'))
+                        .catch(() => setButtonState(copyButton, 'Не удалось'));
+                    return;
+                }
+
+                const rotateButton = event.target.closest('[data-rotate-client-link]');
+                if (rotateButton) {
+                    const note = rotateButton.closest('[data-client-link-note]');
+                    if (!note) return;
+                    rotateButton.dataset.defaultText ||= rotateButton.textContent;
+                    rotateButton.disabled = true;
+                    rotateButton.textContent = 'Меняю';
+                    fetch(rotateButton.dataset.rotateUrl, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'X-Requested-With': 'fetch',
+                            'X-CSRF-Token': csrfToken,
+                        },
+                    })
+                        .then((response) => {
+                            if (!response.ok) throw new Error('rotate failed');
+                            return response.json();
+                        })
+                        .then((payload) => {
+                            setClientLink(note, payload.url);
+                            setButtonState(rotateButton, 'Готово');
+                        })
+                        .catch(() => setButtonState(rotateButton, 'Ошибка'));
                     return;
                 }
 
@@ -472,7 +666,8 @@
                     document.title = nextDocument.title;
                     if (pushState) window.history.pushState({ adminTab: true }, '', url);
                     closeDeleteModal();
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    const content = shell.querySelector('[data-admin-content]');
+                    if (content) content.scrollTop = 0;
                 } catch (error) {
                     if (error.name !== 'AbortError') window.location.href = url;
                 } finally {

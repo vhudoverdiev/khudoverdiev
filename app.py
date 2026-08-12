@@ -1,11 +1,14 @@
 ﻿import hmac
 import os
+import hashlib
+import json
 import re
 import secrets
 import sqlite3
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
+from ipaddress import ip_address
 from urllib.parse import urlparse
 import uuid
 
@@ -27,6 +30,12 @@ ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin")
 ADMIN_PASSWORD_HASH = os.environ.get("ADMIN_PASSWORD_HASH")
 ADMIN_PATH = "/st"
 LEGACY_ADMIN_PATH = "/sk"
+ROOT_MESSAGE_COOKIE = "root_message_device"
+ROOT_MESSAGE_DAILY_LIMIT = 1
+ROOT_MESSAGE_SCOPE = "root-message"
+PROJECT_LEAD_COOKIE = "project_lead_device"
+PROJECT_LEAD_DAILY_LIMIT = 3
+PROJECT_LEAD_SCOPE = "it-project-lead"
 
 BRANCH_HOSTS = {
     "root": "khudoverdiev.ru",
@@ -258,6 +267,141 @@ def clean_text(value, max_length):
     return value[:max_length]
 
 
+def hmac_digest(value):
+    secret = (app.secret_key or "dev-only-change-this-secret-key").encode("utf-8")
+    return hmac.new(secret, value.encode("utf-8"), hashlib.sha256).hexdigest()
+
+
+def current_day():
+    return datetime.now().strftime("%Y-%m-%d")
+
+
+def clean_cookie_token(value):
+    value = (value or "").strip()
+    if re.fullmatch(r"[A-Za-z0-9_.-]{16,128}", value):
+        return value
+    return ""
+
+
+def client_network_key():
+    raw_ip = get_client_ip()
+    try:
+        parsed_ip = ip_address(raw_ip)
+    except ValueError:
+        ip_key = raw_ip[:64]
+    else:
+        if parsed_ip.version == 4:
+            ip_key = ".".join(raw_ip.split(".")[:3]) + ".0/24"
+        else:
+            ip_key = ":".join(parsed_ip.exploded.split(":")[:4]) + "::/64"
+    user_agent = (request.headers.get("User-Agent", "") or "")[:200].strip().lower()
+    accept_language = (request.headers.get("Accept-Language", "") or "")[:80].strip().lower()
+    return f"{ip_key}|{user_agent}|{accept_language}"
+
+
+def submission_device_id(cookie_name):
+    return (
+        clean_cookie_token(request.cookies.get(cookie_name))
+        or clean_cookie_token(request.cookies.get("visitor_id"))
+        or uuid.uuid4().hex
+    )
+
+
+def daily_submission_fingerprints(scope, device_id):
+    return [
+        hmac_digest(f"{scope}:device:{device_id}"),
+        hmac_digest(f"{scope}:network:{client_network_key()}"),
+    ]
+
+
+def reserve_daily_submission_quota(scope, limit, device_id):
+    fingerprints = daily_submission_fingerprints(scope, device_id)
+    quota_day = current_day()
+    timestamp = now()
+    placeholders = ",".join("?" for _ in fingerprints)
+    with get_db() as db:
+        db.execute("BEGIN IMMEDIATE")
+        rows = db.execute(
+            f"""
+            SELECT count
+            FROM daily_submission_limits
+            WHERE scope = ?
+              AND day = ?
+              AND fingerprint IN ({placeholders})
+            """,
+            (scope, quota_day, *fingerprints),
+        ).fetchall()
+        if any(row["count"] >= limit for row in rows):
+            db.rollback()
+            return False
+        for fingerprint in fingerprints:
+            db.execute(
+                """
+                INSERT INTO daily_submission_limits (scope, fingerprint, day, count, first_seen_at, last_seen_at)
+                VALUES (?, ?, ?, 1, ?, ?)
+                ON CONFLICT(scope, fingerprint, day)
+                DO UPDATE SET count = count + 1, last_seen_at = excluded.last_seen_at
+                """,
+                (scope, fingerprint, quota_day, timestamp, timestamp),
+            )
+        db.commit()
+    return True
+
+
+def set_daily_submission_cookie(response, cookie_name, device_id):
+    response.set_cookie(
+        cookie_name,
+        device_id,
+        max_age=60 * 60 * 24 * 365,
+        httponly=True,
+        secure=app.config["SESSION_COOKIE_SECURE"],
+        samesite="Lax",
+    )
+    return response
+
+
+def daily_submission_limit_response(cookie_name, device_id, message_text):
+    if request.headers.get("X-Requested-With") == "fetch":
+        response = make_response(json.dumps({"error": message_text}, ensure_ascii=False) + "\n", 429)
+        response.mimetype = "application/json"
+        return set_daily_submission_cookie(response, cookie_name, device_id)
+    abort(429)
+
+
+def root_message_device_id():
+    return submission_device_id(ROOT_MESSAGE_COOKIE)
+
+
+def reserve_root_message_quota(device_id):
+    return reserve_daily_submission_quota(ROOT_MESSAGE_SCOPE, ROOT_MESSAGE_DAILY_LIMIT, device_id)
+
+
+def set_root_message_cookie(response, device_id):
+    return set_daily_submission_cookie(response, ROOT_MESSAGE_COOKIE, device_id)
+
+
+def root_message_limit_response(device_id):
+    message_text = "С этого устройства уже отправлено сообщение за сегодня. Попробуйте завтра или напишите напрямую в Telegram."
+    return daily_submission_limit_response(ROOT_MESSAGE_COOKIE, device_id, message_text)
+
+
+def project_lead_device_id():
+    return submission_device_id(PROJECT_LEAD_COOKIE)
+
+
+def reserve_project_lead_quota(device_id):
+    return reserve_daily_submission_quota(PROJECT_LEAD_SCOPE, PROJECT_LEAD_DAILY_LIMIT, device_id)
+
+
+def set_project_lead_cookie(response, device_id):
+    return set_daily_submission_cookie(response, PROJECT_LEAD_COOKIE, device_id)
+
+
+def project_lead_limit_response(device_id):
+    message_text = "С этого устройства уже отправлено 3 заявки за сегодня. Попробуйте завтра или напишите напрямую в Telegram."
+    return daily_submission_limit_response(PROJECT_LEAD_COOKIE, device_id, message_text)
+
+
 def clean_slug(value):
     value = CONTROL_CHARS_RE.sub("", (value or "").strip().lower())
     value = re.sub(r"[\s_]+", "-", value)
@@ -411,9 +555,30 @@ def init_db():
             )
             """
         )
+        db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS daily_submission_limits (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                scope TEXT NOT NULL,
+                fingerprint TEXT NOT NULL,
+                day TEXT NOT NULL,
+                count INTEGER NOT NULL DEFAULT 0,
+                first_seen_at TEXT NOT NULL,
+                last_seen_at TEXT NOT NULL,
+                UNIQUE(scope, fingerprint, day)
+            )
+            """
+        )
+        db.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_daily_submission_limits_day
+            ON daily_submission_limits (scope, day)
+            """
+        )
         ensure_column(db, "visits", "site_source", "TEXT NOT NULL DEFAULT 'khudoverdiev.ru'")
         ensure_column(db, "messages", "message_type", "TEXT NOT NULL DEFAULT 'message'")
         ensure_column(db, "messages", "site_source", "TEXT NOT NULL DEFAULT 'khudoverdiev.ru'")
+        ensure_column(db, "photo_clients", "archived_at", "TEXT")
 
 
 def ensure_column(db, table, column, definition):
@@ -481,9 +646,9 @@ def get_photo_client_by_slug(slug):
     with get_db() as db:
         return db.execute(
             """
-            SELECT id, client_name, slug, photo_link, review_link, discount_text, message_text, is_active, created_at, updated_at
+            SELECT id, client_name, slug, photo_link, review_link, discount_text, message_text, is_active, created_at, updated_at, archived_at
             FROM photo_clients
-            WHERE slug = ?
+            WHERE slug = ? AND archived_at IS NULL
             """,
             (slug,),
         ).fetchone()
@@ -494,9 +659,23 @@ def get_photo_clients():
     with get_db() as db:
         return db.execute(
             """
-            SELECT id, client_name, slug, photo_link, review_link, discount_text, message_text, is_active, created_at, updated_at
+            SELECT id, client_name, slug, photo_link, review_link, discount_text, message_text, is_active, created_at, updated_at, archived_at
             FROM photo_clients
+            WHERE archived_at IS NULL
             ORDER BY created_at DESC, id DESC
+            """
+        ).fetchall()
+
+
+def get_archived_photo_clients():
+    init_db()
+    with get_db() as db:
+        return db.execute(
+            """
+            SELECT id, client_name, slug, photo_link, review_link, discount_text, message_text, is_active, created_at, updated_at, archived_at
+            FROM photo_clients
+            WHERE archived_at IS NOT NULL
+            ORDER BY archived_at DESC, id DESC
             """
         ).fetchall()
 
@@ -661,6 +840,7 @@ def admin_clients_context(**extra):
         "authorized": True,
         "active_admin_tab": "clients",
         "photo_clients": get_photo_clients(),
+        "archived_photo_clients": get_archived_photo_clients(),
         "client_form": photo_client_form_defaults(),
     }
     context.update(extra)
@@ -728,6 +908,10 @@ def index():
         secure=app.config["SESSION_COOKIE_SECURE"],
         samesite="Lax",
     )
+    if branch == "it":
+        set_project_lead_cookie(response, project_lead_device_id())
+    elif branch == "root":
+        set_root_message_cookie(response, root_message_device_id())
     return response
 
 
@@ -793,11 +977,24 @@ def message():
 
     name = clean_text(request.form.get("name"), 80) or "Гость"
     contact = clean_text(request.form.get("contact"), 120)
+    site_source = message_source_label()
     message_type = "booking" if request.form.get("form_type") == "booking" else "message"
+    is_fetch_request = request.headers.get("X-Requested-With") == "fetch"
+    is_root_message = site_source == BRANCH_HOSTS["root"] and message_type == "message"
+    is_project_lead = site_source == BRANCH_HOSTS["it"] and message_type != "booking"
+    if is_project_lead:
+        message_type = "project"
     if message_type == "booking":
         text = build_booking_message(request.form)
     else:
         text = clean_text(request.form.get("text"), 1000)
+
+    root_device_id = root_message_device_id() if is_root_message else ""
+    project_device_id = project_lead_device_id() if is_project_lead else ""
+    if text and is_root_message and not reserve_root_message_quota(root_device_id):
+        return root_message_limit_response(root_device_id)
+    if text and is_project_lead and not reserve_project_lead_quota(project_device_id):
+        return project_lead_limit_response(project_device_id)
 
     if text:
         with get_db() as db:
@@ -806,13 +1003,23 @@ def message():
                 INSERT INTO messages (name, contact, text, message_type, site_source, created_at)
                 VALUES (?, ?, ?, ?, ?, ?)
                 """,
-                (name, contact, text, message_type, message_source_label(), now()),
+                (name, contact, text, message_type, site_source, now()),
             )
 
-    if request.headers.get("X-Requested-With") == "fetch":
-        return ("", 204)
+    if is_fetch_request:
+        response = make_response("", 204)
+        if is_root_message:
+            set_root_message_cookie(response, root_device_id)
+        if is_project_lead:
+            set_project_lead_cookie(response, project_device_id)
+        return response
 
-    return redirect(url_for("index", sent=1))
+    response = redirect(url_for("index", sent=1))
+    if is_root_message:
+        set_root_message_cookie(response, root_device_id)
+    if is_project_lead:
+        set_project_lead_cookie(response, project_device_id)
+    return response
 
 
 @app.route(LEGACY_ADMIN_PATH)
@@ -959,8 +1166,35 @@ def delete_photo_client(client_id):
     if not validate_csrf():
         abort(400)
 
+    archived_at = now()
     with get_db() as db:
-        db.execute("DELETE FROM photo_clients WHERE id = ?", (client_id,))
+        db.execute(
+            """
+            UPDATE photo_clients
+            SET archived_at = ?, is_active = 0, updated_at = ?
+            WHERE id = ? AND archived_at IS NULL
+            """,
+            (archived_at, archived_at, client_id),
+        )
+        archived = db.execute(
+            """
+            SELECT id, client_name, slug, archived_at
+            FROM photo_clients
+            WHERE id = ?
+            """,
+            (client_id,),
+        ).fetchone()
+    if request.headers.get("X-Requested-With") == "fetch":
+        if archived is None:
+            abort(404)
+        return jsonify(
+            {
+                "id": archived["id"],
+                "client_name": archived["client_name"],
+                "url": photo_client_public_url(archived["slug"]),
+                "archived_at": archived["archived_at"],
+            }
+        )
     return redirect(url_for("admin_clients"))
 
 
@@ -973,10 +1207,13 @@ def rotate_photo_client_link(client_id):
         abort(400)
 
     with get_db() as db:
+        slug = generate_unique_photo_client_slug(db)
         db.execute(
             "UPDATE photo_clients SET slug = ?, updated_at = ? WHERE id = ?",
-            (generate_unique_photo_client_slug(db), now(), client_id),
+            (slug, now(), client_id),
         )
+    if request.headers.get("X-Requested-With") == "fetch":
+        return jsonify({"slug": slug, "url": photo_client_public_url(slug)})
     return redirect(url_for("admin_clients"))
 
 

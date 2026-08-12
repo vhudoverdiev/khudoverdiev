@@ -10,7 +10,7 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='photo/ph-favicon.ico') }}?v=1">
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='photo/ph-favicon.svg') }}?v=5">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='photo/ph-favicon.png') }}?v=2">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/photo.css') }}?v=46">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/photo.css') }}?v=48">
 </head>
 <body>
     <a class="ph-skip" href="#portfolio">Перейти к портфолио</a>
@@ -270,14 +270,14 @@
         </section>
 
         {% set ph_reviews = [
-            {'title': 'Портретная съемка', 'text': 'Съемка прошла спокойно и легко. Было понятно, как встать, куда смотреть и что делать в кадре.', 'name': 'Алина и Дмитрий', 'meta': 'Свадебная съемка', 'date': '21.05.2024', 'avatar': 'photo/portfolio/portfolio-071.jpg'},
-            {'title': 'Свадебная история', 'text': 'В кадрах остался не только сам день, но и настроение: близкие люди, детали и живые эмоции без лишней постановки.', 'name': 'Алина и Дмитрий', 'meta': 'Пара', 'date': '21.05.2024', 'avatar': 'photo/portfolio/portfolio-003.jpg'},
-            {'title': 'Брендовый контент', 'text': 'Получились фотографии, которые удобно сразу использовать для соцсетей, афиш и рабочих материалов.', 'name': 'Ксения', 'meta': 'Маркетолог', 'date': '14.02.2024', 'avatar': 'photo/portfolio/portfolio-050.jpg'},
-            {'title': 'Репортаж', 'text': 'Моменты пойманы честно: движение, реакции людей и атмосфера события выглядят живыми.', 'name': 'Иван', 'meta': 'Организатор', 'date': '07.12.2023', 'avatar': 'photo/portfolio/portfolio-100.jpg'},
-            {'title': 'Студийная съемка', 'text': 'Все было организовано заранее: образ, свет, локация и спокойный темп работы.', 'name': 'Мария', 'meta': 'Модель', 'date': '28.09.2023', 'avatar': 'photo/portfolio/portfolio-012.jpg'},
-            {'title': 'Семейная серия', 'text': 'Даже тем, кто обычно смущается камеры, было комфортно. В результате получились теплые и естественные фотографии.', 'name': 'Екатерина', 'meta': 'Семья', 'date': '16.08.2023', 'avatar': 'photo/portfolio/portfolio-025.jpg'},
-            {'title': 'Предметная съемка', 'text': 'Аккуратные кадры с вниманием к деталям, фактуре и тому, как продукт будет смотреться в публикациях.', 'name': 'Анна', 'meta': 'Бренд', 'date': '04.06.2023', 'avatar': 'photo/portfolio/portfolio-066.jpg'},
-            {'title': 'Фото и видео', 'text': 'Удобно, когда один процесс закрывает сразу два формата: фотографии и короткие ролики в одном настроении.', 'name': 'Софья', 'meta': 'Личный проект', 'date': '12.04.2023', 'avatar': 'photo/portfolio/portfolio-088.jpg'}
+            {'title': 'Портретная съемка', 'text': 'Съемка прошла спокойно и легко. Было понятно, как встать, куда смотреть и что делать в кадре.', 'name': 'Алина', 'date': '21.05.2024', 'avatar': 'photo/portfolio/portfolio-038.jpg'},
+            {'title': 'Свадебная история', 'text': 'В кадрах остался не только сам день, но и настроение: близкие люди, детали и живые эмоции без лишней постановки.', 'name': 'Валерия', 'date': '18.03.2025', 'avatar': 'photo/portfolio/portfolio-040.jpg'},
+            {'title': 'Брендовый контент', 'text': 'Получились фотографии, которые удобно сразу использовать для соцсетей, афиш и рабочих материалов.', 'name': 'Ксения', 'date': '14.02.2024', 'avatar': 'photo/portfolio/portfolio-041.jpg'},
+            {'title': 'Репортаж', 'text': 'Моменты пойманы честно: движение, реакции людей и атмосфера события выглядят живыми.', 'name': 'Иван', 'date': '07.12.2023', 'avatar': 'photo/portfolio/portfolio-072.jpg'},
+            {'title': 'Студийная съемка', 'text': 'Все было организовано заранее: образ, свет, локация и спокойный темп работы.', 'name': 'Мария', 'date': '28.09.2023', 'avatar': 'photo/portfolio/portfolio-095.jpg'},
+            {'title': 'Семейная серия', 'text': 'Даже тем, кто обычно смущается камеры, было комфортно. В результате получились теплые и естественные фотографии.', 'name': 'Екатерина', 'date': '16.08.2023', 'avatar': 'photo/portfolio/portfolio-053.jpg'},
+            {'title': 'Предметная съемка', 'text': 'Аккуратные кадры с вниманием к деталям, фактуре и тому, как продукт будет смотреться в публикациях.', 'name': 'Анна', 'date': '04.06.2023', 'avatar': 'photo/portfolio/portfolio-097.jpg'},
+            {'title': 'Фото и видео', 'text': 'Удобно, когда один процесс закрывает сразу два формата: фотографии и короткие ролики в одном настроении.', 'name': 'Софья', 'date': '12.04.2023', 'avatar': 'photo/portfolio/portfolio-021.jpg'}
         ] %}
         <section class="ph-reviews" id="reviews">
             <header class="ph-reviews-heading">
@@ -292,12 +292,11 @@
                     <div class="ph-review-top">
                         <div class="ph-review-person">
                             <img src="{{ url_for('static', filename=ph_reviews[0].avatar) }}" alt="">
-                            <span><strong>{{ ph_reviews[0].name }}</strong><small>{{ ph_reviews[0].meta }}</small></span>
+                            <span><strong>{{ ph_reviews[0].name }}</strong><small>{{ ph_reviews[0].date }}</small></span>
                         </div>
                         <div class="ph-review-rating" aria-label="Оценка 5 из 5"><span aria-hidden="true">★★★★★</span><b>5.0</b></div>
                     </div>
                     <blockquote>{{ ph_reviews[0].text }}</blockquote>
-                    <p>{{ ph_reviews[0].title }}</p>
                 </article>
                 <div class="ph-review-grid">
                 {% for review in ph_reviews[1:5] %}
@@ -311,7 +310,6 @@
                     </div>
                     <h3>{{ review.title }}</h3>
                     <p>{{ review.text }}</p>
-                    <small>{{ review.meta }}</small>
                 </article>
                 {% endfor %}
                 </div>

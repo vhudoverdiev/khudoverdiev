@@ -95,9 +95,11 @@ def login_as_admin(client):
 
 def test_index_records_visit_sets_stable_visitor_cookie_and_security_headers(client):
     response = client.get("/")
+    cookies = response.headers.getlist("Set-Cookie")
 
     assert response.status_code == 200
-    assert "visitor_id=" in response.headers["Set-Cookie"]
+    assert any(cookie.startswith("visitor_id=") for cookie in cookies)
+    assert any("root_message_device=" in cookie for cookie in response.headers.getlist("Set-Cookie"))
     assert response.headers["X-Content-Type-Options"] == "nosniff"
     assert response.headers["X-Frame-Options"] == "DENY"
     assert "default-src 'self'" in response.headers["Content-Security-Policy"]
@@ -109,12 +111,16 @@ def test_index_records_visit_sets_stable_visitor_cookie_and_security_headers(cli
 
 def test_index_visitor_cookie_has_privacy_and_lifetime_attributes(client):
     response = client.get("/")
-    cookie = response.headers["Set-Cookie"]
+    cookies = response.headers.getlist("Set-Cookie")
+    visitor_cookie = next(cookie for cookie in cookies if cookie.startswith("visitor_id="))
+    message_cookie = next(cookie for cookie in cookies if cookie.startswith("root_message_device="))
 
-    assert "visitor_id=" in cookie
-    assert "Max-Age=31536000" in cookie
-    assert "HttpOnly" in cookie
-    assert "SameSite=Lax" in cookie
+    assert "Max-Age=31536000" in visitor_cookie
+    assert "HttpOnly" in visitor_cookie
+    assert "SameSite=Lax" in visitor_cookie
+    assert "Max-Age=31536000" in message_cookie
+    assert "HttpOnly" in message_cookie
+    assert "SameSite=Lax" in message_cookie
 
 
 def test_index_records_remote_addr_and_user_agent_for_visit_audit(client):
@@ -132,7 +138,8 @@ def test_index_records_remote_addr_and_user_agent_for_visit_audit(client):
 
 def test_index_counts_returning_cookie_as_new_visit_but_not_new_unique_visitor(client):
     first = client.get("/")
-    visitor_cookie = first.headers["Set-Cookie"].split("visitor_id=", 1)[1].split(";", 1)[0]
+    visitor_header = next(cookie for cookie in first.headers.getlist("Set-Cookie") if cookie.startswith("visitor_id="))
+    visitor_cookie = visitor_header.split("visitor_id=", 1)[1].split(";", 1)[0]
 
     response = client.get("/", headers={"Cookie": f"visitor_id={visitor_cookie}"})
 
@@ -173,6 +180,9 @@ def test_allowed_host_with_port_is_accepted(client):
     response = client.get("/", base_url="http://localhost:5000")
 
     assert response.status_code == 200
+    assert b"css/styles.css?v=5" in response.data
+    assert b'id="message-form-error"' in response.data
+    assert b"payload.error" in response.data
     assert "Твой вдохновитель отправил новое сообщение".encode() in response.data
     assert "новый таплинк".encode() not in response.data
     assert len(db_rows("visits")) == 1
@@ -197,9 +207,9 @@ def test_secure_cookie_flag_is_applied_to_visitor_cookie_when_enabled(client, mo
     monkeypatch.setitem(site.app.config, "SESSION_COOKIE_SECURE", True)
 
     response = client.get("/")
+    visitor_cookie = next(cookie for cookie in response.headers.getlist("Set-Cookie") if cookie.startswith("visitor_id="))
 
-    assert "visitor_id=" in response.headers["Set-Cookie"]
-    assert "Secure" in response.headers["Set-Cookie"]
+    assert "Secure" in visitor_cookie
 
 
 def test_large_message_payload_is_rejected_before_persisting_body(client):
@@ -240,11 +250,13 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert b"portfolio/vh-favicon.svg" in portfolio.data
     assert b"vh-favicon.svg?v=7" in portfolio.data
     assert b'content="width=device-width, initial-scale=1, viewport-fit=cover"' in portfolio.data
-    assert b"css/it.css?v=94" in portfolio.data
+    assert b"css/it.css?v=95" in portfolio.data
     assert b'id="project-prompt"' in portfolio.data
     assert b'class="project-prompt-close"' in portfolio.data
     assert b'data-close-project-prompt' in portfolio.data
     assert b"data-project-prompt-contact" in portfolio.data
+    assert b'name="form_type" value="project"' in portfolio.data
+    assert any("project_lead_device=" in cookie for cookie in portfolio.headers.getlist("Set-Cookie"))
     assert "30 секунд на сайте".encode() not in portfolio.data
     assert b"class=\"desktop-scale-shell\"" in portfolio.data
     assert b"class=\"desktop-scale-stage\"" in portfolio.data
@@ -284,6 +296,7 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "--desktop-canvas-height: 1080px;" in css
     assert "--desktop-scale: 1;" in css
     assert "--mobile-viewport-height: 100svh;" in css
+    assert "--mobile-hero-bg: #070907;" in css
     assert "--mobile-hero-bottom-space: calc(38px + env(safe-area-inset-bottom));" in css
     assert "--mobile-console-height: min(354px, 38svh);" in css
     assert ".desktop-scale-stage {\n        width: var(--desktop-canvas-width);" in css
@@ -330,6 +343,7 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "const openedFromProjectPrompt = Boolean(event.currentTarget.closest('#project-prompt'));" in portfolio_text
     assert "contactDialog.focus({ preventScroll: true });" in portfolio_text
     assert "contactModal.querySelector('input[name=\"name\"]').focus()" not in portfolio_text
+    assert "payload.error" in portfolio_text
     assert "project-prompt-backdrop" in css
     assert "backdrop-filter: blur(18px) saturate(0.86);" in css
     assert ".project-prompt-kicker" not in css
@@ -347,7 +361,8 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "scrollToScaledTarget(target || document.getElementById('site-footer'))" in portfolio_text
     assert "/* Mobile polish: one deliberate layout, not a squeezed desktop. */" in css
     assert ".hero {\n        min-height: var(--mobile-viewport-height);" in css
-    assert ".hero::before {\n        pointer-events: none;" in css
+    assert "background: var(--mobile-hero-bg);" in css
+    assert ".hero::before {\n        display: none;" in css
     assert ".hero-grid {\n        min-height: var(--mobile-viewport-height);" in css
     assert "padding: 116px 0 var(--mobile-hero-bottom-space);" in css
     assert "transition:\n            background 180ms ease,\n            border-color 180ms ease,\n            box-shadow 180ms ease;" in css
@@ -445,7 +460,7 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "default-src 'self'" in response.headers["Content-Security-Policy"]
     assert "frame-src https://vk.com https://vk.ru https://vkvideo.ru" in response.headers["Content-Security-Policy"]
     assert b"css/photo.css" in response.data
-    assert b"photo.css?v=46" in response.data
+    assert b"photo.css?v=48" in response.data
     assert b"js/photo.js" in response.data
     assert b"photo.js?v=16" in response.data
     assert "Архангельск, Северодвинск".encode() in response.data
@@ -570,6 +585,15 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert 'id="reviews-modal-title"'.encode() not in response.data
     assert "Фото и видео".encode() not in response.data
     assert "Свадебная история".encode() in response.data
+    assert "Алина и Дмитрий".encode() not in response.data
+    assert "Организатор".encode() not in response.data
+    assert "Маркетолог".encode() not in response.data
+    assert "Модель".encode() not in response.data
+    assert "Пара</small>".encode() not in response.data
+    assert b"photo/portfolio/portfolio-003.jpg" not in response.data
+    assert b"photo/portfolio/portfolio-012.jpg" not in response.data
+    assert b"photo/portfolio/portfolio-038.jpg" in response.data
+    assert "Валерия".encode() in response.data
     assert b"https://vk.ru/reviews-190646738" in response.data
     assert "06 / Контакты".encode() in response.data
     assert "Открыть полное портфолио".encode() in response.data
@@ -589,7 +613,7 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
 
     assert response.status_code == 200
     assert b"css/photo.css" in response.data
-    assert b"photo.css?v=46" in response.data
+    assert b"photo.css?v=48" in response.data
     assert b"js/photo.js" in response.data
     assert b"photo.js?v=16" in response.data
     assert "Портфолио".encode() in response.data
@@ -618,8 +642,8 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     css = Path("static/css/photo.css").read_text(encoding="utf-8")
     assert ".ph-hero {\n    position: relative;\n    box-sizing: border-box;" in css
     assert ".ph-trust {\n    position: relative;\n    box-sizing: border-box;" in css
-    assert ".ph-hero-stage {\n        width: min(520px, 100%);\n        height: 520px;" in css
-    assert ".ph-hero-person {\n        height: 465px;\n        bottom: -94px;" in css
+    assert ".ph-hero-stage {\n        width: min(640px, 100%);\n        height: 640px;" in css
+    assert ".ph-hero-person {\n        height: 575px;\n        bottom: -130px;" in css
     assert "height: 482px;" not in css
     assert "bottom: -64px;" not in css
     assert ".ph-booking-fields select {\n    appearance: none;" in css
@@ -634,6 +658,8 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert "body.ph-modal-open,\nbody.ph-nudge-open { overflow: hidden; }" in css
     assert "body.ph-nudge-open .ph-scroll-cue {" in css
     assert ".ph-booking-nudge-card {\n    position: relative;" in css
+    assert "justify-items: center;" in css
+    assert "text-align: center;" in css
     assert ".ph-booking-nudge-card > button:not(.ph-booking-nudge-close) {" in css
     assert ".ph-booking-nudge.is-visible {" in css
     assert ".ph-reviews {\n    position: relative;" in css
@@ -643,6 +669,7 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert ".ph-review-top {\n    display: flex;" in css
     assert ".ph-review-person img {\n    width: 46px;" in css
     assert ".ph-review-rating {\n    flex: 0 0 auto;" in css
+    assert ".ph-review-grid article > small" not in css
     assert ".ph-review-link" not in css
     assert ".ph-reviews-modal" not in css
     assert ".ph-reviews-list" not in css
@@ -842,6 +869,128 @@ def test_message_fetch_request_returns_no_content_after_saving(client):
     assert len(db_rows("messages")) == 1
 
 
+def test_root_message_daily_limit_blocks_second_submission_from_same_device(client, monkeypatch):
+    monkeypatch.setattr(site, "current_day", lambda: "2026-08-12")
+    csrf = csrf_from(client)
+    headers = {
+        "X-Requested-With": "fetch",
+        "X-CSRF-Token": csrf,
+        "User-Agent": "root-browser",
+        "Accept-Language": "ru-RU",
+    }
+    environ_base = {"REMOTE_ADDR": "203.0.113.21"}
+
+    first = client.post(
+        "/message",
+        data={"name": "Root", "contact": "@root", "text": "First root message"},
+        headers=headers,
+        environ_base=environ_base,
+    )
+    blocked = client.post(
+        "/message",
+        data={"name": "Root", "contact": "@root", "text": "Second root message"},
+        headers=headers,
+        environ_base=environ_base,
+    )
+
+    messages = db_rows("messages")
+    quota_rows = db_rows("daily_submission_limits")
+    assert first.status_code == 204
+    assert blocked.status_code == 429
+    assert "уже отправлено сообщение".encode() in blocked.data
+    assert len(messages) == 1
+    assert messages[0]["message_type"] == "message"
+    assert messages[0]["site_source"] == "khudoverdiev.ru"
+    assert len(quota_rows) == 2
+    assert {row["count"] for row in quota_rows} == {1}
+    assert all(row["scope"] == site.ROOT_MESSAGE_SCOPE for row in quota_rows)
+    assert all(re.fullmatch(r"[a-f0-9]{64}", row["fingerprint"]) for row in quota_rows)
+
+
+def test_root_message_daily_limit_also_blocks_plain_post_without_fetch_header(client, monkeypatch):
+    monkeypatch.setattr(site, "current_day", lambda: "2026-08-12")
+    csrf = csrf_from(client)
+    environ_base = {"REMOTE_ADDR": "203.0.113.22"}
+    headers = {"User-Agent": "plain-root-browser"}
+
+    first = client.post(
+        "/message",
+        data={"csrf_token": csrf, "contact": "@root", "text": "Plain first"},
+        headers=headers,
+        environ_base=environ_base,
+    )
+    blocked = client.post(
+        "/message",
+        data={"csrf_token": csrf, "contact": "@root", "text": "Plain second"},
+        headers=headers,
+        environ_base=environ_base,
+    )
+
+    assert first.status_code == 302
+    assert blocked.status_code == 429
+    assert len(db_rows("messages")) == 1
+
+
+def test_root_message_daily_limit_survives_cookie_reset_by_network_signature(client, monkeypatch):
+    monkeypatch.setattr(site, "current_day", lambda: "2026-08-12")
+    headers = {
+        "X-Requested-With": "fetch",
+        "User-Agent": "same-root-browser",
+        "Accept-Language": "ru-RU",
+    }
+    environ_base = {"REMOTE_ADDR": "198.51.100.54"}
+    csrf = csrf_from(client)
+
+    first = client.post(
+        "/message",
+        data={"csrf_token": csrf, "contact": "@root", "text": "First root message"},
+        headers=headers,
+        environ_base=environ_base,
+    )
+
+    with site.app.test_client() as fresh_client:
+        fresh_client.get("/", headers=headers, environ_base=environ_base)
+        with fresh_client.session_transaction() as session:
+            fresh_csrf = session["_csrf_token"]
+        blocked = fresh_client.post(
+            "/message",
+            data={"csrf_token": fresh_csrf, "contact": "@root", "text": "Fresh cookie attempt"},
+            headers=headers,
+            environ_base=environ_base,
+        )
+
+    assert first.status_code == 204
+    assert blocked.status_code == 429
+    assert len(db_rows("messages")) == 1
+
+
+def test_root_message_daily_limit_resets_on_next_day(client, monkeypatch):
+    quota_day = ["2026-08-12"]
+    monkeypatch.setattr(site, "current_day", lambda: quota_day[0])
+    csrf = csrf_from(client)
+    headers = {"X-Requested-With": "fetch", "X-CSRF-Token": csrf, "User-Agent": "root-browser"}
+    environ_base = {"REMOTE_ADDR": "203.0.113.29"}
+
+    first = client.post(
+        "/message",
+        data={"contact": "@root", "text": "First root message"},
+        headers=headers,
+        environ_base=environ_base,
+    )
+
+    quota_day[0] = "2026-08-13"
+    second = client.post(
+        "/message",
+        data={"contact": "@root", "text": "Next day root message"},
+        headers=headers,
+        environ_base=environ_base,
+    )
+
+    assert first.status_code == 204
+    assert second.status_code == 204
+    assert len(db_rows("messages")) == 2
+
+
 def test_booking_form_posts_structured_shoot_request_to_admin_messages(client):
     csrf = csrf_from(client, base_url="http://ph.khudoverdiev.ru")
 
@@ -949,12 +1098,20 @@ def test_message_limits_stored_field_lengths(client):
 
 
 def test_message_rate_limit_blocks_excessive_posts(client):
-    csrf = csrf_from(client)
+    csrf = csrf_from(client, base_url="http://ph.khudoverdiev.ru")
     for index in range(10):
-        response = client.post("/message", data={"csrf_token": csrf, "text": f"Message {index}"})
+        response = client.post(
+            "/message",
+            data={"csrf_token": csrf, "text": f"Message {index}"},
+            base_url="http://ph.khudoverdiev.ru",
+        )
         assert response.status_code == 302
 
-    blocked = client.post("/message", data={"csrf_token": csrf, "text": "Too much"})
+    blocked = client.post(
+        "/message",
+        data={"csrf_token": csrf, "text": "Too much"},
+        base_url="http://ph.khudoverdiev.ru",
+    )
 
     assert blocked.status_code == 429
     assert len(db_rows("messages")) == 10
@@ -962,7 +1119,7 @@ def test_message_rate_limit_blocks_excessive_posts(client):
 
 def test_message_rate_limit_is_scoped_by_first_forwarded_ip_and_user_agent(client, monkeypatch):
     monkeypatch.setattr(site.time, "time", lambda: 1_000.0)
-    csrf = csrf_from(client)
+    csrf = csrf_from(client, base_url="http://ph.khudoverdiev.ru")
     throttled_headers = {"X-Forwarded-For": "203.0.113.10, 10.0.0.1", "User-Agent": "mobile-app"}
     other_ip_headers = {"X-Forwarded-For": "203.0.113.11, 10.0.0.1", "User-Agent": "mobile-app"}
     other_agent_headers = {"X-Forwarded-For": "203.0.113.10, 10.0.0.1", "User-Agent": "browser"}
@@ -972,28 +1129,186 @@ def test_message_rate_limit_is_scoped_by_first_forwarded_ip_and_user_agent(clien
             "/message",
             data={"csrf_token": csrf, "text": f"Limited {index}"},
             headers=throttled_headers,
+            base_url="http://ph.khudoverdiev.ru",
         )
         assert response.status_code == 302
 
-    assert client.post("/message", data={"csrf_token": csrf, "text": "Blocked"}, headers=throttled_headers).status_code == 429
-    assert client.post("/message", data={"csrf_token": csrf, "text": "Other IP"}, headers=other_ip_headers).status_code == 302
-    assert client.post("/message", data={"csrf_token": csrf, "text": "Other agent"}, headers=other_agent_headers).status_code == 302
+    assert (
+        client.post(
+            "/message",
+            data={"csrf_token": csrf, "text": "Blocked"},
+            headers=throttled_headers,
+            base_url="http://ph.khudoverdiev.ru",
+        ).status_code
+        == 429
+    )
+    assert (
+        client.post(
+            "/message",
+            data={"csrf_token": csrf, "text": "Other IP"},
+            headers=other_ip_headers,
+            base_url="http://ph.khudoverdiev.ru",
+        ).status_code
+        == 302
+    )
+    assert (
+        client.post(
+            "/message",
+            data={"csrf_token": csrf, "text": "Other agent"},
+            headers=other_agent_headers,
+            base_url="http://ph.khudoverdiev.ru",
+        ).status_code
+        == 302
+    )
 
 
 def test_message_rate_limit_window_expires_without_manual_reset(client, monkeypatch):
     current_time = [1_000.0]
     monkeypatch.setattr(site.time, "time", lambda: current_time[0])
-    csrf = csrf_from(client)
+    csrf = csrf_from(client, base_url="http://ph.khudoverdiev.ru")
 
     for index in range(10):
-        assert client.post("/message", data={"csrf_token": csrf, "text": f"Before {index}"}).status_code == 302
-    assert client.post("/message", data={"csrf_token": csrf, "text": "Blocked"}).status_code == 429
+        assert (
+            client.post(
+                "/message",
+                data={"csrf_token": csrf, "text": f"Before {index}"},
+                base_url="http://ph.khudoverdiev.ru",
+            ).status_code
+            == 302
+        )
+    assert (
+        client.post(
+            "/message",
+            data={"csrf_token": csrf, "text": "Blocked"},
+            base_url="http://ph.khudoverdiev.ru",
+        ).status_code
+        == 429
+    )
 
     current_time[0] += 301
-    response = client.post("/message", data={"csrf_token": csrf, "text": "After window"})
+    response = client.post(
+        "/message",
+        data={"csrf_token": csrf, "text": "After window"},
+        base_url="http://ph.khudoverdiev.ru",
+    )
 
     assert response.status_code == 302
     assert len(db_rows("messages")) == 11
+
+
+def test_it_project_lead_daily_limit_blocks_fourth_submission_from_same_device(client, monkeypatch):
+    monkeypatch.setattr(site, "current_day", lambda: "2026-08-12")
+    csrf = csrf_from(client, path="/", base_url="http://it.khudoverdiev.ru")
+    headers = {
+        "X-Requested-With": "fetch",
+        "X-CSRF-Token": csrf,
+        "User-Agent": "lead-browser",
+        "Accept-Language": "ru-RU",
+    }
+    environ_base = {"REMOTE_ADDR": "203.0.113.77"}
+
+    for index in range(3):
+        response = client.post(
+            "/message",
+            data={"name": "Lead", "contact": "@lead", "text": f"Project {index}"},
+            headers=headers,
+            environ_base=environ_base,
+            base_url="http://it.khudoverdiev.ru",
+        )
+        assert response.status_code == 204
+
+    blocked = client.post(
+        "/message",
+        data={"name": "Lead", "contact": "@lead", "text": "Project 4"},
+        headers=headers,
+        environ_base=environ_base,
+        base_url="http://it.khudoverdiev.ru",
+    )
+
+    messages = db_rows("messages")
+    quota_rows = db_rows("daily_submission_limits")
+    assert blocked.status_code == 429
+    assert "3 заявки".encode() in blocked.data
+    assert len(messages) == 3
+    assert {message["message_type"] for message in messages} == {"project"}
+    assert {message["site_source"] for message in messages} == {"it.khudoverdiev.ru"}
+    assert len(quota_rows) == 2
+    assert {row["count"] for row in quota_rows} == {3}
+    assert all(row["scope"] == site.PROJECT_LEAD_SCOPE for row in quota_rows)
+    assert all(re.fullmatch(r"[a-f0-9]{64}", row["fingerprint"]) for row in quota_rows)
+
+
+def test_it_project_lead_daily_limit_survives_cookie_reset_by_network_signature(client, monkeypatch):
+    monkeypatch.setattr(site, "current_day", lambda: "2026-08-12")
+    headers = {
+        "X-Requested-With": "fetch",
+        "User-Agent": "same-computer-browser",
+        "Accept-Language": "ru-RU",
+    }
+    environ_base = {"REMOTE_ADDR": "198.51.100.42"}
+    csrf = csrf_from(client, path="/", base_url="http://it.khudoverdiev.ru")
+
+    for index in range(3):
+        response = client.post(
+            "/message",
+            data={"csrf_token": csrf, "contact": "@lead", "text": f"Project {index}"},
+            headers=headers,
+            environ_base=environ_base,
+            base_url="http://it.khudoverdiev.ru",
+        )
+        assert response.status_code == 204
+
+    with site.app.test_client() as fresh_client:
+        fresh_client.get(
+            "/",
+            headers=headers,
+            environ_base=environ_base,
+            base_url="http://it.khudoverdiev.ru",
+        )
+        with fresh_client.session_transaction(base_url="http://it.khudoverdiev.ru") as session:
+            fresh_csrf = session["_csrf_token"]
+        blocked = fresh_client.post(
+            "/message",
+            data={"csrf_token": fresh_csrf, "contact": "@lead", "text": "Fresh cookie attempt"},
+            headers=headers,
+            environ_base=environ_base,
+            base_url="http://it.khudoverdiev.ru",
+        )
+
+    assert blocked.status_code == 429
+    assert len(db_rows("messages")) == 3
+
+
+def test_it_project_lead_daily_limit_resets_on_next_day(client, monkeypatch):
+    quota_day = ["2026-08-12"]
+    monkeypatch.setattr(site, "current_day", lambda: quota_day[0])
+    csrf = csrf_from(client, path="/", base_url="http://it.khudoverdiev.ru")
+    headers = {"X-Requested-With": "fetch", "X-CSRF-Token": csrf, "User-Agent": "lead-browser"}
+    environ_base = {"REMOTE_ADDR": "203.0.113.88"}
+
+    for index in range(3):
+        assert (
+            client.post(
+                "/message",
+                data={"contact": "@lead", "text": f"Project {index}"},
+                headers=headers,
+                environ_base=environ_base,
+                base_url="http://it.khudoverdiev.ru",
+            ).status_code
+            == 204
+        )
+
+    quota_day[0] = "2026-08-13"
+    response = client.post(
+        "/message",
+        data={"contact": "@lead", "text": "Next day project"},
+        headers=headers,
+        environ_base=environ_base,
+        base_url="http://it.khudoverdiev.ru",
+    )
+
+    assert response.status_code == 204
+    assert len(db_rows("messages")) == 4
 
 
 def test_admin_login_page_is_no_store_and_contains_csrf(client):
@@ -1004,12 +1319,15 @@ def test_admin_login_page_is_no_store_and_contains_csrf(client):
     assert b'name="csrf_token"' in response.data
     assert b'name="username"' in response.data
     assert b'autocomplete="username"' in response.data
-    assert b"css/styles.css?v=21" in response.data
+    assert b"css/styles.css?v=26" in response.data
     assert "<title>Админ-панель</title>".encode() in response.data
     assert "Админ-панель — KHUDOVERDIEV".encode() not in response.data
     assert "Фотография сохраняет тишину момента".encode() in response.data
     css = Path("static/css/styles.css").read_text(encoding="utf-8")
     assert "rgba(255, 255, 255, 0.74)" in css
+    assert "height: min(920px, calc(100svh - 60px));" in css
+    assert ".admin-content {\n    min-height: 0;" in css
+    assert "overflow-y: auto;" in css
     assert '.login-aesthetic-note blockquote::after {\n    content: none;' in css
     assert '.login-aesthetic-note p::after {\n    content: "\\00BB";' in css
 
@@ -1159,9 +1477,11 @@ def test_admin_dashboard_counts_only_recent_activity_and_orders_clicks(client, m
 
     assert response.status_code == 200
     assert b'data-admin-shell' in response.data
+    assert b'data-admin-content' in response.data
     assert "Админ-панель".encode() in response.data
     assert "KHUDOVERDIEV</p>".encode() not in response.data
     assert b"loadAdminTab" in response.data
+    assert b"window.scrollTo" not in response.data
     assert "Посещения сайтов".encode() in response.data
     assert "ph.khudoverdiev".encode() in response.data
     assert "khudoverdiev".encode() in response.data
@@ -1208,7 +1528,19 @@ def test_admin_clients_tab_lists_photo_clients_and_creation_form_without_file_st
     response = client.get(f"{site.ADMIN_PATH}/clients")
 
     assert response.status_code == 200
-    assert "Страницы клиентов".encode() in response.data
+    assert "Страницы клиентов".encode() not in response.data
+    assert "Создавайте персональные ссылки без хранения фотографий на сайте.".encode() not in response.data
+    assert "Заполните только рабочие ссылки и текст. Безопасный публичный адрес создастся автоматически.".encode() not in response.data
+    assert "Клиенты".encode() in response.data
+    assert b'class="client-subtabs"' in response.data
+    assert b'data-client-subtab="create"' in response.data
+    assert b'data-client-subtab="links"' in response.data
+    assert b'data-client-subtab="archive"' in response.data
+    assert b'id="client-panel-create"' in response.data
+    assert b'id="client-panel-links"' in response.data
+    assert b'id="client-panel-archive"' in response.data
+    assert "Создание".encode() in response.data
+    assert "Все ссылки".encode() in response.data
     assert 'href="/st"'.encode() in response.data
     assert 'href="/st/clients"'.encode() in response.data
     assert b'name="photo_link"' in response.data
@@ -1219,7 +1551,23 @@ def test_admin_clients_tab_lists_photo_clients_and_creation_form_without_file_st
     assert b'name="slug"' not in response.data
     assert b"https://drive.google.com/photos" in response.data
     assert b"https://ph.khudoverdiev.ru/client/ivanova-2026" in response.data
-    assert "Клиентские страницы пока не созданы.".encode() not in response.data
+    assert "Безопасная ссылка".encode() not in response.data
+    assert "Ссылка".encode() in response.data
+    assert b"data-client-summary-link" in response.data
+    assert b"data-client-url" in response.data
+    assert b"data-copy-client-link" in response.data
+    assert b"data-rotate-client-link" in response.data
+    assert "Скопировать ссылку".encode() in response.data
+    assert "Сменить</button>".encode() in response.data
+    assert "Сменить ссылку".encode() not in response.data
+    assert "Открыть</a>".encode() not in response.data
+    assert "Удалить клиента".encode() not in response.data
+    assert "Удалить</button>".encode() in response.data
+    assert b"data-client-delete-form" in response.data
+    assert b"data-client-delete-trigger" in response.data
+    assert "Архив".encode() in response.data
+    assert "Архив пока пуст.".encode() in response.data
+    assert b'<div class="client-list">' in response.data
     assert b'type="file"' not in response.data
     assert b'multipart/form-data' not in response.data
 
@@ -1460,7 +1808,7 @@ def test_photo_client_admin_ignores_submitted_slug_and_rejects_unsafe_external_l
     assert re.fullmatch(r"[a-z0-9]{32}", rows[1]["slug"])
 
 
-def test_photo_client_admin_updates_and_deletes_client_records(client):
+def test_photo_client_admin_updates_and_archives_client_records(client):
     client_id = insert_photo_client(slug="old-slug")
     login_as_admin(client)
     with client.session_transaction() as session:
@@ -1482,12 +1830,42 @@ def test_photo_client_admin_updates_and_deletes_client_records(client):
     unavailable = client.get("/client/new-slug")
     rows = db_rows("photo_clients")
     deleted = client.post(f"{site.ADMIN_PATH}/clients/{client_id}/delete", data={"csrf_token": csrf})
+    archived_rows = db_rows("photo_clients")
+    clients_tab = client.get(f"{site.ADMIN_PATH}/clients")
 
     assert updated.status_code == 302
     assert unavailable.status_code == 404
     assert rows[0]["slug"] == "old-slug"
     assert deleted.status_code == 302
-    assert db_rows("photo_clients") == []
+    assert len(archived_rows) == 1
+    assert archived_rows[0]["slug"] == "old-slug"
+    assert archived_rows[0]["is_active"] == 0
+    assert archived_rows[0]["archived_at"]
+    assert client.get("/client/old-slug").status_code == 404
+    assert b"https://ph.khudoverdiev.ru/client/old-slug" in clients_tab.data
+    assert "Архив".encode() in clients_tab.data
+
+
+def test_photo_client_admin_fetch_delete_archives_link_without_losing_record(client):
+    client_id = insert_photo_client(slug="ivanova-2026")
+    login_as_admin(client)
+    with client.session_transaction() as session:
+        csrf = session["_csrf_token"]
+
+    response = client.post(
+        f"{site.ADMIN_PATH}/clients/{client_id}/delete",
+        headers={"X-Requested-With": "fetch", "X-CSRF-Token": csrf},
+    )
+
+    rows = db_rows("photo_clients")
+    payload = response.get_json()
+    assert response.status_code == 200
+    assert payload["client_name"] == "Иванова"
+    assert payload["url"] == "https://ph.khudoverdiev.ru/client/ivanova-2026"
+    assert payload["archived_at"] == rows[0]["archived_at"]
+    assert rows[0]["archived_at"]
+    assert rows[0]["is_active"] == 0
+    assert client.get("/client/ivanova-2026").status_code == 404
 
 
 def test_photo_client_admin_can_rotate_existing_client_link(client):
@@ -1505,6 +1883,26 @@ def test_photo_client_admin_can_rotate_existing_client_link(client):
     assert re.fullmatch(r"[a-z0-9]{32}", rows[0]["slug"])
     assert client.get("/client/ivanova-2026").status_code == 404
     assert client.get(f"/client/{rows[0]['slug']}").status_code == 200
+
+
+def test_photo_client_admin_fetch_rotate_returns_new_public_url_without_redirect(client):
+    client_id = insert_photo_client(slug="ivanova-2026")
+    login_as_admin(client)
+    with client.session_transaction() as session:
+        csrf = session["_csrf_token"]
+
+    response = client.post(
+        f"{site.ADMIN_PATH}/clients/{client_id}/rotate-link",
+        headers={"X-Requested-With": "fetch", "X-CSRF-Token": csrf},
+    )
+
+    rows = db_rows("photo_clients")
+    assert response.status_code == 200
+    assert response.content_type.startswith("application/json")
+    payload = response.get_json()
+    assert payload["slug"] == rows[0]["slug"]
+    assert payload["url"] == f"https://ph.khudoverdiev.ru/client/{rows[0]['slug']}"
+    assert rows[0]["slug"] != "ivanova-2026"
 
 
 def test_photo_client_rotate_link_requires_admin_and_csrf(client):
@@ -1529,6 +1927,7 @@ def test_photo_client_delete_requires_admin_and_csrf(client):
     assert unauthorized.status_code == 302
     assert missing_csrf.status_code == 400
     assert len(db_rows("photo_clients")) == 1
+    assert db_rows("photo_clients")[0]["archived_at"] is None
 
 
 def test_admin_messages_can_render_empty_messages_state_after_ajax_delete(client):
@@ -1574,6 +1973,7 @@ def test_init_db_creates_expected_not_null_schema_contract(client):
     visits = table_columns("visits")
     unique_visits = table_columns("unique_visits")
     photo_clients = table_columns("photo_clients")
+    daily_submission_limits = table_columns("daily_submission_limits")
     assert messages["name"]["notnull"] == 1
     assert messages["text"]["notnull"] == 1
     assert messages["message_type"]["notnull"] == 1
@@ -1587,6 +1987,13 @@ def test_init_db_creates_expected_not_null_schema_contract(client):
     assert photo_clients["slug"]["notnull"] == 1
     assert photo_clients["photo_link"]["notnull"] == 1
     assert photo_clients["is_active"]["notnull"] == 1
+    assert "archived_at" in photo_clients
+    assert daily_submission_limits["scope"]["notnull"] == 1
+    assert daily_submission_limits["fingerprint"]["notnull"] == 1
+    assert daily_submission_limits["day"]["notnull"] == 1
+    assert daily_submission_limits["count"]["notnull"] == 1
+    assert daily_submission_limits["first_seen_at"]["notnull"] == 1
+    assert daily_submission_limits["last_seen_at"]["notnull"] == 1
 
 
 def test_unauthorized_delete_redirects_to_admin_without_deleting(client):
