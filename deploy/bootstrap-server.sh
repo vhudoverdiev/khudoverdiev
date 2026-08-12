@@ -86,6 +86,7 @@ PY
     umask 077
     cat > "$APP_DIR/.env" <<EOF
 FLASK_SECRET_KEY=$flask_secret
+ADMIN_USERNAME=admin
 ADMIN_PASSWORD=$admin_password
 ADMIN_PASSWORD_HASH=
 FLASK_COOKIE_SECURE=1

@@ -22,6 +22,7 @@ app.config.update(
 )
 
 DB_PATH = Path(__file__).with_name("site.db")
+ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin")
 ADMIN_PASSWORD_HASH = os.environ.get("ADMIN_PASSWORD_HASH")
 ADMIN_PATH = "/st"
@@ -200,6 +201,12 @@ SOCIAL_LINKS = [
     },
 ]
 
+DASHBOARD_SITE_SOURCES = [
+    ("ph.khudoverdiev.ru", "ph.khudoverdiev"),
+    ("khudoverdiev.ru", "khudoverdiev"),
+    ("it.khudoverdiev.ru", "it.khudoverdiev"),
+]
+
 
 def normalize_host(host):
     host = (host or "").lower().strip()
@@ -296,6 +303,10 @@ def verify_admin_password(password):
     return hmac.compare_digest(password or "", ADMIN_PASSWORD)
 
 
+def verify_admin_credentials(username, password):
+    return hmac.compare_digest(username or "", ADMIN_USERNAME) and verify_admin_password(password)
+
+
 @app.before_request
 def security_gate():
     if not is_allowed_host():
@@ -345,6 +356,7 @@ def init_db():
             CREATE TABLE IF NOT EXISTS visits (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 created_at TEXT NOT NULL,
+                site_source TEXT NOT NULL DEFAULT 'khudoverdiev.ru',
                 ip TEXT,
                 user_agent TEXT
             )
@@ -366,6 +378,7 @@ def init_db():
                 name TEXT NOT NULL,
                 contact TEXT,
                 text TEXT NOT NULL,
+                message_type TEXT NOT NULL DEFAULT 'message',
                 site_source TEXT NOT NULL DEFAULT 'khudoverdiev.ru',
                 created_at TEXT NOT NULL
             )
@@ -397,6 +410,8 @@ def init_db():
             )
             """
         )
+        ensure_column(db, "visits", "site_source", "TEXT NOT NULL DEFAULT 'khudoverdiev.ru'")
+        ensure_column(db, "messages", "message_type", "TEXT NOT NULL DEFAULT 'message'")
         ensure_column(db, "messages", "site_source", "TEXT NOT NULL DEFAULT 'khudoverdiev.ru'")
 
 
@@ -421,6 +436,20 @@ def social_by_name(name):
 def message_source_label():
     branch = get_site_branch()
     return BRANCH_HOSTS.get(branch, BRANCH_HOSTS["root"])
+
+
+def dashboard_site_visit_stats(rows):
+    counts = {}
+    for row in rows:
+        source = row["site_source"] or BRANCH_HOSTS["root"]
+        counts[source] = counts.get(source, 0) + row["count"]
+
+    stats = []
+    for source, label in DASHBOARD_SITE_SOURCES:
+        stats.append({"source": source, "label": label, "count": counts.pop(source, 0)})
+    for source in sorted(counts):
+        stats.append({"source": source, "label": source.removesuffix(".ru"), "count": counts[source]})
+    return stats
 
 
 def build_booking_message(form):
@@ -516,7 +545,25 @@ def admin_dashboard_context(**extra):
                 (cutoff,),
             ).fetchone()[0],
             "messages": db.execute("SELECT COUNT(*) FROM messages WHERE created_at >= ?", (cutoff,)).fetchone()[0],
+            "bookings": db.execute(
+                """
+                SELECT COUNT(*)
+                FROM messages
+                WHERE created_at >= ?
+                  AND (message_type = 'booking' OR text LIKE 'Заявка на съемку%')
+                """,
+                (cutoff,),
+            ).fetchone()[0],
         }
+        site_visit_rows = db.execute(
+            """
+            SELECT COALESCE(site_source, ?) AS site_source, COUNT(*) AS count
+            FROM visits
+            WHERE created_at >= ?
+            GROUP BY COALESCE(site_source, ?)
+            """,
+            (BRANCH_HOSTS["root"], cutoff, BRANCH_HOSTS["root"]),
+        ).fetchall()
         click_stats = db.execute(
             """
             SELECT social, COUNT(*) AS count
@@ -532,6 +579,7 @@ def admin_dashboard_context(**extra):
         "authorized": True,
         "active_admin_tab": "dashboard",
         "stats": stats,
+        "site_visit_stats": dashboard_site_visit_stats(site_visit_rows),
         "click_stats": click_stats,
         "period_label": "Последние 30 дней",
     }
@@ -626,17 +674,19 @@ def record_visit():
     """Record a page view and return the stable anonymous visitor id."""
     init_db()
     visitor_id = request.cookies.get("visitor_id") or uuid.uuid4().hex
+    timestamp = now()
+    site_source = message_source_label()
     with get_db() as db:
         db.execute(
-            "INSERT INTO visits (created_at, ip, user_agent) VALUES (?, ?, ?)",
-            (now(), request.remote_addr, request.headers.get("User-Agent", "")),
+            "INSERT INTO visits (created_at, site_source, ip, user_agent) VALUES (?, ?, ?, ?)",
+            (timestamp, site_source, request.remote_addr, request.headers.get("User-Agent", "")),
         )
         db.execute(
             """
             INSERT OR IGNORE INTO unique_visits (visitor_id, first_seen_at, ip, user_agent)
             VALUES (?, ?, ?, ?)
             """,
-            (visitor_id, now(), request.remote_addr, request.headers.get("User-Agent", "")),
+            (visitor_id, timestamp, request.remote_addr, request.headers.get("User-Agent", "")),
         )
     return visitor_id
 
@@ -731,7 +781,8 @@ def message():
 
     name = clean_text(request.form.get("name"), 80) or "Гость"
     contact = clean_text(request.form.get("contact"), 120)
-    if request.form.get("form_type") == "booking":
+    message_type = "booking" if request.form.get("form_type") == "booking" else "message"
+    if message_type == "booking":
         text = build_booking_message(request.form)
     else:
         text = clean_text(request.form.get("text"), 1000)
@@ -739,8 +790,11 @@ def message():
     if text:
         with get_db() as db:
             db.execute(
-                "INSERT INTO messages (name, contact, text, site_source, created_at) VALUES (?, ?, ?, ?, ?)",
-                (name, contact, text, message_source_label(), now()),
+                """
+                INSERT INTO messages (name, contact, text, message_type, site_source, created_at)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (name, contact, text, message_type, message_source_label(), now()),
             )
 
     if request.headers.get("X-Requested-With") == "fetch":
@@ -769,12 +823,12 @@ def admin():
             abort(400)
         if not check_rate_limit("admin-login", limit=5, window_seconds=600):
             abort(429)
-        if verify_admin_password(request.form.get("password")):
+        if verify_admin_credentials(request.form.get("username"), request.form.get("password")):
             session.clear()
             session["admin"] = True
             session["_csrf_token"] = secrets.token_urlsafe(32)
             return redirect(url_for("admin"))
-        error = "Неверный пароль"
+        error = "Неверный логин или пароль"
 
     if not session.get("admin"):
         return render_template("admin.html", authorized=False, error=error)

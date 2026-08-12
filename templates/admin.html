@@ -22,8 +22,12 @@
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <h1 id="login-title">Вход</h1>
                     <label class="login-field">
+                        <span>Логин</span>
+                        <input type="text" name="username" placeholder="Ваш логин" autocomplete="username" autofocus>
+                    </label>
+                    <label class="login-field">
                         <span>Пароль</span>
-                        <input type="password" name="password" placeholder="Ваш пароль" autofocus>
+                        <input type="password" name="password" placeholder="Ваш пароль" autocomplete="current-password">
                     </label>
                     {% if error %}
                     <p class="login-error">{{ error }}</p>
@@ -88,6 +92,22 @@
                     <span>Обращения</span>
                     <strong id="messages-count">{{ stats.messages }}</strong>
                 </article>
+                <article>
+                    <span>Заявки</span>
+                    <strong>{{ stats.bookings }}</strong>
+                </article>
+            </section>
+
+            <section class="admin-card">
+                <h2>Посещения сайтов</h2>
+                <div class="click-list site-visit-list">
+                    {% for item in site_visit_stats %}
+                    <div>
+                        <span>{{ item.label }}</span>
+                        <strong>{{ item.count }}</strong>
+                    </div>
+                    {% endfor %}
+                </div>
             </section>
 
             <section class="admin-card">

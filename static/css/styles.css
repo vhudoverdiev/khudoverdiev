@@ -873,9 +873,16 @@ a {
 }
 
 .login-aesthetic-note blockquote::after {
+    content: none;
+}
+
+.login-aesthetic-note p::after {
     content: "\00BB";
-    right: 22px;
-    bottom: 36px;
+    color: rgba(244, 208, 180, 0.58);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 34px;
+    line-height: 1;
+    pointer-events: none;
 }
 
 .admin-period {
@@ -961,7 +968,7 @@ a {
 
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
     gap: 12px;
 }
 

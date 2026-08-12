@@ -1,4 +1,8 @@
 from pathlib import Path
+import subprocess
+import sys
+
+from werkzeug.security import check_password_hash
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -72,6 +76,7 @@ def test_server_bootstrap_installs_project_and_deploy_command():
     assert "https://github.com/vhudoverdiev/khudoverdiev.git" in script
     assert "git clone --branch" in script
     assert "python3 -m venv" in script
+    assert "ADMIN_USERNAME=admin" in script
     assert "ensure_runtime_permissions" in script
     assert "chown www-data:www-data \"$APP_DIR\"" in script
     assert 'find "$APP_DIR/venv" -type d -exec chmod a+rx {} +' in script
@@ -91,6 +96,45 @@ def test_server_diagnostics_cover_backend_and_nginx():
     assert "journalctl -u \"$SERVICE\"" in script
     assert "nginx -t" in script
     assert "http://127.0.0.1:8000/health" in script
+
+
+def test_admin_credentials_script_updates_env_with_password_hash(tmp_path):
+    env_path = tmp_path / ".env"
+    env_path.write_text(
+        "\n".join(
+            [
+                "FLASK_SECRET_KEY=keep-me",
+                "ADMIN_PASSWORD=old-secret",
+                "FORCE_HTTPS=1",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    subprocess.run(
+        [
+            sys.executable,
+            str(PROJECT_ROOT / "deploy" / "admin_credentials.py"),
+            "--env",
+            str(env_path),
+            "--username",
+            "owner",
+            "--password",
+            "new-secret",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    values = dict(line.split("=", 1) for line in env_path.read_text(encoding="utf-8").splitlines() if "=" in line)
+    assert values["FLASK_SECRET_KEY"] == "keep-me"
+    assert values["FORCE_HTTPS"] == "1"
+    assert values["ADMIN_USERNAME"] == "owner"
+    assert values["ADMIN_PASSWORD"] == ""
+    assert values["ADMIN_PASSWORD_HASH"] != "new-secret"
+    assert check_password_hash(values["ADMIN_PASSWORD_HASH"], "new-secret")
 
 
 def test_ssl_setup_requests_certificates_for_all_domains():

@@ -10,11 +10,15 @@
     const videoPlayButton = document.querySelector("[data-video-play]");
     const videoPlayerTitle = document.querySelector("[data-video-player-title]");
     const videoCards = [...document.querySelectorAll("[data-video-card]")];
+    const bookingNudge = document.querySelector("[data-booking-nudge]");
+    const bookingNudgeOpen = bookingNudge?.querySelector("[data-booking-nudge-open]");
+    const bookingNudgeClose = bookingNudge?.querySelector("[data-booking-nudge-close]");
     const scrollTargets = ["#about", "#portfolio", "#services", "#video", "#contact", "#ph-site-footer"]
         .map((selector) => document.querySelector(selector))
         .filter(Boolean);
     let lastTrigger = null;
     let lastBookingTrigger = null;
+    let bookingNudgeDismissed = false;
 
     const updateScrollCue = () => {
         if (!scrollCue) return;
@@ -42,6 +46,7 @@
 
     const openBooking = (trigger) => {
         if (!bookingModal || !bookingForm) return;
+        bookingNudge?.classList.remove("is-visible");
         lastBookingTrigger = trigger || document.activeElement;
         bookingModal.classList.add("is-open");
         bookingModal.setAttribute("aria-hidden", "false");
@@ -84,6 +89,19 @@
             videoPlayerTitle.textContent = videoPlayer.dataset.videoTitle;
         }
         if (shouldPlay) renderVideoPlayer();
+    };
+
+    const showBookingNudge = () => {
+        if (!bookingNudge || bookingNudgeDismissed || bookingModal?.classList.contains("is-open")) return;
+        bookingNudge.classList.add("is-visible");
+        bookingNudge.setAttribute("aria-hidden", "false");
+    };
+
+    const closeBookingNudge = () => {
+        if (!bookingNudge) return;
+        bookingNudgeDismissed = true;
+        bookingNudge.classList.remove("is-visible");
+        bookingNudge.setAttribute("aria-hidden", "true");
     };
 
     const closeCustomSelect = (customSelect, shouldFocus = false) => {
@@ -283,6 +301,15 @@
     document.querySelectorAll("[data-booking-close]").forEach((button) => {
         button.addEventListener("click", closeBooking);
     });
+
+    bookingNudgeOpen?.addEventListener("click", () => {
+        closeBookingNudge();
+        openBooking(bookingNudgeOpen);
+    });
+    bookingNudgeClose?.addEventListener("click", closeBookingNudge);
+    if (bookingNudge) {
+        window.setTimeout(showBookingNudge, 30000);
+    }
 
     scrollCue?.addEventListener("click", () => {
         if (scrollCue.dataset.direction === "up") {

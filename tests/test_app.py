@@ -11,6 +11,7 @@ import app as site
 @pytest.fixture()
 def client(tmp_path, monkeypatch):
     monkeypatch.setattr(site, "DB_PATH", tmp_path / "site.db")
+    monkeypatch.setattr(site, "ADMIN_USERNAME", "admin")
     monkeypatch.setattr(site, "ADMIN_PASSWORD", "secret")
     monkeypatch.setattr(site, "ADMIN_PASSWORD_HASH", None)
     monkeypatch.setattr(site, "RATE_LIMITS", {})
@@ -89,7 +90,7 @@ def insert_photo_client(
 
 def login_as_admin(client):
     csrf = csrf_from(client, site.ADMIN_PATH)
-    return client.post(site.ADMIN_PATH, data={"password": "secret", "csrf_token": csrf})
+    return client.post(site.ADMIN_PATH, data={"username": "admin", "password": "secret", "csrf_token": csrf})
 
 
 def test_index_records_visit_sets_stable_visitor_cookie_and_security_headers(client):
@@ -100,7 +101,9 @@ def test_index_records_visit_sets_stable_visitor_cookie_and_security_headers(cli
     assert response.headers["X-Content-Type-Options"] == "nosniff"
     assert response.headers["X-Frame-Options"] == "DENY"
     assert "default-src 'self'" in response.headers["Content-Security-Policy"]
-    assert len(db_rows("visits")) == 1
+    visits = db_rows("visits")
+    assert len(visits) == 1
+    assert visits[0]["site_source"] == "khudoverdiev.ru"
     assert len(db_rows("unique_visits")) == 1
 
 
@@ -122,6 +125,7 @@ def test_index_records_remote_addr_and_user_agent_for_visit_audit(client):
     unique_visit = db_rows("unique_visits")[0]
     assert visit["ip"] == "198.51.100.20"
     assert visit["user_agent"] == "qa-browser"
+    assert visit["site_source"] == "khudoverdiev.ru"
     assert unique_visit["ip"] == "198.51.100.20"
     assert unique_visit["user_agent"] == "qa-browser"
 
@@ -235,7 +239,10 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "IT | Владимир Худовердиев".encode() in portfolio.data
     assert b"portfolio/vh-favicon.svg" in portfolio.data
     assert b"vh-favicon.svg?v=7" in portfolio.data
-    assert b"css/it.css?v=84" in portfolio.data
+    assert b'content="width=device-width, initial-scale=1, viewport-fit=cover"' in portfolio.data
+    assert b"css/it.css?v=88" in portfolio.data
+    assert b'id="project-prompt"' in portfolio.data
+    assert b"data-project-prompt-contact" in portfolio.data
     assert b"class=\"desktop-scale-shell\"" in portfolio.data
     assert b"class=\"desktop-scale-stage\"" in portfolio.data
     assert b"class=\"rotate-lock\"" in portfolio.data
@@ -274,9 +281,10 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "--desktop-canvas-height: 1080px;" in css
     assert "--desktop-scale: 1;" in css
     assert "--mobile-viewport-height: 100svh;" in css
-    assert "--mobile-hero-bottom-space: calc(76px + env(safe-area-inset-bottom));" in css
+    assert "--mobile-hero-bottom-space: calc(38px + env(safe-area-inset-bottom));" in css
     assert ".desktop-scale-stage {\n        width: var(--desktop-canvas-width);" in css
     assert "zoom: var(--desktop-scale);" in css
+    assert "translate: 0 -68px;" in css
     assert "min-width: var(--desktop-canvas-width);" not in css
     assert "overflow-x: auto;" not in css
     assert "min-height: var(--desktop-canvas-height);" in css
@@ -309,21 +317,32 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "window.matchMedia('(min-width: 500px)')" in portfolio_text
     assert "updateMobileViewport()" in portfolio_text
     assert "visualViewport.height" in portfolio_text
-    assert "Math.min(118, Math.max(76, viewportHeight * 0.09))" in portfolio_text
+    assert "Math.min(59, Math.max(38, viewportHeight * 0.045))" in portfolio_text
+    assert "visualViewport.addEventListener('scroll', updateMobileViewport" not in portfolio_text
+    assert "projectPromptDelay = 30000" in portfolio_text
+    assert "window.setTimeout(showProjectPrompt, projectPromptDelay)" in portfolio_text
+    assert "projectPromptContact.addEventListener('click', openContact)" in portfolio_text
+    assert "project-prompt-backdrop" in css
+    assert "backdrop-filter: blur(18px) saturate(0.86);" in css
     assert "getScaledOffsetTop(element)" in portfolio_text
     assert "scrollToScaledTarget(target || document.getElementById('site-footer'))" in portfolio_text
     assert "/* Mobile polish: one deliberate layout, not a squeezed desktop. */" in css
     assert ".hero {\n        min-height: var(--mobile-viewport-height);" in css
     assert ".hero::before {\n        pointer-events: none;" in css
     assert ".hero-grid {\n        min-height: var(--mobile-viewport-height);" in css
-    assert "padding: 94px 0 var(--mobile-hero-bottom-space);" in css
+    assert "padding: 116px 0 var(--mobile-hero-bottom-space);" in css
+    assert "transition:\n            background 180ms ease,\n            border-color 180ms ease,\n            box-shadow 180ms ease;" in css
     assert "@media (max-width: 499px) and (max-height: 820px)" in css
     assert "grid-template-rows: auto auto auto auto minmax(152px, 1fr) auto;" in css
+    assert "padding-top: 96px;" in css
     assert ".mobile-action-console {\n        height: calc(100% - 18px);\n        min-height: 184px;" in css
     assert "grid-template-rows: 26px repeat(8, minmax(18px, 1fr)) 26px;" in css
     assert "@media (orientation: landscape) and (max-height: 499px) and (pointer: coarse)" in css
     assert ".rotate-lock {\n        position: fixed;\n        z-index: 9999;" in css
-    assert ".desktop-scale-shell,\n    .page-scroll-cue,\n    .media-modal,\n    .contact-modal {\n        visibility: hidden;" in css
+    assert "width: 100dvw;" in css
+    assert "height: 100dvh;" in css
+    assert "max(24px, env(safe-area-inset-right))" in css
+    assert ".desktop-scale-shell,\n    .page-scroll-cue,\n    .project-prompt-modal,\n    .media-modal,\n    .contact-modal {\n        visibility: hidden;" in css
     assert "grid-template-rows: auto auto auto auto minmax(112px, 1fr) auto;" in css
     assert "grid-template-columns: minmax(0, 1fr) 118px;" not in css
     assert ".hero-copy {\n        display: contents;" in css
@@ -403,9 +422,9 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "default-src 'self'" in response.headers["Content-Security-Policy"]
     assert "frame-src https://vk.com https://vk.ru https://vkvideo.ru" in response.headers["Content-Security-Policy"]
     assert b"css/photo.css" in response.data
-    assert b"photo.css?v=37" in response.data
+    assert b"photo.css?v=39" in response.data
     assert b"js/photo.js" in response.data
-    assert b"photo.js?v=9" in response.data
+    assert b"photo.js?v=10" in response.data
     assert "Архангельск, Северодвинск".encode() in response.data
     assert b"photo/ph-favicon.ico" in response.data
     assert b"photo/ph-favicon.svg" in response.data
@@ -424,6 +443,8 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert b"photo/portfolio/portfolio-110.jpg" in response.data
     assert b"photo/portfolio/portfolio-058.jpg" in response.data
     assert b"photo/mikhail-" not in response.data
+    assert '<a class="ph-button ph-button-primary" href="#portfolio">Фото'.encode() in response.data
+    assert "Смотреть портфолио".encode() not in response.data
     assert b"data-lightbox" in response.data
     assert b"data-photo-card" not in response.data
     assert b"data-card-next" not in response.data
@@ -440,6 +461,10 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "Стоимость съемок".encode() not in response.data
     assert b'data-booking-open' in response.data
     assert b'data-booking-form' in response.data
+    assert b'data-booking-nudge' in response.data
+    assert b'data-booking-nudge-open' in response.data
+    assert "Желаете записаться на съемку?".encode() in response.data
+    assert "Узнать подробности".encode() in response.data
     assert "Оставьте детали, чтобы я сразу понял".encode() not in response.data
     assert b'name="form_type" value="booking"' in response.data
     assert b'name="shoot_type"' in response.data
@@ -486,6 +511,10 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "Контент для бренда".encode() in response.data
     assert "от 5 000 ₽/час".encode() in response.data
     assert "от 6 000 ₽/час".encode() in response.data
+    assert "4 000 ₽/час при заказе от 4 часов".encode() in response.data
+    assert "4 000 ₽/час при заказе от 2 часов".encode() not in response.data
+    assert "От 4 часов".encode() in response.data
+    assert "От 2 часов".encode() not in response.data
     assert b"https://vk.ru/v.khudoverdiev" not in response.data
     assert "Быстрый ответ во VK".encode() not in response.data
     assert "Открыть видеосъемку во VK".encode() not in response.data
@@ -506,9 +535,9 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
 
     assert response.status_code == 200
     assert b"css/photo.css" in response.data
-    assert b"photo.css?v=37" in response.data
+    assert b"photo.css?v=39" in response.data
     assert b"js/photo.js" in response.data
-    assert b"photo.js?v=9" in response.data
+    assert b"photo.js?v=10" in response.data
     assert "Портфолио".encode() in response.data
     assert "126 фотографий".encode() not in response.data
     assert "Собрал сюда все снимки из альбома ВКонтакте".encode() not in response.data
@@ -535,18 +564,23 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert ".ph-hero {\n    position: relative;\n    box-sizing: border-box;" in css
     assert ".ph-trust {\n    position: relative;\n    box-sizing: border-box;" in css
     assert ".ph-hero-stage {\n        width: min(520px, 100%);\n        height: 520px;" in css
-    assert ".ph-hero-person {\n        height: 430px;\n        bottom: -64px;" in css
+    assert ".ph-hero-person {\n        height: 465px;\n        bottom: -94px;" in css
     assert "height: 482px;" not in css
+    assert "bottom: -64px;" not in css
     assert ".ph-booking-fields select {\n    appearance: none;" in css
     assert "padding-right: 48px;" in css
     assert ".ph-custom-select-trigger {\n    position: relative;\n    width: 100%;" in css
     assert ".ph-custom-select-list {\n    position: absolute;" in css
     assert ".ph-custom-select-option.is-selected {" in css
+    assert ".ph-booking-nudge {\n    position: fixed;" in css
+    assert ".ph-booking-nudge.is-visible {" in css
     assert ".ph-booking-head p:last-child" not in css
     js = Path("static/js/photo.js").read_text(encoding="utf-8")
     assert "initCustomSelects" in js
     assert 'value.className = "ph-custom-select-value";' in js
     assert "data-custom-select-option" in js
+    assert "window.setTimeout(showBookingNudge, 30000);" in js
+    assert "data-booking-nudge-open" in js
     assert ".ph-booking-head > p:not(.ph-section-index)" in js
     assert ".ph-about-copy {\n    position: relative;\n    z-index: 1;\n    align-self: start;" in css
     assert ".ph-hero,\n    .ph-about,\n    .ph-portfolio" not in css
@@ -557,7 +591,7 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert ".ph-contact {\n    min-height: 0;\n    display: grid;\n    grid-template-columns: minmax(0, 1fr) 300px;\n    align-items: start;" in css
     assert ".ph-contact > div:not(.ph-contact-actions) {\n    grid-column: 1;" in css
     assert ".ph-contact-actions {\n    grid-column: 2;\n    grid-row: 1 / span 2;" in css
-    assert ".ph-contact {\n        padding-top: 96px;\n        padding-bottom: 48px;" in css
+    assert ".ph-contact {\n        padding-top: 52px;\n        padding-bottom: 48px;" in css
     assert ".ph-contact .ph-section-index {\n    align-self: start;\n    margin: 0;" in css
     assert "min-height: calc(100svh - 150px);" in css
     assert ".ph-trust {\n        min-height: 150px;" in css
@@ -713,6 +747,7 @@ def test_message_persists_cleaned_text_default_name_and_redirects(client):
     assert messages[0]["name"] == "Гость"
     assert messages[0]["contact"] == "@alice"
     assert messages[0]["text"] == "Hello world"
+    assert messages[0]["message_type"] == "message"
 
 
 def test_message_fetch_request_returns_no_content_after_saving(client):
@@ -754,6 +789,7 @@ def test_booking_form_posts_structured_shoot_request_to_admin_messages(client):
     assert len(messages) == 1
     assert messages[0]["name"] == "Мария"
     assert messages[0]["contact"] == "@maria"
+    assert messages[0]["message_type"] == "booking"
     assert messages[0]["site_source"] == "ph.khudoverdiev.ru"
     assert "Заявка на съемку" in messages[0]["text"]
     assert "Направление: Видеосъемка" in messages[0]["text"]
@@ -887,9 +923,14 @@ def test_admin_login_page_is_no_store_and_contains_csrf(client):
     assert response.status_code == 200
     assert response.headers["Cache-Control"] == "no-store, max-age=0"
     assert b'name="csrf_token"' in response.data
+    assert b'name="username"' in response.data
+    assert b'autocomplete="username"' in response.data
     assert "<title>Админ-панель</title>".encode() in response.data
     assert "Админ-панель — KHUDOVERDIEV".encode() not in response.data
     assert "Фотография сохраняет тишину момента".encode() in response.data
+    css = Path("static/css/styles.css").read_text(encoding="utf-8")
+    assert '.login-aesthetic-note blockquote::after {\n    content: none;' in css
+    assert '.login-aesthetic-note p::after {\n    content: "\\00BB";' in css
 
 
 def test_admin_aliases_are_no_store_even_when_redirecting(client):
@@ -903,7 +944,7 @@ def test_admin_aliases_are_no_store_even_when_redirecting(client):
 
 
 def test_admin_login_requires_csrf(client):
-    response = client.post(site.ADMIN_PATH, data={"password": "secret"})
+    response = client.post(site.ADMIN_PATH, data={"username": "admin", "password": "secret"})
 
     assert response.status_code == 400
 
@@ -911,18 +952,29 @@ def test_admin_login_requires_csrf(client):
 def test_admin_rejects_wrong_password_without_session(client):
     csrf = csrf_from(client, site.ADMIN_PATH)
 
-    response = client.post(site.ADMIN_PATH, data={"password": "wrong", "csrf_token": csrf})
+    response = client.post(site.ADMIN_PATH, data={"username": "admin", "password": "wrong", "csrf_token": csrf})
 
     assert response.status_code == 200
     with client.session_transaction() as session:
         assert "admin" not in session
-    assert "Неверный пароль".encode() in response.data
+    assert "Неверный логин или пароль".encode() in response.data
+
+
+def test_admin_rejects_wrong_username_without_session(client):
+    csrf = csrf_from(client, site.ADMIN_PATH)
+
+    response = client.post(site.ADMIN_PATH, data={"username": "wrong", "password": "secret", "csrf_token": csrf})
+
+    assert response.status_code == 200
+    with client.session_transaction() as session:
+        assert "admin" not in session
+    assert "Неверный логин или пароль".encode() in response.data
 
 
 def test_admin_accepts_plain_password_and_rotates_csrf(client):
     old_csrf = csrf_from(client, site.ADMIN_PATH)
 
-    response = client.post(site.ADMIN_PATH, data={"password": "secret", "csrf_token": old_csrf})
+    response = client.post(site.ADMIN_PATH, data={"username": "admin", "password": "secret", "csrf_token": old_csrf})
 
     assert response.status_code == 302
     assert response.headers["Location"] == site.ADMIN_PATH
@@ -937,7 +989,7 @@ def test_admin_login_clears_preexisting_session_state_to_prevent_fixation(client
         session["cart"] = "unexpected-state"
         session["next"] = "/malicious"
 
-    response = client.post(site.ADMIN_PATH, data={"password": "secret", "csrf_token": csrf})
+    response = client.post(site.ADMIN_PATH, data={"username": "admin", "password": "secret", "csrf_token": csrf})
 
     assert response.status_code == 302
     with client.session_transaction() as session:
@@ -950,7 +1002,10 @@ def test_admin_accepts_configured_password_hash(client, monkeypatch):
     monkeypatch.setattr(site, "ADMIN_PASSWORD_HASH", generate_password_hash("hashed-secret"))
     csrf = csrf_from(client, site.ADMIN_PATH)
 
-    response = client.post(site.ADMIN_PATH, data={"password": "hashed-secret", "csrf_token": csrf})
+    response = client.post(
+        site.ADMIN_PATH,
+        data={"username": "admin", "password": "hashed-secret", "csrf_token": csrf},
+    )
 
     assert response.status_code == 302
     with client.session_transaction() as session:
@@ -961,7 +1016,7 @@ def test_admin_password_hash_rejects_plain_fallback_password(client, monkeypatch
     monkeypatch.setattr(site, "ADMIN_PASSWORD_HASH", generate_password_hash("hashed-secret"))
     csrf = csrf_from(client, site.ADMIN_PATH)
 
-    response = client.post(site.ADMIN_PATH, data={"password": "secret", "csrf_token": csrf})
+    response = client.post(site.ADMIN_PATH, data={"username": "admin", "password": "secret", "csrf_token": csrf})
 
     assert response.status_code == 200
     with client.session_transaction() as session:
@@ -971,10 +1026,10 @@ def test_admin_password_hash_rejects_plain_fallback_password(client, monkeypatch
 def test_admin_login_rate_limit_blocks_brute_force_attempts(client):
     csrf = csrf_from(client, site.ADMIN_PATH)
     for _ in range(5):
-        response = client.post(site.ADMIN_PATH, data={"password": "bad", "csrf_token": csrf})
+        response = client.post(site.ADMIN_PATH, data={"username": "admin", "password": "bad", "csrf_token": csrf})
         assert response.status_code == 200
 
-    blocked = client.post(site.ADMIN_PATH, data={"password": "bad", "csrf_token": csrf})
+    blocked = client.post(site.ADMIN_PATH, data={"username": "admin", "password": "bad", "csrf_token": csrf})
 
     assert blocked.status_code == 429
 
@@ -984,10 +1039,13 @@ def test_admin_dashboard_counts_only_recent_activity_and_orders_clicks(client, m
     site.init_db()
     with sqlite3.connect(site.DB_PATH) as db:
         db.executemany(
-            "INSERT INTO visits (created_at, ip, user_agent) VALUES (?, ?, ?)",
+            "INSERT INTO visits (created_at, site_source, ip, user_agent) VALUES (?, ?, ?, ?)",
             [
-                ("2026-01-02 00:00:00", "1.1.1.1", "new"),
-                ("2025-12-31 23:59:59", "2.2.2.2", "old"),
+                ("2026-01-02 00:00:00", "ph.khudoverdiev.ru", "1.1.1.1", "new"),
+                ("2026-01-02 00:00:00", "ph.khudoverdiev.ru", "1.1.1.2", "new"),
+                ("2026-01-02 00:00:00", "it.khudoverdiev.ru", "1.1.1.3", "new"),
+                ("2026-01-02 00:00:00", "khudoverdiev.ru", "1.1.1.4", "new"),
+                ("2025-12-31 23:59:59", "it.khudoverdiev.ru", "2.2.2.2", "old"),
             ],
         )
         db.executemany(
@@ -1007,10 +1065,11 @@ def test_admin_dashboard_counts_only_recent_activity_and_orders_clicks(client, m
             ],
         )
         db.executemany(
-            "INSERT INTO messages (name, contact, text, created_at) VALUES (?, ?, ?, ?)",
+            "INSERT INTO messages (name, contact, text, message_type, created_at) VALUES (?, ?, ?, ?, ?)",
             [
-                ("Recent", "", "visible", "2026-01-02 00:00:00"),
-                ("Old", "", "hidden", "2025-12-31 23:59:59"),
+                ("Recent", "", "visible", "message", "2026-01-02 00:00:00"),
+                ("Booking", "", "Заявка на съемку", "booking", "2026-01-02 00:00:00"),
+                ("Old", "", "hidden", "message", "2025-12-31 23:59:59"),
             ],
         )
     login_as_admin(client)
@@ -1022,6 +1081,15 @@ def test_admin_dashboard_counts_only_recent_activity_and_orders_clicks(client, m
     assert "Админ-панель".encode() in response.data
     assert "KHUDOVERDIEV</p>".encode() not in response.data
     assert b"loadAdminTab" in response.data
+    assert "Посещения сайтов".encode() in response.data
+    assert "ph.khudoverdiev".encode() in response.data
+    assert "khudoverdiev".encode() in response.data
+    assert "it.khudoverdiev".encode() in response.data
+    assert response.data.index("ph.khudoverdiev".encode()) < response.data.index("khudoverdiev".encode())
+    assert response.data.index("khudoverdiev".encode()) < response.data.index("it.khudoverdiev".encode())
+    assert "Заявки".encode() in response.data
+    assert b"<strong>4</strong>" in response.data
+    assert b"<strong>2</strong>" in response.data
     assert b"<strong>1</strong>" in response.data
     assert b"Telegram" in response.data
     assert response.data.index(b"Telegram") < response.data.index(b"VK")
@@ -1365,9 +1433,11 @@ def test_init_db_creates_expected_not_null_schema_contract(client):
     photo_clients = table_columns("photo_clients")
     assert messages["name"]["notnull"] == 1
     assert messages["text"]["notnull"] == 1
+    assert messages["message_type"]["notnull"] == 1
     assert messages["site_source"]["notnull"] == 1
     assert messages["created_at"]["notnull"] == 1
     assert visits["created_at"]["notnull"] == 1
+    assert visits["site_source"]["notnull"] == 1
     assert unique_visits["visitor_id"]["pk"] == 1
     assert unique_visits["first_seen_at"]["notnull"] == 1
     assert photo_clients["client_name"]["notnull"] == 1

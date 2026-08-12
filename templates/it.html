@@ -2,12 +2,12 @@
 <html lang="ru">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>IT | Владимир Худовердиев</title>
     <meta name="description" content="Разработка CRM-систем и веб-продуктов под реальные бизнес-процессы. Избранные кейсы Владимира Худовердиева.">
     <meta name="theme-color" content="#f4f0e8">
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='portfolio/vh-favicon.svg') }}?v=7">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/it.css') }}?v=84">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/it.css') }}?v=88">
 </head>
 <body>
     <a class="skip-link" href="#about">Перейти к содержанию</a>
@@ -183,6 +183,20 @@
         </section>
     </div>
 
+    <div class="project-prompt-modal" id="project-prompt" aria-hidden="true">
+        <div class="project-prompt-backdrop" data-close-project-prompt></div>
+        <section class="project-prompt-card" role="dialog" aria-modal="true" aria-labelledby="project-prompt-title">
+            <button class="project-prompt-close" type="button" data-close-project-prompt aria-label="Закрыть">×</button>
+            <p class="project-prompt-kicker">30 секунд на сайте</p>
+            <h2 id="project-prompt-title">У вас есть проект?</h2>
+            <p>Расскажите, что нужно автоматизировать или запустить. Я посмотрю задачу и предложу понятный первый шаг.</p>
+            <button class="project-prompt-primary" type="button" data-project-prompt-contact>
+                <span>Связаться</span>
+                <b class="ui-icon ui-icon-symbol ui-icon-arrow-up-right" aria-hidden="true">↗︎</b>
+            </button>
+        </section>
+    </div>
+
     <div class="contact-modal" id="contact-modal" aria-hidden="true">
         <div class="contact-backdrop" data-close-contact></div>
         <section class="contact-dialog" role="dialog" aria-modal="true" aria-labelledby="contact-title">
@@ -225,6 +239,8 @@
         const mediaPrev = modal.querySelector('.media-prev');
         const mediaNext = modal.querySelector('.media-next');
         const closeButton = modal.querySelector('header button');
+        const projectPrompt = document.getElementById('project-prompt');
+        const projectPromptContact = projectPrompt.querySelector('[data-project-prompt-contact]');
         const contactModal = document.getElementById('contact-modal');
         const projectForm = document.getElementById('project-form');
         const projectSuccess = document.getElementById('project-success');
@@ -237,8 +253,10 @@
             .map((selector) => document.querySelector(selector))
             .filter(Boolean);
         const desktopCanvasWidth = 1920;
+        const projectPromptDelay = 30000;
         let returnFocus = null;
         let contactReturnFocus = null;
+        let projectPromptDismissed = false;
         let mediaMode = 'slides';
         let mediaItems = [];
         let mediaIndex = 0;
@@ -258,7 +276,7 @@
 
         function updateMobileViewport() {
             const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-            const bottomSpace = Math.round(Math.min(118, Math.max(76, viewportHeight * 0.09)));
+            const bottomSpace = Math.round(Math.min(59, Math.max(38, viewportHeight * 0.045)));
             document.documentElement.style.setProperty('--mobile-viewport-height', `${Math.round(viewportHeight)}px`);
             document.documentElement.style.setProperty('--mobile-hero-bottom-space', `calc(${bottomSpace}px + env(safe-area-inset-bottom))`);
         }
@@ -311,7 +329,6 @@
         }, { passive: true });
         if (window.visualViewport) {
             window.visualViewport.addEventListener('resize', updateMobileViewport, { passive: true });
-            window.visualViewport.addEventListener('scroll', updateMobileViewport, { passive: true });
         }
 
         document.querySelectorAll('a[href^="#"]').forEach((link) => {
@@ -420,8 +437,32 @@
 
         modal.querySelectorAll('[data-close-media]').forEach((element) => element.addEventListener('click', closeMedia));
 
+        function isBlockingPromptOpen() {
+            return modal.classList.contains('is-open') || contactModal.classList.contains('is-open');
+        }
+
+        function closeProjectPrompt() {
+            projectPromptDismissed = true;
+            projectPrompt.classList.remove('is-open');
+            projectPrompt.setAttribute('aria-hidden', 'true');
+            if (!isBlockingPromptOpen()) document.body.classList.remove('modal-open');
+        }
+
+        function showProjectPrompt() {
+            if (projectPromptDismissed) return;
+            if (isBlockingPromptOpen()) {
+                window.setTimeout(showProjectPrompt, 4000);
+                return;
+            }
+            projectPrompt.classList.add('is-open');
+            projectPrompt.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('modal-open');
+            projectPromptContact.focus();
+        }
+
         function openContact(event) {
-            contactReturnFocus = event.currentTarget;
+            contactReturnFocus = event.currentTarget.closest('#project-prompt') ? document.querySelector('.header-cta') : event.currentTarget;
+            if (projectPrompt.classList.contains('is-open')) closeProjectPrompt();
             projectForm.hidden = false;
             projectSuccess.classList.remove('is-visible');
             projectSuccess.setAttribute('aria-hidden', 'true');
@@ -440,6 +481,9 @@
         }
 
         document.querySelectorAll('[data-open-contact]').forEach((button) => button.addEventListener('click', openContact));
+        projectPromptContact.addEventListener('click', openContact);
+        projectPrompt.querySelectorAll('[data-close-project-prompt]').forEach((element) => element.addEventListener('click', closeProjectPrompt));
+        window.setTimeout(showProjectPrompt, projectPromptDelay);
         contactModal.querySelectorAll('[data-close-contact]').forEach((element) => element.addEventListener('click', closeContact));
 
         projectForm.addEventListener('submit', async (event) => {
@@ -475,6 +519,7 @@
             if (event.key === 'Escape' && modal.classList.contains('is-open')) closeMedia();
             if (event.key === 'ArrowLeft' && modal.classList.contains('is-open')) changeMedia(-1);
             if (event.key === 'ArrowRight' && modal.classList.contains('is-open')) changeMedia(1);
+            if (event.key === 'Escape' && projectPrompt.classList.contains('is-open')) closeProjectPrompt();
             if (event.key === 'Escape' && contactModal.classList.contains('is-open')) closeContact();
         });
     </script>

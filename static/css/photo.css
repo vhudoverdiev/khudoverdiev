@@ -259,6 +259,76 @@ body.ph-modal-open .ph-scroll-cue {
     opacity: 0;
     pointer-events: none;
 }
+.ph-booking-nudge {
+    position: fixed;
+    right: max(26px, env(safe-area-inset-right));
+    bottom: max(92px, calc(76px + env(safe-area-inset-bottom)));
+    z-index: 24;
+    width: min(320px, calc(100vw - 36px));
+    display: grid;
+    gap: 14px;
+    padding: 18px;
+    border: 1px solid rgba(255, 250, 243, .3);
+    border-radius: 24px;
+    background:
+        linear-gradient(145deg, rgba(255, 250, 243, .92), rgba(231, 220, 209, .78)),
+        #fffaf3;
+    color: var(--ph-ink);
+    box-shadow: 0 26px 74px rgba(23, 18, 15, .28);
+    opacity: 0;
+    transform: translateY(16px) scale(.96);
+    pointer-events: none;
+    transition: opacity .28s ease, transform .28s var(--ph-ease);
+}
+.ph-booking-nudge.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+.ph-booking-nudge p {
+    max-width: 13ch;
+    margin: 0;
+    font-size: 24px;
+    font-weight: 850;
+    line-height: 1.05;
+}
+.ph-booking-nudge > button:not(.ph-booking-nudge-close) {
+    min-height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--ph-ink);
+    color: #fffaf3;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 850;
+    cursor: pointer;
+}
+.ph-booking-nudge-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(91, 63, 49, .12);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .62);
+    color: var(--ph-ink);
+    font: inherit;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+}
+body.ph-modal-open .ph-booking-nudge {
+    opacity: 0;
+    pointer-events: none;
+}
 
 .ph-hero-stage {
     position: relative;
@@ -339,9 +409,9 @@ body.ph-modal-open .ph-scroll-cue {
     z-index: 2;
     position: absolute;
     left: 50%;
-    bottom: -89px;
+    bottom: -124px;
     width: auto;
-    height: 515px;
+    height: 550px;
     max-height: none;
     display: block;
     object-fit: contain;
@@ -1217,7 +1287,7 @@ h2 em {
     align-items: start;
     column-gap: 42px;
     row-gap: 18px;
-    padding: 72px 0 44px;
+    padding: 56px 0 44px;
     border-top: 1px solid var(--ph-line);
 }
 .ph-contact .ph-section-index {
@@ -1354,8 +1424,8 @@ h2 em {
     }
 
     .ph-hero-person {
-        height: 430px;
-        bottom: -64px;
+        height: 465px;
+        bottom: -94px;
     }
 
     .ph-trust {
@@ -1378,7 +1448,7 @@ h2 em {
     }
 
     .ph-contact {
-        padding-top: 96px;
+        padding-top: 52px;
         padding-bottom: 48px;
     }
 }
@@ -1993,8 +2063,8 @@ h2 em {
     }
 
     .ph-hero-person {
-        height: 462px;
-        bottom: -80px;
+        height: 492px;
+        bottom: -105px;
     }
 }
 
@@ -2051,9 +2121,9 @@ h2 em {
 
     .ph-hero-person {
         width: auto;
-        height: 360px;
+        height: 376px;
         max-width: none;
-        bottom: -56px;
+        bottom: -68px;
     }
 
     .ph-hero-stage::before {
@@ -2178,6 +2248,11 @@ h2 em {
     .ph-booking-submit {
         width: 100%;
         justify-content: space-between;
+    }
+
+    .ph-booking-nudge {
+        right: max(14px, env(safe-area-inset-right));
+        bottom: max(78px, calc(68px + env(safe-area-inset-bottom)));
     }
 
     .ph-about {
@@ -2378,8 +2453,8 @@ h2 em {
     }
 
     .ph-hero-person {
-        height: 300px;
-        bottom: -56px;
+        height: 314px;
+        bottom: -66px;
     }
 
     .ph-trust div {
