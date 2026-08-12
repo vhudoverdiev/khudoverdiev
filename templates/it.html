@@ -7,7 +7,7 @@
     <meta name="description" content="Разработка CRM-систем и веб-продуктов под реальные бизнес-процессы. Избранные кейсы Владимира Худовердиева.">
     <meta name="theme-color" content="#f4f0e8">
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='portfolio/vh-favicon.svg') }}?v=7">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/it.css') }}?v=90">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/it.css') }}?v=94">
 </head>
 <body>
     <a class="skip-link" href="#about">Перейти к содержанию</a>
@@ -198,7 +198,7 @@
 
     <div class="contact-modal" id="contact-modal" aria-hidden="true">
         <div class="contact-backdrop" data-close-contact></div>
-        <section class="contact-dialog" role="dialog" aria-modal="true" aria-labelledby="contact-title">
+        <section class="contact-dialog" role="dialog" aria-modal="true" aria-labelledby="contact-title" tabindex="-1">
             <button class="contact-close" type="button" data-close-contact aria-label="Закрыть">×</button>
             <div class="contact-dialog-copy">
                 <h2 id="contact-title">Расскажите<br><em>о вашей задаче</em></h2>
@@ -241,6 +241,7 @@
         const projectPrompt = document.getElementById('project-prompt');
         const projectPromptContact = projectPrompt.querySelector('[data-project-prompt-contact]');
         const contactModal = document.getElementById('contact-modal');
+        const contactDialog = contactModal.querySelector('.contact-dialog');
         const projectForm = document.getElementById('project-form');
         const projectSuccess = document.getElementById('project-success');
         const projectFormError = document.getElementById('project-form-error');
@@ -260,11 +261,6 @@
         let mediaItems = [];
         let mediaIndex = 0;
         let touchStartX = 0;
-        const mobileViewportState = {
-            width: 0,
-            orientation: '',
-            initialized: false,
-        };
 
         function isDesktopCanvas() {
             return window.matchMedia('(min-width: 500px)').matches;
@@ -276,29 +272,6 @@
 
         function updateDesktopScale() {
             document.documentElement.style.setProperty('--desktop-scale', getDesktopScale().toFixed(5));
-        }
-
-        function getViewportOrientation() {
-            if (window.screen && window.screen.orientation && window.screen.orientation.type) {
-                return window.screen.orientation.type;
-            }
-            return window.innerWidth > window.innerHeight ? 'landscape' : 'portrait';
-        }
-
-        function updateMobileViewport(force = false) {
-            const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-            const viewportWidth = window.visualViewport ? window.visualViewport.width : window.innerWidth;
-            const orientation = getViewportOrientation();
-            const widthChanged = Math.abs(viewportWidth - mobileViewportState.width) > 1;
-            const orientationChanged = orientation !== mobileViewportState.orientation;
-            if (!force && mobileViewportState.initialized && !widthChanged && !orientationChanged) return;
-
-            const bottomSpace = Math.round(Math.min(59, Math.max(38, viewportHeight * 0.045)));
-            document.documentElement.style.setProperty('--mobile-viewport-height', `${Math.round(viewportHeight)}px`);
-            document.documentElement.style.setProperty('--mobile-hero-bottom-space', `calc(${bottomSpace}px + env(safe-area-inset-bottom))`);
-            mobileViewportState.width = viewportWidth;
-            mobileViewportState.orientation = orientation;
-            mobileViewportState.initialized = true;
         }
 
         function getScaledOffsetTop(element) {
@@ -339,17 +312,12 @@
         }
 
         updateDesktopScale();
-        updateMobileViewport(true);
         updateHeader();
         window.addEventListener('scroll', updateHeader, { passive: true });
         window.addEventListener('resize', () => {
             updateDesktopScale();
-            updateMobileViewport();
             updateHeader();
         }, { passive: true });
-        if (window.visualViewport) {
-            window.visualViewport.addEventListener('resize', () => updateMobileViewport(), { passive: true });
-        }
 
         document.querySelectorAll('a[href^="#"]').forEach((link) => {
             link.addEventListener('click', (event) => {
@@ -481,7 +449,8 @@
         }
 
         function openContact(event) {
-            contactReturnFocus = event.currentTarget.closest('#project-prompt') ? document.querySelector('.header-cta') : event.currentTarget;
+            const openedFromProjectPrompt = Boolean(event.currentTarget.closest('#project-prompt'));
+            contactReturnFocus = openedFromProjectPrompt ? document.querySelector('.header-cta') : event.currentTarget;
             if (projectPrompt.classList.contains('is-open')) closeProjectPrompt();
             projectForm.hidden = false;
             projectSuccess.classList.remove('is-visible');
@@ -490,7 +459,7 @@
             contactModal.classList.add('is-open');
             contactModal.setAttribute('aria-hidden', 'false');
             document.body.classList.add('modal-open');
-            contactModal.querySelector('input[name="name"]').focus();
+            contactDialog.focus({ preventScroll: true });
         }
 
         function closeContact() {

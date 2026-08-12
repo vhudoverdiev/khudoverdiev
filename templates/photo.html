@@ -10,7 +10,7 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='photo/ph-favicon.ico') }}?v=1">
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='photo/ph-favicon.svg') }}?v=5">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='photo/ph-favicon.png') }}?v=2">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/photo.css') }}?v=44">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/photo.css') }}?v=46">
 </head>
 <body>
     <a class="ph-skip" href="#portfolio">Перейти к портфолио</a>
@@ -270,14 +270,14 @@
         </section>
 
         {% set ph_reviews = [
-            ('Портретная съемка', 'Съемка прошла спокойно и легко. Было понятно, как встать, куда смотреть и что делать в кадре.'),
-            ('Свадебная история', 'В кадрах остался не только сам день, но и настроение: близкие люди, детали и живые эмоции без лишней постановки.'),
-            ('Брендовый контент', 'Получились фотографии, которые удобно сразу использовать для соцсетей, афиш и рабочих материалов.'),
-            ('Репортаж', 'Моменты пойманы честно: движение, реакции людей и атмосфера события выглядят живыми.'),
-            ('Студийная съемка', 'Все было организовано заранее: образ, свет, локация и спокойный темп работы.'),
-            ('Семейная серия', 'Даже тем, кто обычно смущается камеры, было комфортно. В результате получились теплые и естественные фотографии.'),
-            ('Предметная съемка', 'Аккуратные кадры с вниманием к деталям, фактуре и тому, как продукт будет смотреться в публикациях.'),
-            ('Фото и видео', 'Удобно, когда один процесс закрывает сразу два формата: фотографии и короткие ролики в одном настроении.')
+            {'title': 'Портретная съемка', 'text': 'Съемка прошла спокойно и легко. Было понятно, как встать, куда смотреть и что делать в кадре.', 'name': 'Алина и Дмитрий', 'meta': 'Свадебная съемка', 'date': '21.05.2024', 'avatar': 'photo/portfolio/portfolio-071.jpg'},
+            {'title': 'Свадебная история', 'text': 'В кадрах остался не только сам день, но и настроение: близкие люди, детали и живые эмоции без лишней постановки.', 'name': 'Алина и Дмитрий', 'meta': 'Пара', 'date': '21.05.2024', 'avatar': 'photo/portfolio/portfolio-003.jpg'},
+            {'title': 'Брендовый контент', 'text': 'Получились фотографии, которые удобно сразу использовать для соцсетей, афиш и рабочих материалов.', 'name': 'Ксения', 'meta': 'Маркетолог', 'date': '14.02.2024', 'avatar': 'photo/portfolio/portfolio-050.jpg'},
+            {'title': 'Репортаж', 'text': 'Моменты пойманы честно: движение, реакции людей и атмосфера события выглядят живыми.', 'name': 'Иван', 'meta': 'Организатор', 'date': '07.12.2023', 'avatar': 'photo/portfolio/portfolio-100.jpg'},
+            {'title': 'Студийная съемка', 'text': 'Все было организовано заранее: образ, свет, локация и спокойный темп работы.', 'name': 'Мария', 'meta': 'Модель', 'date': '28.09.2023', 'avatar': 'photo/portfolio/portfolio-012.jpg'},
+            {'title': 'Семейная серия', 'text': 'Даже тем, кто обычно смущается камеры, было комфортно. В результате получились теплые и естественные фотографии.', 'name': 'Екатерина', 'meta': 'Семья', 'date': '16.08.2023', 'avatar': 'photo/portfolio/portfolio-025.jpg'},
+            {'title': 'Предметная съемка', 'text': 'Аккуратные кадры с вниманием к деталям, фактуре и тому, как продукт будет смотреться в публикациях.', 'name': 'Анна', 'meta': 'Бренд', 'date': '04.06.2023', 'avatar': 'photo/portfolio/portfolio-066.jpg'},
+            {'title': 'Фото и видео', 'text': 'Удобно, когда один процесс закрывает сразу два формата: фотографии и короткие ролики в одном настроении.', 'name': 'Софья', 'meta': 'Личный проект', 'date': '12.04.2023', 'avatar': 'photo/portfolio/portfolio-088.jpg'}
         ] %}
         <section class="ph-reviews" id="reviews">
             <header class="ph-reviews-heading">
@@ -285,27 +285,36 @@
                 <div>
                     <h2>После съемки<br><em>остается доверие</em></h2>
                 </div>
-                <button class="ph-review-all-button" type="button" data-reviews-open>Посмотреть все <span>↘</span></button>
+                <a class="ph-review-all-button" href="https://vk.ru/reviews-190646738" target="_blank" rel="noopener">Посмотреть все <span>↗</span></a>
             </header>
             <div class="ph-review-layout" aria-label="Отзывы клиентов">
                 <article class="ph-review-feature">
-                    <span>VK</span>
-                    <blockquote>{{ ph_reviews[0][1] }}</blockquote>
-                    <p>{{ ph_reviews[0][0] }}</p>
+                    <div class="ph-review-top">
+                        <div class="ph-review-person">
+                            <img src="{{ url_for('static', filename=ph_reviews[0].avatar) }}" alt="">
+                            <span><strong>{{ ph_reviews[0].name }}</strong><small>{{ ph_reviews[0].meta }}</small></span>
+                        </div>
+                        <div class="ph-review-rating" aria-label="Оценка 5 из 5"><span aria-hidden="true">★★★★★</span><b>5.0</b></div>
+                    </div>
+                    <blockquote>{{ ph_reviews[0].text }}</blockquote>
+                    <p>{{ ph_reviews[0].title }}</p>
                 </article>
                 <div class="ph-review-grid">
-                {% for title, text in ph_reviews[1:5] %}
+                {% for review in ph_reviews[1:5] %}
                 <article>
-                    <span>VK</span>
-                    <h3>{{ title }}</h3>
-                    <p>{{ text }}</p>
+                    <div class="ph-review-top">
+                        <div class="ph-review-person">
+                            <img src="{{ url_for('static', filename=review.avatar) }}" alt="">
+                            <span><strong>{{ review.name }}</strong><small>{{ review.date }}</small></span>
+                        </div>
+                        <div class="ph-review-rating" aria-label="Оценка 5 из 5"><span aria-hidden="true">★★★★★</span><b>5.0</b></div>
+                    </div>
+                    <h3>{{ review.title }}</h3>
+                    <p>{{ review.text }}</p>
+                    <small>{{ review.meta }}</small>
                 </article>
                 {% endfor %}
                 </div>
-            </div>
-            <div class="ph-review-actions">
-                <button class="ph-review-link" type="button" data-reviews-open><span>Все отзывы</span><strong>Посмотреть все</strong><b aria-hidden="true">↘</b></button>
-                <a class="ph-review-source" href="https://vk.ru/reviews-190646738" target="_blank" rel="noopener">Открыть отзывы во ВКонтакте <span>↗</span></a>
             </div>
         </section>
 
@@ -322,9 +331,11 @@
     <button class="ph-scroll-cue" type="button" aria-label="Перейти к следующему блоку" data-direction="down"><span>↓</span></button>
 
     <div class="ph-booking-nudge" data-booking-nudge aria-hidden="true">
-        <button class="ph-booking-nudge-close" type="button" aria-label="Закрыть уведомление" data-booking-nudge-close>×</button>
-        <p><strong>Желаете записаться на съемку?</strong><small>Оставьте короткую заявку, и я помогу выбрать формат, дату и настроение будущей серии.</small></p>
-        <button type="button" data-booking-nudge-open>Записаться <span>↘</span></button>
+        <div class="ph-booking-nudge-card">
+            <button class="ph-booking-nudge-close" type="button" aria-label="Закрыть уведомление" data-booking-nudge-close>×</button>
+            <p><strong>Желаете записаться на съемку?</strong><small>Оставьте короткую заявку, и я помогу выбрать формат, дату и настроение будущей серии.</small></p>
+            <button type="button" data-booking-nudge-open>Подробнее <span>↘</span></button>
+        </div>
     </div>
 
     <footer class="ph-footer" id="ph-site-footer">
@@ -399,35 +410,12 @@
         </form>
     </div>
 
-    <div class="ph-reviews-modal" data-reviews-modal aria-hidden="true">
-        <div class="ph-reviews-backdrop" data-reviews-close></div>
-        <section class="ph-reviews-dialog" aria-labelledby="reviews-modal-title" role="dialog" aria-modal="true">
-            <button class="ph-reviews-close" type="button" data-reviews-close aria-label="Закрыть отзывы">×</button>
-            <div class="ph-reviews-dialog-head">
-                <p class="ph-section-index">Отзывы</p>
-                <h2 id="reviews-modal-title">Все отзывы<br><em>клиентов</em></h2>
-                <a href="https://vk.ru/reviews-190646738" target="_blank" rel="noopener">Открыть VK <span>↗</span></a>
-            </div>
-            <div class="ph-reviews-list">
-                {% for title, text in ph_reviews %}
-                <article>
-                    <span>{{ '%02d'|format(loop.index) }}</span>
-                    <div>
-                        <h3>{{ title }}</h3>
-                        <p>{{ text }}</p>
-                    </div>
-                </article>
-                {% endfor %}
-            </div>
-        </section>
-    </div>
-
     <div class="ph-lightbox" id="ph-lightbox" aria-hidden="true">
         <button type="button" data-lightbox-close aria-label="Закрыть фотографию">×</button>
         <img alt="Открытая фотография">
         <p>Нажмите Esc, чтобы закрыть</p>
     </div>
 
-    <script src="{{ url_for('static', filename='js/photo.js') }}?v=14" defer></script>
+    <script src="{{ url_for('static', filename='js/photo.js') }}?v=16" defer></script>
 </body>
 </html>

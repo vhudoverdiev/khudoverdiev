@@ -13,15 +13,11 @@
     const bookingNudge = document.querySelector("[data-booking-nudge]");
     const bookingNudgeOpen = bookingNudge?.querySelector("[data-booking-nudge-open]");
     const bookingNudgeClose = bookingNudge?.querySelector("[data-booking-nudge-close]");
-    const reviewsModal = document.querySelector("[data-reviews-modal]");
-    const reviewsOpenButtons = [...document.querySelectorAll("[data-reviews-open]")];
-    const reviewsCloseButtons = [...document.querySelectorAll("[data-reviews-close]")];
     const scrollTargets = ["#about", "#portfolio", "#services", "#video", "#reviews", "#contact", "#ph-site-footer"]
         .map((selector) => document.querySelector(selector))
         .filter(Boolean);
     let lastTrigger = null;
     let lastBookingTrigger = null;
-    let lastReviewsTrigger = null;
     let bookingNudgeDismissed = false;
 
     const updateScrollCue = () => {
@@ -51,6 +47,7 @@
     const openBooking = (trigger) => {
         if (!bookingModal || !bookingForm) return;
         bookingNudge?.classList.remove("is-visible");
+        document.body.classList.remove("ph-nudge-open");
         lastBookingTrigger = trigger || document.activeElement;
         bookingModal.classList.add("is-open");
         bookingModal.setAttribute("aria-hidden", "false");
@@ -66,23 +63,6 @@
         bookingModal.setAttribute("aria-hidden", "true");
         document.body.classList.remove("ph-modal-open");
         lastBookingTrigger?.focus();
-    };
-
-    const openReviews = (trigger) => {
-        if (!reviewsModal) return;
-        lastReviewsTrigger = trigger || document.activeElement;
-        reviewsModal.classList.add("is-open");
-        reviewsModal.setAttribute("aria-hidden", "false");
-        document.body.classList.add("ph-modal-open");
-        reviewsModal.querySelector("[data-reviews-close]")?.focus();
-    };
-
-    const closeReviews = () => {
-        if (!reviewsModal) return;
-        reviewsModal.classList.remove("is-open");
-        reviewsModal.setAttribute("aria-hidden", "true");
-        document.body.classList.remove("ph-modal-open");
-        lastReviewsTrigger?.focus();
     };
 
     const renderVideoPlayer = () => {
@@ -116,6 +96,7 @@
         if (!bookingNudge || bookingNudgeDismissed || bookingModal?.classList.contains("is-open")) return;
         bookingNudge.classList.add("is-visible");
         bookingNudge.setAttribute("aria-hidden", "false");
+        document.body.classList.add("ph-nudge-open");
     };
 
     const closeBookingNudge = () => {
@@ -123,6 +104,7 @@
         bookingNudgeDismissed = true;
         bookingNudge.classList.remove("is-visible");
         bookingNudge.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("ph-nudge-open");
     };
 
     const closeCustomSelect = (customSelect, shouldFocus = false) => {
@@ -323,14 +305,6 @@
         button.addEventListener("click", closeBooking);
     });
 
-    reviewsOpenButtons.forEach((button) => {
-        button.addEventListener("click", () => openReviews(button));
-    });
-
-    reviewsCloseButtons.forEach((button) => {
-        button.addEventListener("click", closeReviews);
-    });
-
     bookingNudgeOpen?.addEventListener("click", () => {
         closeBookingNudge();
         openBooking(bookingNudgeOpen);
@@ -398,7 +372,6 @@
         if (event.key === "Escape") closeAllCustomSelects();
         if (event.key === "Escape" && lightbox?.classList.contains("is-open")) closeLightbox();
         if (event.key === "Escape" && bookingModal?.classList.contains("is-open")) closeBooking();
-        if (event.key === "Escape" && reviewsModal?.classList.contains("is-open")) closeReviews();
     });
 
     if (window.location.hash === "#booking") {

@@ -240,8 +240,10 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert b"portfolio/vh-favicon.svg" in portfolio.data
     assert b"vh-favicon.svg?v=7" in portfolio.data
     assert b'content="width=device-width, initial-scale=1, viewport-fit=cover"' in portfolio.data
-    assert b"css/it.css?v=90" in portfolio.data
+    assert b"css/it.css?v=94" in portfolio.data
     assert b'id="project-prompt"' in portfolio.data
+    assert b'class="project-prompt-close"' in portfolio.data
+    assert b'data-close-project-prompt' in portfolio.data
     assert b"data-project-prompt-contact" in portfolio.data
     assert "30 секунд на сайте".encode() not in portfolio.data
     assert b"class=\"desktop-scale-shell\"" in portfolio.data
@@ -283,6 +285,7 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "--desktop-scale: 1;" in css
     assert "--mobile-viewport-height: 100svh;" in css
     assert "--mobile-hero-bottom-space: calc(38px + env(safe-area-inset-bottom));" in css
+    assert "--mobile-console-height: min(354px, 38svh);" in css
     assert ".desktop-scale-stage {\n        width: var(--desktop-canvas-width);" in css
     assert "zoom: var(--desktop-scale);" in css
     assert "translate: 0 -68px;" in css
@@ -316,23 +319,30 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     portfolio_text = portfolio.get_data(as_text=True)
     assert "desktopCanvasWidth = 1920" in portfolio_text
     assert "window.matchMedia('(min-width: 500px)')" in portfolio_text
-    assert "const mobileViewportState = {" in portfolio_text
-    assert "updateMobileViewport(true)" in portfolio_text
-    assert "visualViewport.height" in portfolio_text
-    assert "Math.abs(viewportWidth - mobileViewportState.width) > 1" in portfolio_text
-    assert "if (!force && mobileViewportState.initialized && !widthChanged && !orientationChanged) return;" in portfolio_text
-    assert "Math.min(59, Math.max(38, viewportHeight * 0.045))" in portfolio_text
-    assert "visualViewport.addEventListener('resize', () => updateMobileViewport()" in portfolio_text
+    assert "updateMobileViewport" not in portfolio_text
+    assert "visualViewport.height" not in portfolio_text
+    assert "visualViewport.addEventListener" not in portfolio_text
     assert "visualViewport.addEventListener('scroll', updateMobileViewport" not in portfolio_text
     assert "projectPromptDelay = 120000" in portfolio_text
     assert "window.setTimeout(showProjectPrompt, projectPromptDelay)" in portfolio_text
     assert "projectPromptContact.addEventListener('click', openContact)" in portfolio_text
+    assert "const contactDialog = contactModal.querySelector('.contact-dialog');" in portfolio_text
+    assert "const openedFromProjectPrompt = Boolean(event.currentTarget.closest('#project-prompt'));" in portfolio_text
+    assert "contactDialog.focus({ preventScroll: true });" in portfolio_text
+    assert "contactModal.querySelector('input[name=\"name\"]').focus()" not in portfolio_text
     assert "project-prompt-backdrop" in css
     assert "backdrop-filter: blur(18px) saturate(0.86);" in css
     assert ".project-prompt-kicker" not in css
+    assert ".project-prompt-close {\n    position: absolute;\n    z-index: 2;" in css
+    assert ".project-prompt-close:hover,\n.project-prompt-close:focus-visible {" in css
     assert ".project-prompt-primary {\n    min-height: 58px;" in css
     assert "border-radius: 6px;\n    background: var(--ink);\n    color: #fff;" in css
     assert ".project-prompt-primary .ui-icon {\n    color: #fff;" in css
+    assert ".contact-dialog {\n    position: relative;\n    width: 840px;\n    min-height: 520px;" in css
+    assert "outline: none;" in css
+    assert "width: min(390px, calc(100vw - 28px));" in css
+    assert "min-height: 0;\n        max-height: min(680px, calc(100dvh - 48px));" in css
+    assert "max-height: min(680px, calc(100dvh - 48px));" in css
     assert "getScaledOffsetTop(element)" in portfolio_text
     assert "scrollToScaledTarget(target || document.getElementById('site-footer'))" in portfolio_text
     assert "/* Mobile polish: one deliberate layout, not a squeezed desktop. */" in css
@@ -342,25 +352,29 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "padding: 116px 0 var(--mobile-hero-bottom-space);" in css
     assert "transition:\n            background 180ms ease,\n            border-color 180ms ease,\n            box-shadow 180ms ease;" in css
     assert "@media (max-width: 499px) and (max-height: 820px)" in css
-    assert "grid-template-rows: auto auto auto auto minmax(152px, 1fr) auto;" in css
+    assert "grid-template-rows: auto auto auto auto minmax(152px, 1fr) auto;" not in css
     assert "padding-top: 96px;" in css
-    assert ".mobile-action-console {\n        height: calc(100% - 18px);\n        min-height: 184px;" in css
+    assert ".mobile-action-console {\n        height: min(320px, 40svh);\n        min-height: 0;" in css
     assert "grid-template-rows: 26px repeat(8, minmax(18px, 1fr)) 26px;" in css
     assert "@media (orientation: landscape) and (max-height: 499px) and (pointer: coarse)" in css
     assert ".rotate-lock {\n        position: fixed;\n        z-index: 9999;" in css
-    assert "width: 100dvw;" in css
-    assert "height: 100dvh;" in css
+    rotate_lock = re.search(r"\.rotate-lock \{(?P<body>.*?)\n    \}", css, re.S)
+    assert rotate_lock is not None
+    assert "width: 100dvw;" not in rotate_lock.group("body")
+    assert "height: 100dvh;" not in rotate_lock.group("body")
+    assert ".rotate-lock::before {\n        content: \"\";\n        position: fixed;" in css
     assert "max(24px, env(safe-area-inset-right))" in css
     assert ".desktop-scale-shell,\n    .page-scroll-cue,\n    .project-prompt-modal,\n    .media-modal,\n    .contact-modal {\n        visibility: hidden;" in css
-    assert "grid-template-rows: auto auto auto auto minmax(112px, 1fr) auto;" in css
+    assert "grid-template-rows: auto auto auto auto auto auto;" in css
+    assert "grid-template-rows: auto auto auto auto minmax(112px, 1fr) auto;" not in css
     assert "grid-template-columns: minmax(0, 1fr) 118px;" not in css
     assert ".hero-copy {\n        display: contents;" in css
     assert ".hero h1 {\n        grid-column: 1;\n        grid-row: 3;" in css
     assert ".portrait-wrap {\n        display: none;" in css
     assert ".mobile-action-console {\n    display: none;" in css
     assert ".mobile-action-console {\n        grid-column: 1 / -1;\n        grid-row: 5;" in css
-    assert "height: calc(100% - 26px);" in css
-    assert "min-height: 126px;" in css
+    assert "height: var(--mobile-console-height);" in css
+    assert "height: calc(100% - 26px);" not in css
     assert "align-self: start;" in css
     assert "grid-template-rows: 30px repeat(8, minmax(29px, 1fr)) 30px;" in css
     assert ".mobile-console-bar,\n    .mobile-console-status {" in css
@@ -431,9 +445,9 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "default-src 'self'" in response.headers["Content-Security-Policy"]
     assert "frame-src https://vk.com https://vk.ru https://vkvideo.ru" in response.headers["Content-Security-Policy"]
     assert b"css/photo.css" in response.data
-    assert b"photo.css?v=44" in response.data
+    assert b"photo.css?v=46" in response.data
     assert b"js/photo.js" in response.data
-    assert b"photo.js?v=14" in response.data
+    assert b"photo.js?v=16" in response.data
     assert "Архангельск, Северодвинск".encode() in response.data
     assert b"photo/ph-favicon.ico" in response.data
     assert b"photo/ph-favicon.svg" in response.data
@@ -473,9 +487,12 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert b'data-booking-form' in response.data
     assert b'data-booking-nudge' in response.data
     assert b'data-booking-nudge-open' in response.data
+    assert b'class="ph-booking-nudge-card"' in response.data
+    assert b'class="ph-booking-nudge-close"' in response.data
     assert "Желаете записаться на съемку?".encode() in response.data
     assert "Оставьте короткую заявку".encode() in response.data
-    assert "Записаться".encode() in response.data
+    assert "Подробнее".encode() in response.data
+    assert "data-booking-nudge-open>Записаться".encode() not in response.data
     assert "У вас есть проект?".encode() not in response.data
     assert "Связаться".encode() not in response.data
     assert "Узнать подробности".encode() not in response.data
@@ -538,15 +555,21 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "После съемки".encode() in response.data
     assert "остается доверие".encode() in response.data
     assert b'class="ph-review-feature"' in response.data
-    assert b'data-reviews-open' in response.data
-    assert b'data-reviews-modal' in response.data
-    assert b'data-reviews-close' in response.data
+    assert b'class="ph-review-top"' in response.data
+    assert b'class="ph-review-person"' in response.data
+    assert b'class="ph-review-rating"' in response.data
+    assert b">VK</span>" not in response.data
+    assert b"data-reviews-open" not in response.data
+    assert b"data-reviews-modal" not in response.data
+    assert b"data-reviews-close" not in response.data
     assert "Посмотреть все".encode() in response.data
-    assert "Все отзывы".encode() in response.data
-    assert "Открыть отзывы во ВКонтакте".encode() in response.data
-    assert "Все отзывы".encode() in response.data
-    assert "клиентов".encode() in response.data
-    assert "Фото и видео".encode() in response.data
+    assert b'class="ph-review-all-button" href="https://vk.ru/reviews-190646738"' in response.data
+    assert "Открыть отзывы во ВКонтакте".encode() not in response.data
+    assert "Открыть VK".encode() not in response.data
+    assert "Все отзывы".encode() not in response.data
+    assert 'id="reviews-modal-title"'.encode() not in response.data
+    assert "Фото и видео".encode() not in response.data
+    assert "Свадебная история".encode() in response.data
     assert b"https://vk.ru/reviews-190646738" in response.data
     assert "06 / Контакты".encode() in response.data
     assert "Открыть полное портфолио".encode() in response.data
@@ -566,9 +589,9 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
 
     assert response.status_code == 200
     assert b"css/photo.css" in response.data
-    assert b"photo.css?v=44" in response.data
+    assert b"photo.css?v=46" in response.data
     assert b"js/photo.js" in response.data
-    assert b"photo.js?v=14" in response.data
+    assert b"photo.js?v=16" in response.data
     assert "Портфолио".encode() in response.data
     assert "126 фотографий".encode() not in response.data
     assert "Собрал сюда все снимки из альбома ВКонтакте".encode() not in response.data
@@ -608,15 +631,21 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert "inset: 0;" in css
     assert "place-items: center;" in css
     assert "backdrop-filter: blur(18px) saturate(.9);" in css
+    assert "body.ph-modal-open,\nbody.ph-nudge-open { overflow: hidden; }" in css
+    assert "body.ph-nudge-open .ph-scroll-cue {" in css
+    assert ".ph-booking-nudge-card {\n    position: relative;" in css
+    assert ".ph-booking-nudge-card > button:not(.ph-booking-nudge-close) {" in css
     assert ".ph-booking-nudge.is-visible {" in css
     assert ".ph-reviews {\n    position: relative;" in css
     assert ".ph-review-layout {\n    position: relative;" in css
     assert ".ph-review-feature {\n    min-height: 506px;" in css
     assert ".ph-review-grid {\n    position: relative;" in css
-    assert ".ph-review-link {\n    position: relative;" in css
-    assert ".ph-reviews-modal {\n    position: fixed;" in css
-    assert ".ph-reviews-modal.is-open {" in css
-    assert ".ph-reviews-list {\n    display: grid;" in css
+    assert ".ph-review-top {\n    display: flex;" in css
+    assert ".ph-review-person img {\n    width: 46px;" in css
+    assert ".ph-review-rating {\n    flex: 0 0 auto;" in css
+    assert ".ph-review-link" not in css
+    assert ".ph-reviews-modal" not in css
+    assert ".ph-reviews-list" not in css
     assert ".ph-booking-head p:last-child" not in css
     js = Path("static/js/photo.js").read_text(encoding="utf-8")
     assert "initCustomSelects" in js
@@ -624,6 +653,8 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert "data-custom-select-option" in js
     assert "window.setTimeout(showBookingNudge, 120000);" in js
     assert "data-booking-nudge-open" in js
+    assert "document.body.classList.add(\"ph-nudge-open\")" in js
+    assert "document.body.classList.remove(\"ph-nudge-open\")" in js
     assert ".ph-booking-head > p:not(.ph-section-index)" in js
     assert ".ph-about-copy {\n    position: relative;\n    z-index: 1;\n    align-self: start;" in css
     assert ".ph-hero,\n    .ph-about,\n    .ph-portfolio" not in css
@@ -648,9 +679,9 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     js = Path("static/js/photo.js").read_text(encoding="utf-8")
     assert "portfolio-100.jpg" in js
     assert '"#reviews"' in js
-    assert "openReviews" in js
-    assert "closeReviews" in js
-    assert "data-reviews-open" in js
+    assert "openReviews" not in js
+    assert "closeReviews" not in js
+    assert "data-reviews-open" not in js
     assert 'link.textContent = "Фото";' in js
 
 
@@ -681,6 +712,7 @@ def test_it_portfolio_project_form_uses_protected_shared_message_endpoint(client
     assert b'action="/message"' in response.data
     assert b'name="csrf_token"' in response.data
     assert b'data-open-contact' in response.data
+    assert b'aria-labelledby="contact-title" tabindex="-1"' in response.data
 
 
 def test_it_project_request_is_saved_and_visible_in_admin_reached_through_sk(client):
@@ -972,7 +1004,7 @@ def test_admin_login_page_is_no_store_and_contains_csrf(client):
     assert b'name="csrf_token"' in response.data
     assert b'name="username"' in response.data
     assert b'autocomplete="username"' in response.data
-    assert b"css/styles.css?v=20" in response.data
+    assert b"css/styles.css?v=21" in response.data
     assert "<title>Админ-панель</title>".encode() in response.data
     assert "Админ-панель — KHUDOVERDIEV".encode() not in response.data
     assert "Фотография сохраняет тишину момента".encode() in response.data
@@ -1269,7 +1301,7 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
     assert b'href="https://vk.ru/reviews-190646738"' in response.data
     assert b'href="https://ph.khudoverdiev.ru"' in response.data
     assert "Страница фотографа".encode() in response.data
-    assert b"class=\"client-button client-button-tertiary\"" in response.data
+    assert b"class=\"client-header-link\"" in response.data
     assert b"https://reviews.example/ivanova" not in response.data
     assert b"<form" not in response.data
     assert b'type="file"' not in response.data
