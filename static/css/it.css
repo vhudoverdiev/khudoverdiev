@@ -3368,60 +3368,51 @@ footer p:last-child {
 }
 
 @media (min-width: 400px) and (max-width: 499px) {
-    .code-console {
-        margin-bottom: 18px;
+    .hero-grid {
+        padding-top: 82px;
     }
 
     .code-console-bar,
     .code-console-status {
-        min-height: 28px;
         font-size: 8px;
     }
 
     .code-console-line {
-        min-height: 44px;
         font-size: 9px;
     }
 
     .eyebrow {
-        margin-bottom: 14px;
         font-size: 9px;
     }
 
     .hero h1 {
-        font-size: 50px;
+        font-size: 44px;
     }
 
     .lead {
-        margin-top: 12px;
-        font-size: 16px;
-        line-height: 1.42;
+        font-size: 15px;
+        line-height: 1.4;
     }
 
     .mobile-action-console {
-        height: 340px;
-        margin-top: 18px;
-        grid-template-rows: 28px repeat(8, minmax(24px, 1fr)) 28px;
+        height: 240px;
     }
 
     .mobile-console-bar,
     .mobile-console-status {
-        min-height: 28px;
         font-size: 7px;
     }
 
     .mobile-code-line {
-        min-height: 24px;
         font-size: 9px;
     }
 
     .hero-actions {
-        margin-top: 20px;
+        margin-top: 12px;
     }
 
     .button {
-        min-height: 58px;
-        font-size: 16px;
+        font-size: 15px;
     }
 }
 
