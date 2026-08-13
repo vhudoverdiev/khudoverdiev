@@ -7,8 +7,7 @@
     const bookingStatus = bookingModal?.querySelector("[data-booking-status]");
     const scrollCue = document.querySelector(".ph-scroll-cue");
     const videoPlayer = document.querySelector("[data-video-player]");
-    const videoPlayButton = document.querySelector("[data-video-play]");
-    const videoPlayerTitle = document.querySelector("[data-video-player-title]");
+    const videoFrame = document.querySelector("[data-video-frame]");
     const videoCards = [...document.querySelectorAll("[data-video-card]")];
     const bookingNudge = document.querySelector("[data-booking-nudge]");
     const bookingNudgeOpen = bookingNudge?.querySelector("[data-booking-nudge-open]");
@@ -66,16 +65,19 @@
     };
 
     const setActiveVideo = (button) => {
-        if (!button || !videoPlayer) return;
-        videoCards.forEach((card) => card.classList.toggle("is-active", card === button));
-        videoPlayer.dataset.videoTitle = button.dataset.videoTitle || "";
-        if (videoPlayerTitle && videoPlayer.dataset.videoTitle) {
-            videoPlayerTitle.textContent = videoPlayer.dataset.videoTitle;
+        if (!button || !videoPlayer || !videoFrame) return;
+        const videoTitle = button.dataset.videoTitle || "Видео";
+        const videoEmbed = button.dataset.videoEmbed || "";
+        videoCards.forEach((card) => {
+            const isActive = card === button;
+            card.classList.toggle("is-active", isActive);
+            card.setAttribute("aria-pressed", isActive ? "true" : "false");
+        });
+        videoPlayer.dataset.videoTitle = videoTitle;
+        if (videoEmbed && videoFrame.getAttribute("src") !== videoEmbed) {
+            videoFrame.src = videoEmbed;
         }
-        if (videoPlayButton) {
-            videoPlayButton.href = button.dataset.videoUrl || "#";
-            videoPlayButton.setAttribute("aria-label", `Смотреть работу «${videoPlayer.dataset.videoTitle}» в VK Video`);
-        }
+        videoFrame.title = videoTitle;
     };
 
     const showBookingNudge = () => {

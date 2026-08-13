@@ -40,7 +40,7 @@
             </div>
 
             <div class="ph-hero-stage" aria-label="Фотограф и примеры работ">
-                <div class="ph-portrait-orbit" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+                <div class="ph-portrait-orbit" aria-hidden="true"></div>
                 <div class="ph-person-plate">
                     <img class="ph-hero-person" src="{{ url_for('static', filename='photo/portrait-cutout.png') }}" alt="Фотограф Владимир Худовердиев" width="1023" height="1537">
                 </div>
@@ -197,12 +197,13 @@
 
             <div class="ph-video-showcase" aria-label="Видеопортфолио">
                 <div class="ph-video-player" data-video-player aria-live="polite">
-                    <div class="ph-video-placeholder">
-                        <span>VK Video</span>
-                        <h3 data-video-player-title>Николай &amp; Галина</h3>
-                        <p>Выберите работу ниже и откройте ее в VK Video.</p>
-                        <a href="https://vkvideo.ru/video-229443984_456239042" target="_blank" rel="noopener noreferrer" data-video-play>Смотреть работу <b>↗</b></a>
-                    </div>
+                    <iframe
+                        src="https://vk.com/video_ext.php?oid=-229443984&amp;id=456239042&amp;hd=2"
+                        title="Николай &amp; Галина"
+                        loading="lazy"
+                        allow="autoplay; encrypted-media; fullscreen; picture-in-picture; screen-wake-lock"
+                        allowfullscreen
+                        data-video-frame></iframe>
                 </div>
                 <div class="ph-video-works" aria-label="Работы из VK Video и клипов">
                     {% for title, meta, video_id, kind in [
@@ -215,7 +216,7 @@
                         ('VK Клип', 'Короткий вертикальный ролик', '456239046', 'Клип'),
                         ('VK Клип', 'Короткий вертикальный ролик', '456239044', 'Клип')
                     ] %}
-                    <button class="ph-video-work {{ 'is-active' if loop.first else '' }}" type="button" data-video-card data-video-url="https://vkvideo.ru/video-229443984_{{ video_id }}" data-video-title="{{ title }}">
+                    <button class="ph-video-work {{ 'is-active' if loop.first else '' }}" type="button" data-video-card data-video-embed="https://vk.com/video_ext.php?oid=-229443984&amp;id={{ video_id }}&amp;hd=2" data-video-title="{{ title }}" aria-pressed="{{ 'true' if loop.first else 'false' }}">
                         <span>{{ '%02d'|format(loop.index) }}</span>
                         <small>{{ kind }}</small>
                         <strong>{{ title }}</strong>
@@ -270,13 +271,13 @@
         </section>
 
         {% set ph_reviews = [
-            {'text': 'Большое спасибо Владимиру за замечательную фотосессию! Очень комфортная и душевная атмосфера, снимки красивые, качество 🔥, очень всё понравилось!🥰👍🏻', 'name': 'Юлия Митягина', 'date': '20 дек 2025', 'avatar': 'photo/portfolio/portfolio-038.jpg'},
+            {'text': 'Большое спасибо Владимиру за замечательную фотосессию! Очень комфортная и душевная атмосфера, снимки красивые, качество, очень всё понравилось!', 'name': 'Юлия Митягина', 'date': '20 дек 2025', 'avatar': 'photo/portfolio/portfolio-038.jpg'},
             {'text': 'Владимир, хочется выразить огромную благодарность за твои потрясающие фотографии! Они действительно невероятны: каждая деталь, свет, композиция — всё выполнено безупречно. Ты умеешь поймать самые искренние эмоции и создать атмосферу, которая вызывает восторг и восхищение. От всей души желаю дальнейших творческих успехов и вдохновляющих проектов!', 'name': 'Наталья Неверова', 'date': '25 сен 2025', 'avatar': 'photo/portfolio/portfolio-040.jpg'},
             {'text': 'Огромное спасибо Владимиру за прекрасные фотографии! Вы настоящий профессионал: все было организовано четко, атмосфера на съемке была легкой и позитивной, а результат превзошел все ожидания! Фото получились живыми, эмоциональными и очень красивыми. Рекомендую Владимира всем, кто ищет качество и душевный подход!', 'name': 'Людмила Головкова', 'date': '7 авг 2025', 'avatar': 'photo/portfolio/portfolio-041.jpg'},
-            {'text': 'Обращалась к Владимиру не первый раз, все как всегда на высшем уровне 😎очень нравиться подход к детям , фото просто восторг 🤩 обращусь ещё не раз 🔥', 'name': 'Елена Коняева', 'date': '17 июл 2025', 'avatar': 'photo/portfolio/portfolio-072.jpg'},
-            {'text': 'Обратились к Владимиру для видеосъемки на свадьбе. Видео Владимир отправил очень оперативно, вежливо общался. Видео получились даже лучше, чем я ожидала. Спасибо большое 😊', 'name': 'Галина Перова', 'date': '27 июн 2025', 'avatar': 'photo/portfolio/portfolio-095.jpg'},
-            {'text': 'Владимир, огромное спасибо за Вашу работу! Участие в фотопроекте благодаря Вам стало очень комфортным, лёгким и запоминающимся! Результат-огонь🔥🔥🔥😇', 'name': 'Анастасия Дубошина', 'date': '24 июл 2025', 'avatar': 'photo/portfolio/portfolio-053.jpg'},
-            {'text': 'обращалась к Владимиру не первый раз, все как всегда на высшем уровне 😎очень нравиться подход к детям , фото просто восторг 😇 обращусь ещё не раз 🔥', 'name': 'Елена Коняева', 'date': '17 июл 2025', 'avatar': 'photo/portfolio/portfolio-097.jpg'},
+            {'text': 'Обращалась к Владимиру не первый раз, все как всегда на высшем уровне, очень нравиться подход к детям, фото просто восторг, обращусь ещё не раз.', 'name': 'Елена Коняева', 'date': '17 июл 2025', 'avatar': 'photo/portfolio/portfolio-072.jpg'},
+            {'text': 'Обратились к Владимиру для видеосъемки на свадьбе. Видео Владимир отправил очень оперативно, вежливо общался. Видео получились даже лучше, чем я ожидала. Спасибо большое.', 'name': 'Галина Перова', 'date': '27 июн 2025', 'avatar': 'photo/portfolio/portfolio-095.jpg'},
+            {'text': 'Владимир, огромное спасибо за Вашу работу! Участие в фотопроекте благодаря Вам стало очень комфортным, лёгким и запоминающимся! Результат огонь.', 'name': 'Анастасия Дубошина', 'date': '24 июл 2025', 'avatar': 'photo/portfolio/portfolio-053.jpg'},
+            {'text': 'обращалась к Владимиру не первый раз, все как всегда на высшем уровне, очень нравиться подход к детям, фото просто восторг, обращусь ещё не раз.', 'name': 'Елена Коняева', 'date': '17 июл 2025', 'avatar': 'photo/portfolio/portfolio-097.jpg'},
             {'text': 'Спасибо огромное за прекрасную фотосессию с лошадью. И за чудесные фотографии. Вся семья довольна, особенно дети', 'name': 'Екатерина Телокина', 'date': '24 июл 2025', 'avatar': 'photo/portfolio/portfolio-021.jpg'}
         ] %}
         <section class="ph-reviews" id="reviews">
@@ -417,6 +418,6 @@
         <p>Нажмите Esc, чтобы закрыть</p>
     </div>
 
-    <script src="{{ url_for('static', filename='js/photo.js') }}?v=17" defer></script>
+    <script src="{{ url_for('static', filename='js/photo.js') }}?v=18" defer></script>
 </body>
 </html>

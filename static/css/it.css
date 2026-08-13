@@ -2767,14 +2767,14 @@ footer p:last-child {
     .hero-grid {
         height: var(--mobile-hero-height);
         min-height: 704px;
-        width: calc(100% - 32px);
+        width: min(408px, calc(100% - 32px));
         grid-template-columns: minmax(0, 1fr);
         grid-template-rows: auto auto auto auto auto auto;
         align-content: start;
         align-items: center;
         column-gap: 10px;
         row-gap: 0;
-        padding: 116px 0 var(--mobile-hero-bottom-space);
+        padding: 92px 0 calc(18px + env(safe-area-inset-bottom));
     }
 
     .hero-copy {
@@ -2785,7 +2785,7 @@ footer p:last-child {
     .code-console {
         grid-column: 1 / -1;
         grid-row: 1;
-        margin-bottom: 22px;
+        margin-bottom: 14px;
         border-radius: 18px;
         background:
             linear-gradient(135deg, rgba(255, 255, 255, 0.055), transparent 42%),
@@ -2795,14 +2795,14 @@ footer p:last-child {
 
     .code-console-bar,
     .code-console-status {
-        min-height: 28px;
+        min-height: 24px;
         padding-inline: 12px;
         font-size: 7px;
         letter-spacing: 0.75px;
     }
 
     .code-console-line {
-        min-height: 48px;
+        min-height: 38px;
         padding-inline: 12px;
         font-size: 8px;
         white-space: nowrap;
@@ -2818,7 +2818,9 @@ footer p:last-child {
         grid-column: 1 / -1;
         grid-row: 2;
         max-width: 100%;
-        margin-bottom: 18px;
+        margin-bottom: 10px;
+        font-size: 8px;
+        line-height: 1.35;
         color: rgba(255, 255, 255, 0.58);
     }
 
@@ -2836,9 +2838,9 @@ footer p:last-child {
         grid-column: 1;
         grid-row: 4;
         max-width: 100%;
-        margin-top: 14px;
-        font-size: 15px;
-        line-height: 1.48;
+        margin-top: 8px;
+        font-size: 14px;
+        line-height: 1.36;
         color: rgba(255, 255, 255, 0.68);
     }
 
@@ -2846,13 +2848,13 @@ footer p:last-child {
         grid-column: 1 / -1;
         grid-row: 5;
         width: 100%;
-        height: var(--mobile-console-height);
+        height: 260px;
         min-height: 0;
         align-self: start;
-        margin-top: 20px;
+        margin-top: 14px;
         margin-bottom: 0;
         display: grid;
-        grid-template-rows: 30px repeat(8, minmax(29px, 1fr)) 30px;
+        grid-template-rows: 24px repeat(8, minmax(20px, 1fr)) 24px;
         align-content: stretch;
         gap: 0;
         overflow: hidden;
@@ -2872,9 +2874,9 @@ footer p:last-child {
         display: flex;
         align-items: center;
         gap: 10px;
-        min-height: 30px;
-        padding: 0 12px;
-        font-size: 7px;
+        min-height: 24px;
+        padding: 0 10px;
+        font-size: 6px;
         font-weight: 700;
         letter-spacing: 0.78px;
         text-transform: uppercase;
@@ -2909,13 +2911,13 @@ footer p:last-child {
     }
 
     .mobile-code-line {
-        min-height: 29px;
+        min-height: 20px;
         display: flex;
         align-items: center;
         gap: 10px;
-        padding: 0 12px;
+        padding: 0 10px;
         border-top: 1px solid rgba(255, 255, 255, 0.06);
-        font-size: 9px;
+        font-size: 8px;
         line-height: 1;
         white-space: nowrap;
         mask-image: linear-gradient(90deg, #000 88%, transparent);
@@ -2944,71 +2946,14 @@ footer p:last-child {
     .hero-actions {
         grid-column: 1 / -1;
         grid-row: 6;
-        margin-top: 22px;
-    }
-
-    .button {
-        min-height: 54px;
-        padding: 0 18px 0 20px;
-        border-radius: 16px;
-        box-shadow: 0 18px 44px rgba(206, 255, 51, 0.16);
-    }
-
-    html.is-mobile-compact-hero .hero-grid {
-        padding-top: 92px;
-        padding-bottom: calc(18px + env(safe-area-inset-bottom));
-    }
-
-    html.is-mobile-compact-hero .code-console {
-        margin-bottom: 14px;
-    }
-
-    html.is-mobile-compact-hero .code-console-bar,
-    html.is-mobile-compact-hero .code-console-status {
-        min-height: 24px;
-    }
-
-    html.is-mobile-compact-hero .code-console-line {
-        min-height: 38px;
-    }
-
-    html.is-mobile-compact-hero .eyebrow {
-        margin-bottom: 10px;
-        font-size: 8px;
-        line-height: 1.35;
-    }
-
-    html.is-mobile-compact-hero .lead {
-        margin-top: 8px;
-        font-size: 14px;
-        line-height: 1.36;
-    }
-
-    html.is-mobile-compact-hero .mobile-action-console {
-        height: 260px;
-        margin-top: 14px;
-        grid-template-rows: 24px repeat(8, minmax(20px, 1fr)) 24px;
-    }
-
-    html.is-mobile-compact-hero .mobile-console-bar,
-    html.is-mobile-compact-hero .mobile-console-status {
-        min-height: 24px;
-        padding-inline: 10px;
-        font-size: 6px;
-    }
-
-    html.is-mobile-compact-hero .mobile-code-line {
-        min-height: 20px;
-        padding-inline: 10px;
-        font-size: 8px;
-    }
-
-    html.is-mobile-compact-hero .hero-actions {
         margin-top: 16px;
     }
 
-    html.is-mobile-compact-hero .button {
+    .button {
         min-height: 52px;
+        padding: 0 18px 0 20px;
+        border-radius: 16px;
+        box-shadow: 0 18px 44px rgba(206, 255, 51, 0.16);
     }
 
     .button > .ui-icon {

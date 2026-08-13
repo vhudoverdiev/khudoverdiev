@@ -9,7 +9,7 @@
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}?v=2" sizes="any">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}?v=2">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}?v=2">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=28">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=29">
 </head>
 <body class="admin-body{% if not authorized %} admin-login-body{% endif %}">
     <main class="admin-page{% if not authorized %} admin-login-page{% endif %}">
@@ -75,9 +75,37 @@
             </header>
 
             <nav class="admin-tabs" aria-label="Разделы админ-панели">
-                <a class="{{ 'is-active' if active_admin_tab == 'dashboard' else '' }}" href="{{ url_for('admin') }}">Обзор</a>
-                <a class="{{ 'is-active' if active_admin_tab == 'clients' else '' }}" href="{{ url_for('admin_clients') }}">Клиенты</a>
-                <a class="{{ 'is-active' if active_admin_tab == 'messages' else '' }}" href="{{ url_for('admin_messages') }}">Обращения</a>
+                <a class="{{ 'is-active' if active_admin_tab == 'dashboard' else '' }}" href="{{ url_for('admin') }}">
+                    <span class="admin-tab-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="M4 13h6V4H4v9Z"></path>
+                            <path d="M14 20h6V4h-6v16Z"></path>
+                            <path d="M4 20h6v-3H4v3Z"></path>
+                        </svg>
+                    </span>
+                    <span class="admin-tab-label">Обзор</span>
+                </a>
+                <a class="{{ 'is-active' if active_admin_tab == 'clients' else '' }}" href="{{ url_for('admin_clients') }}">
+                    <span class="admin-tab-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"></path>
+                            <path d="M3.5 20a4.5 4.5 0 0 1 9 0"></path>
+                            <path d="M17 10.5a2.5 2.5 0 1 0 0-5"></path>
+                            <path d="M15 15.5c2.5.3 4.5 1.7 5 4.5"></path>
+                        </svg>
+                    </span>
+                    <span class="admin-tab-label">Клиенты</span>
+                </a>
+                <a class="{{ 'is-active' if active_admin_tab == 'messages' else '' }}" href="{{ url_for('admin_messages') }}">
+                    <span class="admin-tab-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="M5 6.5h14v9H9l-4 3v-12Z"></path>
+                            <path d="M8 10h8"></path>
+                            <path d="M8 13h5"></path>
+                        </svg>
+                    </span>
+                    <span class="admin-tab-label">Обращения</span>
+                </a>
             </nav>
 
             <div class="admin-content" data-admin-content>
@@ -158,9 +186,6 @@
                         <div class="client-create-intro">
                             <span>Новая ссылка</span>
                             <strong>Создать страницу клиента</strong>
-                            <div class="client-create-visual" aria-hidden="true">
-                                <i></i>
-                            </div>
                         </div>
                         <form class="client-form client-create-form" action="{{ url_for('admin_clients') }}" method="post">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -175,7 +200,6 @@
                             <label class="client-form-wide">
                                 <span>Внешняя ссылка на фотографии</span>
                                 <div class="client-url-field">
-                                    <i aria-hidden="true"></i>
                                     <input type="url" name="photo_link" maxlength="500" value="{{ client_form.photo_link }}" placeholder="https://drive.google.com/..." required>
                                 </div>
                             </label>
@@ -233,7 +257,6 @@
                                 <label class="client-form-wide">
                                     <span>Внешняя ссылка на фотографии</span>
                                     <div class="client-url-field">
-                                        <i aria-hidden="true"></i>
                                         <input type="url" name="photo_link" maxlength="500" value="{{ client.photo_link }}" required>
                                     </div>
                                 </label>

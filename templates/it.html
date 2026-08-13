@@ -262,8 +262,6 @@
         let mediaItems = [];
         let mediaIndex = 0;
         let touchStartX = 0;
-        let mobileHeroLockWidth = 0;
-        let mobileHeroHeightLocked = false;
 
         function isDesktopCanvas() {
             return window.matchMedia('(min-width: 500px)').matches;
@@ -277,36 +275,9 @@
             document.documentElement.style.setProperty('--desktop-scale', getDesktopScale().toFixed(5));
         }
 
-        function getInitialMobileViewportHeight() {
-            const visualHeight = window.visualViewport && window.visualViewport.height;
-            return Math.round(visualHeight || window.innerHeight);
-        }
-
-        function lockMobileHeroHeight(force = false) {
+        function resetMobileHeroState() {
             const root = document.documentElement;
-            if (isDesktopCanvas()) {
-                root.style.removeProperty('--mobile-hero-height');
-                root.classList.remove('is-mobile-compact-hero');
-                mobileHeroLockWidth = 0;
-                mobileHeroHeightLocked = false;
-                return;
-            }
-
-            const currentWidth = window.innerWidth;
-            if (!force && mobileHeroHeightLocked && currentWidth === mobileHeroLockWidth) return;
-
-            const height = Math.max(620, getInitialMobileViewportHeight());
-            root.style.setProperty('--mobile-hero-height', `${height}px`);
-            root.classList.toggle('is-mobile-compact-hero', height <= 820);
-            mobileHeroLockWidth = currentWidth;
-            mobileHeroHeightLocked = true;
-        }
-
-        function refreshInitialMobileHeroHeight() {
-            lockMobileHeroHeight(true);
-            window.setTimeout(() => {
-                if (window.scrollY < 2) lockMobileHeroHeight(true);
-            }, 160);
+            root.style.removeProperty('--mobile-hero-height');
         }
 
         function getScaledOffsetTop(element) {
@@ -347,12 +318,12 @@
         }
 
         updateDesktopScale();
-        refreshInitialMobileHeroHeight();
+        resetMobileHeroState();
         updateHeader();
         window.addEventListener('scroll', updateHeader, { passive: true });
         window.addEventListener('resize', () => {
             updateDesktopScale();
-            lockMobileHeroHeight();
+            resetMobileHeroState();
             updateHeader();
         }, { passive: true });
 
