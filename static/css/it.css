@@ -2837,7 +2837,8 @@ footer p:last-child {
 
     .hero h1 {
         max-width: 100%;
-        align-self: center;
+        align-self: flex-start;
+        text-align: left;
         font-size: 40px;
         line-height: 0.96;
         letter-spacing: -0.072em;
