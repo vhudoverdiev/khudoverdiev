@@ -3395,7 +3395,7 @@ footer p:last-child {
     }
 
     .mobile-action-console {
-        height: 240px;
+        height: 252px;
     }
 
     .mobile-console-bar,
@@ -3404,11 +3404,11 @@ footer p:last-child {
     }
 
     .mobile-code-line {
-        font-size: 9px;
+        font-size: 10px;
     }
 
     .hero-actions {
-        margin-top: 12px;
+        margin-top: 0;
     }
 
     .button {
