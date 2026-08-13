@@ -250,7 +250,7 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert b"portfolio/vh-favicon.svg" in portfolio.data
     assert b"vh-favicon.svg?v=7" in portfolio.data
     assert b'content="width=device-width, initial-scale=1, viewport-fit=cover"' in portfolio.data
-    assert b"css/it.css?v=99" in portfolio.data
+    assert b"css/it.css?v=100" in portfolio.data
     assert b'id="project-prompt"' in portfolio.data
     assert b'class="project-prompt-close"' in portfolio.data
     assert b'data-close-project-prompt' in portfolio.data
@@ -326,6 +326,7 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert width_media_queries == [
         "@media (min-width: 500px)",
         "@media (max-width: 499px)",
+        "@media (min-width: 400px)",
     ]
     assert "body {\n        min-width: 0;\n        overflow-x: hidden;" in css
     portfolio_text = portfolio.get_data(as_text=True)
@@ -357,6 +358,8 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "min-height: 0;\n        max-height: min(680px, calc(100dvh - 48px));" in css
     assert "max-height: min(680px, calc(100dvh - 48px));" in css
     assert "getScaledOffsetTop(element)" in portfolio_text
+    assert "const scrollMargin = Number.parseFloat(getComputedStyle(element).scrollMarginTop) || 0;" in portfolio_text
+    assert "return Math.max(0, (element.offsetTop - scrollMargin) * scale);" in portfolio_text
     assert "scrollToScaledTarget(target || document.getElementById('site-footer'))" in portfolio_text
     assert "/* Mobile polish: one deliberate layout, not a squeezed desktop. */" in css
     assert "--mobile-viewport-height" not in css
@@ -392,6 +395,8 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert ".hero::after {\n        content: none;" in css
     assert ".hero-copy {\n        display: flex;\n        flex-direction: column;\n        width: 100%;\n        padding: 0;\n        animation: none;" in css
     assert ".hero h1 {\n        max-width: 100%;\n        align-self: flex-start;\n        text-align: left;" in css
+    assert "@media (min-width: 400px) and (max-width: 499px) {" in css
+    assert ".mobile-action-console {\n        height: 340px;" in css
     assert ".portrait-wrap {\n        display: none;" in css
     assert ".mobile-action-console {\n    display: none;" in css
     assert ".mobile-action-console {\n        width: 100%;" in css
@@ -601,6 +606,9 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert response.data.count(b"data-video-card") == 8
     assert b"<video" in response.data
     assert b"data-video-play>" not in response.data
+    assert "Свадебный клип".encode() in response.data
+    assert "Турнир по греко-римской борьбе".encode() in response.data
+    assert "День России".encode() in response.data
     assert "Главный эпизод".encode() in response.data
     assert "Творческий ролик".encode() in response.data
     assert "Контент для бренда".encode() in response.data
@@ -879,6 +887,17 @@ def test_portfolio_video_is_small_enough_to_ship_through_git_deploy():
     assert len(videos) == 8
     assert all(str(video).replace("\\", "/") not in gitignore for video in videos)
     assert all(video.stat().st_size < 100 * 1024 * 1024 for video in videos)
+
+
+def test_video_player_height_does_not_depend_on_video_orientation():
+    css = Path("static/css/photo.css").read_text(encoding="utf-8")
+
+    assert ".ph-video-player {\n    height: 624px;\n    min-height: 0;" in css
+    assert "grid-auto-rows: 147px;" in css
+    assert "height: 147px;\n    min-height: 0;" in css
+    assert "height: 122px;\n        min-height: 0;" in css
+    assert "height: 480px;\n        min-height: 0;" in css
+    assert "height: 360px;\n        min-height: 0;" in css
 
 
 def test_valid_social_redirect_records_click_by_display_label(client):
