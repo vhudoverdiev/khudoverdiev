@@ -250,7 +250,7 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert b"portfolio/vh-favicon.svg" in portfolio.data
     assert b"vh-favicon.svg?v=7" in portfolio.data
     assert b'content="width=device-width, initial-scale=1, viewport-fit=cover"' in portfolio.data
-    assert b"css/it.css?v=98" in portfolio.data
+    assert b"css/it.css?v=99" in portfolio.data
     assert b'id="project-prompt"' in portfolio.data
     assert b'class="project-prompt-close"' in portfolio.data
     assert b'data-close-project-prompt' in portfolio.data
@@ -391,7 +391,7 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert ".hero-copy {\n        display: flex;\n        flex-direction: column;\n        width: 100%;" in css
     assert ".hero::after {\n        content: none;" in css
     assert ".hero-copy {\n        display: flex;\n        flex-direction: column;\n        width: 100%;\n        padding: 0;\n        animation: none;" in css
-    assert ".hero h1 {\n        max-width: 100%;" in css
+    assert ".hero h1 {\n        max-width: 100%;\n        align-self: flex-start;\n        text-align: left;" in css
     assert ".portrait-wrap {\n        display: none;" in css
     assert ".mobile-action-console {\n    display: none;" in css
     assert ".mobile-action-console {\n        width: 100%;" in css
@@ -587,18 +587,18 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert b"data-video-player" in response.data
     assert b"data-video-card" in response.data
     assert b"data-video-frame" in response.data
-    assert b"portfolio/slides/peredacha/slide-1.png" in response.data
-    assert b"portfolio/slides/shans/slide-1.png" in response.data
+    assert b"portfolio/vk-nikolay-galina.jpg" in response.data
+    assert b"portfolio/vk-pyaterochka.jpg" in response.data
     assert b"data-video-src=" in response.data
     assert b"data-video-url" not in response.data
     assert b"data-video-play>" not in response.data
     assert b'target="_blank" rel="noopener noreferrer" data-video-play' not in response.data
-    assert b"portfolio/slides/peredacha/slide-1.png" in response.data
-    assert b"portfolio/slides/shans/slide-1.png" in response.data
+    assert b"portfolio/vk-nikolay-galina.mp4" in response.data
+    assert b"portfolio/vk-hands-up-opening.mp4" in response.data
     assert b"data-video-src=" in response.data
-    assert response.data.count(b"data-video-title=") == 2
-    assert response.data.count(b"data-video-poster=") == 2
-    assert response.data.count(b"data-video-card") == 2
+    assert response.data.count(b"data-video-title=") == 8
+    assert response.data.count(b"data-video-poster=") == 8
+    assert response.data.count(b"data-video-card") == 8
     assert b"<video" in response.data
     assert b"data-video-play>" not in response.data
     assert "Главный эпизод".encode() in response.data
@@ -874,11 +874,11 @@ def test_portfolio_pdf_can_be_framed_only_by_same_origin(client):
 
 def test_portfolio_video_is_small_enough_to_ship_through_git_deploy():
     gitignore = Path(".gitignore").read_text(encoding="utf-8")
-    video = Path("static/portfolio/peredacha.mp4")
+    videos = sorted(Path("static/portfolio").glob("vk-*.mp4"))
 
-    assert "static/portfolio/peredacha.mp4" not in gitignore
-    assert video.exists()
-    assert video.stat().st_size < 100 * 1024 * 1024
+    assert len(videos) == 8
+    assert all(str(video).replace("\\", "/") not in gitignore for video in videos)
+    assert all(video.stat().st_size < 100 * 1024 * 1024 for video in videos)
 
 
 def test_valid_social_redirect_records_click_by_display_label(client):
