@@ -1415,13 +1415,13 @@ h2 em {
     align-items: center;
     gap: 10px;
     min-height: 0;
-    margin-top: -4px;
+    margin-top: 8px;
     color: rgba(255, 250, 243, .2);
 }
 .ph-review-feature-accent span {
     font-family: Georgia, "Times New Roman", serif;
-    font-size: 92px;
-    line-height: .65;
+    font-size: 84px;
+    line-height: .58;
 }
 .ph-review-feature-accent i {
     height: 1px;
@@ -2854,12 +2854,13 @@ h2 em {
     }
 
     .ph-review-feature-accent {
-        min-height: 58px;
-        gap: 14px;
+        min-height: 54px;
+        gap: 12px;
+        margin-top: 4px;
     }
 
     .ph-review-feature-accent span {
-        font-size: 96px;
+        font-size: 88px;
     }
 
     .ph-review-feature blockquote {

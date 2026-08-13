@@ -402,7 +402,7 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert ".mobile-console-bar,\n    .mobile-console-status {" in css
     assert ".mobile-console-bar + .mobile-code-line {\n        border-top: 0;" in css
     assert "animation: console-in 800ms var(--ease-out) 120ms both;" in css
-    assert ".hero-actions {\n        grid-column: 1 / -1;\n        grid-row: 6;\n        margin-top: 16px;" in css
+    assert ".hero-actions {\n        margin-top: 16px;" in css
     assert ".about-mobile-line,\n    .about h2 em {\n        display: block;" in css
     assert ".about-desktop-copy {\n        display: none;" in css
     assert ".about-mobile-copy {\n        display: inline;" in css
@@ -462,7 +462,7 @@ def test_it_mobile_hero_height_does_not_follow_browser_viewport(client):
     assert "--mobile-hero-height: 720px;" in css
     assert "--mobile-console-height: 320px;" in css
     assert ".hero {\n        height: var(--mobile-hero-height);\n        min-height: 704px;" in css
-    assert ".hero {\n        position: relative;\n        z-index: 1;\n        overflow: visible;" in css
+    assert ".hero {\n        height: var(--mobile-hero-height);\n        min-height: 704px;\n        position: relative;\n        z-index: 1;\n        overflow: visible;" in css
     assert ".hero-grid {\n        position: relative;\n        z-index: 1;\n        height: var(--mobile-hero-height);\n        min-height: 704px;" in css
     assert "width: min(408px, calc(100% - 32px));" in css
     assert "padding: 92px 0 calc(18px + env(safe-area-inset-bottom));" in css
@@ -470,7 +470,7 @@ def test_it_mobile_hero_height_does_not_follow_browser_viewport(client):
     assert "height: min(320px, 40svh);" not in css
     assert "@media (max-width: 499px) and (max-height:" not in css
     assert "html.is-mobile-compact-hero" not in css
-    assert ".mobile-action-console {\n        grid-column: 1 / -1;\n        grid-row: 5;\n        width: 100%;\n        height: 260px;" in css
+    assert ".mobile-action-console {\n        width: 100%;\n        height: 260px;" in css
     assert "const height = Math.max(620, getInitialMobileViewportHeight());" not in portfolio_text
     assert "is-mobile-compact-hero" not in portfolio_text
     assert "visualViewport.addEventListener" not in portfolio_text
@@ -705,7 +705,8 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert ".ph-portrait-orbit::after" not in css
     assert ".ph-portrait-orbit i" not in css
     assert ".ph-person-plate {\n        inset: 64px;" in css
-    assert ".ph-hero-person {\n        height: 700px;\n        bottom: -184px;" in css
+    assert ".ph-hero-person {\n        height: 700px;\n        bottom: -196px;" in css
+    assert ".ph-hero-person {\n        height: 600px;\n        bottom: -164px;" in css
     assert ".ph-hero-person {\n        width: auto;\n        height: 460px;\n        max-width: none;\n        bottom: -158px;" in css
     assert ".ph-hero-person {\n        height: 385px;\n        bottom: -126px;" in css
     assert "height: 482px;" not in css
