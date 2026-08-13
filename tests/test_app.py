@@ -554,7 +554,8 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "Узнать подробности".encode() not in response.data
     assert "Оставьте детали, чтобы я сразу понял".encode() not in response.data
     assert b'name="form_type" value="booking"' in response.data
-    assert b'name="shoot_type"' in response.data
+    assert b'<select name="shoot_type">' in response.data
+    assert b'<select name="shoot_type" required>' not in response.data
     assert b'name="shoot_date"' in response.data
     assert b'name="shoot_location"' in response.data
     assert b'class="ph-contact-actions"' in response.data
