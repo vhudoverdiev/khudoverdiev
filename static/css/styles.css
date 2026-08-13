@@ -933,6 +933,11 @@ a {
     font-weight: 800;
 }
 
+.admin-period.is-placeholder {
+    visibility: hidden;
+    pointer-events: none;
+}
+
 .login-error {
     margin: 0;
     padding: 10px 12px;
@@ -1507,7 +1512,9 @@ a {
 .client-create-visual i::after {
     content: "";
     position: absolute;
-    transform: rotate(-45deg);
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
     pointer-events: none;
 }
 
@@ -3039,19 +3046,20 @@ a {
 
     .client-create-visual i::before,
     .client-create-visual i::after {
-        width: 27px;
-        height: 16px;
-        border-width: 4px;
+        left: 50%;
+        top: 50%;
     }
 
     .client-create-visual i::before {
-        left: 16px;
-        top: 22px;
+        width: 34px;
+        height: 26px;
     }
 
     .client-create-visual i::after {
-        right: 16px;
-        bottom: 22px;
+        width: 20px;
+        height: 16px;
+        border-width: 2px;
+        box-shadow: 10px 8px 0 -3px rgba(201, 147, 85, 0.34);
     }
 
     .client-create-actions {

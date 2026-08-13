@@ -250,7 +250,7 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert b"portfolio/vh-favicon.svg" in portfolio.data
     assert b"vh-favicon.svg?v=7" in portfolio.data
     assert b'content="width=device-width, initial-scale=1, viewport-fit=cover"' in portfolio.data
-    assert b"css/it.css?v=96" in portfolio.data
+    assert b"css/it.css?v=97" in portfolio.data
     assert b'id="project-prompt"' in portfolio.data
     assert b'class="project-prompt-close"' in portfolio.data
     assert b'data-close-project-prompt' in portfolio.data
@@ -295,6 +295,7 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "--desktop-canvas-width: 1920px;" in css
     assert "--desktop-canvas-height: 1080px;" in css
     assert "--desktop-scale: 1;" in css
+    assert "--mobile-hero-height: 720px;" in css
     assert "--mobile-hero-bg: #070907;" in css
     assert "--mobile-hero-bottom-space: calc(38px + env(safe-area-inset-bottom));" in css
     assert "--mobile-console-height: 320px;" in css
@@ -331,7 +332,8 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "desktopCanvasWidth = 1920" in portfolio_text
     assert "window.matchMedia('(min-width: 500px)')" in portfolio_text
     assert "updateMobileViewport" not in portfolio_text
-    assert "visualViewport.height" not in portfolio_text
+    assert "getInitialMobileViewportHeight()" in portfolio_text
+    assert "window.visualViewport && window.visualViewport.height" in portfolio_text
     assert "visualViewport.addEventListener" not in portfolio_text
     assert "visualViewport.addEventListener('scroll', updateMobileViewport" not in portfolio_text
     assert "projectPromptDelay = 120000" in portfolio_text
@@ -359,10 +361,10 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "scrollToScaledTarget(target || document.getElementById('site-footer'))" in portfolio_text
     assert "/* Mobile polish: one deliberate layout, not a squeezed desktop. */" in css
     assert "--mobile-viewport-height" not in css
-    assert ".hero {\n        min-height: 0;" in css
+    assert ".hero {\n        height: var(--mobile-hero-height);\n        min-height: 704px;" in css
     assert "background: var(--mobile-hero-bg);" in css
     assert ".hero::before {\n        display: none;" in css
-    assert ".hero-grid {\n        min-height: 0;" in css
+    assert ".hero-grid {\n        height: var(--mobile-hero-height);\n        min-height: 704px;" in css
     assert "padding: 116px 0 var(--mobile-hero-bottom-space);" in css
     assert "transition:\n            background 180ms ease,\n            border-color 180ms ease,\n            box-shadow 180ms ease;" in css
     assert "@media (max-width: 499px) and (max-height: 820px)" not in css
@@ -370,6 +372,11 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "padding-top: 96px;" not in css
     assert "height: min(320px, 40svh);" not in css
     assert "grid-template-rows: 26px repeat(8, minmax(18px, 1fr)) 26px;" not in css
+    assert "html.is-mobile-compact-hero .hero-grid {\n        padding-top: 92px;" in css
+    assert "html.is-mobile-compact-hero .mobile-action-console {\n        height: 260px;" in css
+    assert "grid-template-rows: 24px repeat(8, minmax(20px, 1fr)) 24px;" in css
+    assert "lockMobileHeroHeight(true)" in portfolio_text
+    assert "lockMobileHeroHeight();" in portfolio_text
     assert "@media (orientation: landscape) and (max-height: 499px) and (pointer: coarse)" in css
     assert ".rotate-lock {\n        position: fixed;\n        z-index: 9999;" in css
     rotate_lock = re.search(r"\.rotate-lock \{(?P<body>.*?)\n    \}", css, re.S)
@@ -446,16 +453,24 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
 def test_it_mobile_hero_height_does_not_follow_browser_viewport(client):
     client.get("/", base_url="http://it.khudoverdiev.ru")
     css = Path("static/css/it.css").read_text(encoding="utf-8")
+    portfolio_text = Path("templates/it.html").read_text(encoding="utf-8")
 
     mobile_css = re.search(r"@media \(max-width: 499px\) \{(?P<body>.*?)\n\}", css, re.S)
     assert mobile_css is not None
     assert "--mobile-viewport-height" not in css
+    assert "--mobile-hero-height: 720px;" in css
     assert "--mobile-console-height: 320px;" in css
-    assert ".hero {\n        min-height: 0;" in css
-    assert ".hero-grid {\n        min-height: 0;" in css
+    assert ".hero {\n        height: var(--mobile-hero-height);\n        min-height: 704px;" in css
+    assert ".hero-grid {\n        height: var(--mobile-hero-height);\n        min-height: 704px;" in css
     assert "min-height: var(--mobile-viewport-height)" not in css
     assert "height: min(320px, 40svh);" not in css
     assert "@media (max-width: 499px) and (max-height:" not in css
+    assert "html.is-mobile-compact-hero .hero-grid" in css
+    assert "html.is-mobile-compact-hero .mobile-action-console {\n        height: 260px;" in css
+    assert "const height = Math.max(620, getInitialMobileViewportHeight());" in portfolio_text
+    assert "root.classList.toggle('is-mobile-compact-hero', height <= 820);" in portfolio_text
+    assert "visualViewport.addEventListener" not in portfolio_text
+    assert "if (!force && mobileHeroHeightLocked && currentWidth === mobileHeroLockWidth) return;" in portfolio_text
 
 
 def test_it_portfolio_keeps_security_headers_and_records_visit(client):
@@ -474,9 +489,9 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "default-src 'self'" in response.headers["Content-Security-Policy"]
     assert "frame-src https://vk.com https://vk.ru https://vkvideo.ru" in response.headers["Content-Security-Policy"]
     assert b"css/photo.css" in response.data
-    assert b"photo.css?v=48" in response.data
+    assert b"photo.css?v=49" in response.data
     assert b"js/photo.js" in response.data
-    assert b"photo.js?v=16" in response.data
+    assert b"photo.js?v=17" in response.data
     assert "Архангельск, Северодвинск".encode() in response.data
     assert b"photo/ph-favicon.ico" in response.data
     assert b"photo/ph-favicon.svg" in response.data
@@ -557,8 +572,11 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert b'class="ph-video-showcase"' in response.data
     assert b"data-video-player" in response.data
     assert b"data-video-card" in response.data
-    assert b"video_ext.php?oid=-229443984&amp;id=456239042" in response.data
-    assert b"video_ext.php?oid=-229443984&amp;id=456239046" in response.data
+    assert b"https://vkvideo.ru/video-229443984_456239042" in response.data
+    assert b"https://vkvideo.ru/video-229443984_456239046" in response.data
+    assert b"video_ext.php" not in response.data
+    assert b'data-video-url="https://vkvideo.ru/video-229443984_' in response.data
+    assert b'target="_blank" rel="noopener noreferrer" data-video-play' in response.data
     assert "Видеопортфолио".encode() in response.data
     assert "Николай &amp; Галина".encode() in response.data
     assert "Промоакция магазина «Пятёрочка»".encode() in response.data
@@ -584,8 +602,12 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "После съемки".encode() in response.data
     assert "остается доверие".encode() in response.data
     assert b'class="ph-review-feature"' in response.data
+    assert b'class="ph-review-feature-accent" aria-hidden="true"' in response.data
     assert b'class="ph-review-top"' in response.data
     assert b'class="ph-review-person"' in response.data
+    assert b'class="ph-review-avatar" aria-hidden="true"' in response.data
+    assert "Ю</span>".encode() in response.data
+    assert "Н</span>".encode() in response.data
     assert b'class="ph-review-rating"' in response.data
     assert b">VK</span>" not in response.data
     assert b"data-reviews-open" not in response.data
@@ -598,7 +620,16 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "Все отзывы".encode() not in response.data
     assert 'id="reviews-modal-title"'.encode() not in response.data
     assert "Фото и видео".encode() not in response.data
-    assert "Свадебная история".encode() in response.data
+    assert "Юлия Митягина".encode() in response.data
+    assert "Большое спасибо Владимиру за замечательную фотосессию!".encode() in response.data
+    assert "Наталья Неверова".encode() in response.data
+    assert "Людмила Головкова".encode() in response.data
+    assert "Елена Коняева".encode() in response.data
+    assert "Галина Перова".encode() in response.data
+    assert "Рекомендую Владимира всем, кто ищет качество и душевный подход!".encode() in response.data
+    assert "очень нравиться подход к детям".encode() in response.data
+    assert "Обратились к Владимиру для видеосъемки на свадьбе.".encode() in response.data
+    assert "Спасибо большое 😊".encode() in response.data
     assert "Алина и Дмитрий".encode() not in response.data
     assert "Организатор".encode() not in response.data
     assert "Маркетолог".encode() not in response.data
@@ -606,8 +637,8 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "Пара</small>".encode() not in response.data
     assert b"photo/portfolio/portfolio-003.jpg" not in response.data
     assert b"photo/portfolio/portfolio-012.jpg" not in response.data
-    assert b"photo/portfolio/portfolio-038.jpg" in response.data
-    assert "Валерия".encode() in response.data
+    assert b"photo/portfolio/portfolio-038.jpg" not in response.data
+    assert "25 сен 2025".encode() in response.data
     assert b"https://vk.ru/reviews-190646738" in response.data
     assert "06 / Контакты".encode() in response.data
     assert "Открыть полное портфолио".encode() in response.data
@@ -657,7 +688,7 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert ".ph-hero {\n    position: relative;\n    box-sizing: border-box;" in css
     assert ".ph-trust {\n    position: relative;\n    box-sizing: border-box;" in css
     assert ".ph-hero-stage {\n        width: min(640px, 100%);\n        height: 640px;" in css
-    assert ".ph-hero-person {\n        height: 575px;\n        bottom: -130px;" in css
+    assert ".ph-hero-person {\n        height: 630px;\n        bottom: -160px;" in css
     assert "height: 482px;" not in css
     assert "bottom: -64px;" not in css
     assert ".ph-booking-fields select {\n    appearance: none;" in css
@@ -679,9 +710,13 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert ".ph-reviews {\n    position: relative;" in css
     assert ".ph-review-layout {\n    position: relative;" in css
     assert ".ph-review-feature {\n    min-height: 506px;" in css
+    assert "grid-template-rows: auto minmax(118px, 1fr) auto;" in css
+    assert ".ph-review-feature-accent {\n    position: relative;" in css
+    assert ".ph-review-feature-accent span {\n    font-family: Georgia" in css
     assert ".ph-review-grid {\n    position: relative;" in css
     assert ".ph-review-top {\n    display: flex;" in css
-    assert ".ph-review-person img {\n    width: 46px;" in css
+    assert ".ph-review-avatar {\n    width: 46px;" in css
+    assert ".ph-review-grid .ph-review-avatar {\n    width: 38px;" in css
     assert ".ph-review-rating {\n    flex: 0 0 auto;" in css
     assert ".ph-review-grid article > small" not in css
     assert ".ph-review-link" not in css
@@ -703,10 +738,12 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert ".ph-section-heading {\n    display: grid;\n    grid-template-columns: max-content minmax(320px, 390px);\n    justify-content: start;" in css
     assert ".ph-services > header {\n    display: grid;\n    grid-template-columns: minmax(0, 1fr);\n    align-items: start;\n    gap: 18px;" in css
     assert ".ph-video-heading {\n    position: relative;\n    z-index: 1;\n    display: grid;\n    grid-template-columns: minmax(0, 1fr);\n    align-items: start;\n    gap: 18px;" in css
-    assert ".ph-contact {\n    min-height: 0;\n    display: grid;\n    grid-template-columns: minmax(0, 1fr) 300px;\n    align-items: start;" in css
+    assert ".ph-contact {\n    min-height: 0;\n    display: grid;\n    grid-template-columns: minmax(0, 1fr) minmax(300px, 420px);\n    align-items: start;" in css
     assert ".ph-contact > div:not(.ph-contact-actions) {\n    grid-column: 1;" in css
-    assert ".ph-contact-actions {\n    grid-column: 2;\n    grid-row: 1 / span 2;" in css
-    assert ".ph-contact {\n        padding-top: 52px;\n        padding-bottom: 48px;" in css
+    assert ".ph-contact-actions {\n    grid-column: 2;\n    grid-row: 1 / span 2;\n    width: 300px;\n    justify-self: start;" in css
+    assert ".ph-contact-actions {\n        grid-column: 1;\n        grid-row: auto;\n        width: 100%;" in css
+    assert ".ph-contact {\n        padding-top: 52px;\n        padding-bottom: 48px;" not in css
+    assert ".ph-contact {\n        padding-top: 42px;" in css
     assert ".ph-contact .ph-section-index {\n    align-self: start;\n    margin: 0;" in css
     assert "min-height: calc(100svh - 150px);" in css
     assert ".ph-trust {\n        min-height: 150px;" in css
@@ -1333,7 +1370,7 @@ def test_admin_login_page_is_no_store_and_contains_csrf(client):
     assert b'name="csrf_token"' in response.data
     assert b'name="username"' in response.data
     assert b'autocomplete="username"' in response.data
-    assert b"css/styles.css?v=26" in response.data
+    assert b"css/styles.css?v=28" in response.data
     assert "<title>Админ-панель</title>".encode() in response.data
     assert "Админ-панель — KHUDOVERDIEV".encode() not in response.data
     assert "Фотография сохраняет тишину момента".encode() in response.data
@@ -1343,6 +1380,7 @@ def test_admin_login_page_is_no_store_and_contains_csrf(client):
     assert "min-height: min(720px, calc(100svh - 60px));" in css
     assert ".admin-content {\n    display: grid;" in css
     assert "overflow-y: visible;" in css
+    assert ".admin-period.is-placeholder {\n    visibility: hidden;\n    pointer-events: none;" in css
     assert '.login-aesthetic-note blockquote::after {\n    content: none;' in css
     assert '.login-aesthetic-note p::after {\n    content: "\\00BB";' in css
 
@@ -1357,6 +1395,20 @@ def test_admin_dashboard_layout_allows_long_content_to_extend_page_without_inner
     assert "min-width: 0;" in css
     assert ".click-list strong {\n    flex: 0 0 auto;" in css
     assert ".click-list span {\n    min-width: 0;\n    overflow-wrap: anywhere;" in css
+
+
+def test_admin_tabs_keep_same_vertical_anchor_across_sections(client):
+    login_as_admin(client)
+
+    dashboard = client.get(site.ADMIN_PATH)
+    clients = client.get(f"{site.ADMIN_PATH}/clients")
+    messages = client.get(f"{site.ADMIN_PATH}/messages")
+
+    assert b'class="admin-period"' in dashboard.data
+    assert b'class="admin-period is-placeholder" aria-hidden="true"' in clients.data
+    assert b'class="admin-period"' in messages.data
+    assert b'class="admin-period is-placeholder"' not in dashboard.data
+    assert b'class="admin-period is-placeholder"' not in messages.data
 
 
 def test_admin_aliases_are_no_store_even_when_redirecting(client):
@@ -1571,6 +1623,7 @@ def test_admin_clients_tab_lists_photo_clients_and_creation_form_without_file_st
     assert 'href="/st"'.encode() in response.data
     assert 'href="/st/clients"'.encode() in response.data
     assert b'name="photo_link"' in response.data
+    assert b'name="review_link"' not in response.data
     assert b'name="has_discount"' in response.data
     assert "Дать скидку".encode() in response.data
     assert b"class=\"client-create-visual\"" in response.data
@@ -1580,6 +1633,7 @@ def test_admin_clients_tab_lists_photo_clients_and_creation_form_without_file_st
     assert b"https://ph.khudoverdiev.ru/client/ivanova-2026" in response.data
     assert "Безопасная ссылка".encode() not in response.data
     assert "Ссылка".encode() in response.data
+    assert "Ссылка для отзыва".encode() not in response.data
     assert b"data-client-summary-link" in response.data
     assert b"data-client-url" in response.data
     assert b"data-copy-client-link" in response.data
@@ -1597,6 +1651,18 @@ def test_admin_clients_tab_lists_photo_clients_and_creation_form_without_file_st
     assert b'<div class="client-list">' in response.data
     assert b'type="file"' not in response.data
     assert b'multipart/form-data' not in response.data
+
+
+def test_admin_client_form_layout_keeps_link_note_and_icons_from_overlapping():
+    css = Path("static/css/styles.css").read_text(encoding="utf-8")
+
+    assert '.client-link-note {\n    display: grid;\n    grid-template-columns: minmax(0, 1fr);\n    grid-template-areas:\n        "title"\n        "url";' in css
+    assert ".client-link-note span {\n    grid-area: title;" in css
+    assert ".client-link-note p {\n    grid-area: url;" in css
+    assert ".client-create-visual i::before {\n    width: 44px;" in css
+    assert "linear-gradient(135deg, transparent 0 46%, currentColor 47% 53%, transparent 54%)" in css
+    assert ".client-url-field i::before {\n    inset: 13px 12px 12px 13px;" in css
+    assert "box-shadow:\n        10px -5px 0 -3px currentColor,\n        9px 7px 0 -2px currentColor;" in css
 
 
 def test_admin_clients_tab_requires_authorization_and_is_no_store(client):

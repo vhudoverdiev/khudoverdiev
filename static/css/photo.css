@@ -452,9 +452,9 @@ body.ph-modal-open .ph-booking-nudge {
     z-index: 2;
     position: absolute;
     left: 50%;
-    bottom: -124px;
+    bottom: -140px;
     width: auto;
-    height: 550px;
+    height: 600px;
     max-height: none;
     display: block;
     object-fit: contain;
@@ -1149,7 +1149,7 @@ h2 em {
     font-size: 16px;
     line-height: 1.58;
 }
-.ph-video-placeholder button {
+.ph-video-placeholder a {
     width: max-content;
     min-height: 54px;
     display: inline-flex;
@@ -1163,10 +1163,18 @@ h2 em {
     font: inherit;
     font-size: 14px;
     font-weight: 900;
+    text-decoration: none;
     cursor: pointer;
     box-shadow: 0 18px 34px rgba(0,0,0,.18);
 }
-.ph-video-placeholder button b {
+.ph-video-placeholder a:hover {
+    transform: translateY(-1px);
+}
+.ph-video-placeholder a:focus-visible {
+    outline: 3px solid rgba(255, 250, 243, .8);
+    outline-offset: 3px;
+}
+.ph-video-placeholder a b {
     font-size: 12px;
 }
 .ph-video-works {
@@ -1385,10 +1393,12 @@ h2 em {
     gap: 16px;
 }
 .ph-review-feature {
+    position: relative;
+    overflow: hidden;
     min-height: 506px;
     display: grid;
-    align-content: space-between;
-    gap: 30px;
+    grid-template-rows: auto minmax(118px, 1fr) auto;
+    gap: 22px;
     padding: 34px;
     border: 1px solid rgba(255, 250, 243, .18);
     border-radius: 28px;
@@ -1399,7 +1409,40 @@ h2 em {
     color: #fffaf3;
     box-shadow: 0 30px 80px rgba(44, 33, 26, .16);
 }
+.ph-review-feature::after {
+    content: "";
+    position: absolute;
+    right: -62px;
+    bottom: -74px;
+    width: 260px;
+    height: 260px;
+    border: 1px solid rgba(255, 250, 243, .08);
+    border-radius: 50%;
+    pointer-events: none;
+}
+.ph-review-feature-accent {
+    position: relative;
+    z-index: 1;
+    align-self: center;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 20px;
+    min-height: 118px;
+    color: rgba(255, 250, 243, .2);
+}
+.ph-review-feature-accent span {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 150px;
+    line-height: .65;
+}
+.ph-review-feature-accent i {
+    height: 1px;
+    background: linear-gradient(90deg, rgba(255, 250, 243, .3), rgba(255, 250, 243, 0));
+}
 .ph-review-feature blockquote {
+    position: relative;
+    z-index: 1;
     margin: 0;
     font-family: Georgia, "Times New Roman", serif;
     font-size: 39px;
@@ -1407,6 +1450,8 @@ h2 em {
     line-height: 1.08;
 }
 .ph-review-top {
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1418,14 +1463,22 @@ h2 em {
     align-items: center;
     gap: 12px;
 }
-.ph-review-person img {
+.ph-review-avatar {
     width: 46px;
     height: 46px;
     flex: 0 0 auto;
+    display: inline-grid;
+    place-items: center;
     border-radius: 50%;
-    object-fit: cover;
     border: 2px solid rgba(255, 250, 243, .82);
-    background: rgba(255, 250, 243, .42);
+    background:
+        linear-gradient(145deg, rgba(255, 250, 243, .92), rgba(215, 168, 95, .72));
+    color: #3a261d;
+    font-size: 18px;
+    font-weight: 900;
+    line-height: 1;
+    text-transform: uppercase;
+    box-shadow: 0 10px 24px rgba(28, 20, 17, .16);
 }
 .ph-review-person span {
     min-width: 0;
@@ -1488,10 +1541,15 @@ h2 em {
     color: var(--ph-ink);
     box-shadow: 0 22px 52px rgba(44, 33, 26, .07);
 }
-.ph-review-grid .ph-review-person img {
+.ph-review-grid .ph-review-avatar {
     width: 38px;
     height: 38px;
     border-color: rgba(255, 250, 243, .92);
+    background:
+        linear-gradient(145deg, rgba(91, 63, 49, .95), rgba(44, 33, 26, .92));
+    color: #fffaf3;
+    font-size: 15px;
+    box-shadow: 0 8px 18px rgba(44, 33, 26, .12);
 }
 .ph-review-grid .ph-review-person strong {
     font-size: 13px;
@@ -1510,11 +1568,11 @@ h2 em {
 .ph-contact {
     min-height: 0;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 300px;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 420px);
     align-items: start;
-    column-gap: 42px;
+    column-gap: 24px;
     row-gap: 18px;
-    padding: 56px 0 44px;
+    padding: 42px 0 44px;
     border-top: 1px solid var(--ph-line);
 }
 .ph-contact .ph-section-index {
@@ -1534,6 +1592,8 @@ h2 em {
 .ph-contact-actions {
     grid-column: 2;
     grid-row: 1 / span 2;
+    width: 300px;
+    justify-self: start;
     display: grid;
     gap: 9px;
 }
@@ -1652,8 +1712,8 @@ h2 em {
     }
 
     .ph-hero-person {
-        height: 575px;
-        bottom: -130px;
+        height: 630px;
+        bottom: -160px;
     }
 
     .ph-trust {
@@ -2263,7 +2323,7 @@ h2 em {
     }
 
     .ph-contact {
-        grid-template-columns: 120px 1fr 280px;
+        grid-template-columns: 120px 1fr 320px;
     }
 
     .ph-service-list {
@@ -2288,6 +2348,7 @@ h2 em {
 
     .ph-review-feature {
         min-height: 360px;
+        grid-template-rows: auto minmax(76px, 1fr) auto;
     }
 
     .ph-video-player,
@@ -2305,8 +2366,8 @@ h2 em {
     }
 
     .ph-hero-person {
-        height: 492px;
-        bottom: -105px;
+        height: 540px;
+        bottom: -148px;
     }
 }
 
@@ -2363,9 +2424,9 @@ h2 em {
 
     .ph-hero-person {
         width: auto;
-        height: 376px;
+        height: 420px;
         max-width: none;
-        bottom: -68px;
+        bottom: -147px;
     }
 
     .ph-hero-stage::before {
@@ -2604,7 +2665,7 @@ h2 em {
         font-size: 38px;
     }
 
-    .ph-video-placeholder button {
+    .ph-video-placeholder a {
         width: 100%;
         justify-content: space-between;
     }
@@ -2671,7 +2732,17 @@ h2 em {
 
     .ph-review-feature {
         min-height: 0;
+        grid-template-rows: auto minmax(58px, auto) auto;
         padding: 26px;
+    }
+
+    .ph-review-feature-accent {
+        min-height: 58px;
+        gap: 14px;
+    }
+
+    .ph-review-feature-accent span {
+        font-size: 96px;
     }
 
     .ph-review-feature blockquote {
@@ -2697,6 +2768,7 @@ h2 em {
     .ph-contact-actions {
         grid-column: 1;
         grid-row: auto;
+        width: 100%;
         gap: 12px;
     }
 
@@ -2747,8 +2819,8 @@ h2 em {
     }
 
     .ph-hero-person {
-        height: 314px;
-        bottom: -66px;
+        height: 350px;
+        bottom: -115px;
     }
 
     .ph-trust div {

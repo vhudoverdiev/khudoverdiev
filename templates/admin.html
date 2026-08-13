@@ -9,7 +9,7 @@
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}?v=2" sizes="any">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}?v=2">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}?v=2">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=26">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=28">
 </head>
 <body class="admin-body{% if not authorized %} admin-login-body{% endif %}">
     <main class="admin-page{% if not authorized %} admin-login-page{% endif %}">
@@ -67,6 +67,8 @@
                     </h1>
                     {% if active_admin_tab in ['dashboard', 'messages'] %}
                     <span class="admin-period">{{ period_label }}</span>
+                    {% else %}
+                    <span class="admin-period is-placeholder" aria-hidden="true">&nbsp;</span>
                     {% endif %}
                 </div>
                 <a href="{{ url_for('admin_logout') }}"><span aria-hidden="true">↪</span> Выйти</a>

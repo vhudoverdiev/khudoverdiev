@@ -10,7 +10,7 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='photo/ph-favicon.ico') }}?v=1">
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='photo/ph-favicon.svg') }}?v=5">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='photo/ph-favicon.png') }}?v=2">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/photo.css') }}?v=48">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/photo.css') }}?v=49">
 </head>
 <body>
     <a class="ph-skip" href="#portfolio">Перейти к портфолио</a>
@@ -200,8 +200,8 @@
                     <div class="ph-video-placeholder">
                         <span>VK Video</span>
                         <h3 data-video-player-title>Николай &amp; Галина</h3>
-                        <p>Выберите работу ниже и нажмите «Смотреть», чтобы открыть ролик прямо на сайте.</p>
-                        <button type="button" data-video-play>Смотреть работу <b>▶</b></button>
+                        <p>Выберите работу ниже и откройте ее в VK Video.</p>
+                        <a href="https://vkvideo.ru/video-229443984_456239042" target="_blank" rel="noopener noreferrer" data-video-play>Смотреть работу <b>↗</b></a>
                     </div>
                 </div>
                 <div class="ph-video-works" aria-label="Работы из VK Video и клипов">
@@ -215,7 +215,7 @@
                         ('VK Клип', 'Короткий вертикальный ролик', '456239046', 'Клип'),
                         ('VK Клип', 'Короткий вертикальный ролик', '456239044', 'Клип')
                     ] %}
-                    <button class="ph-video-work {{ 'is-active' if loop.first else '' }}" type="button" data-video-card data-video-src="https://vk.com/video_ext.php?oid=-229443984&amp;id={{ video_id }}&amp;hd=2" data-video-title="{{ title }}">
+                    <button class="ph-video-work {{ 'is-active' if loop.first else '' }}" type="button" data-video-card data-video-url="https://vkvideo.ru/video-229443984_{{ video_id }}" data-video-title="{{ title }}">
                         <span>{{ '%02d'|format(loop.index) }}</span>
                         <small>{{ kind }}</small>
                         <strong>{{ title }}</strong>
@@ -270,14 +270,14 @@
         </section>
 
         {% set ph_reviews = [
-            {'title': 'Портретная съемка', 'text': 'Съемка прошла спокойно и легко. Было понятно, как встать, куда смотреть и что делать в кадре.', 'name': 'Алина', 'date': '21.05.2024', 'avatar': 'photo/portfolio/portfolio-038.jpg'},
-            {'title': 'Свадебная история', 'text': 'В кадрах остался не только сам день, но и настроение: близкие люди, детали и живые эмоции без лишней постановки.', 'name': 'Валерия', 'date': '18.03.2025', 'avatar': 'photo/portfolio/portfolio-040.jpg'},
-            {'title': 'Брендовый контент', 'text': 'Получились фотографии, которые удобно сразу использовать для соцсетей, афиш и рабочих материалов.', 'name': 'Ксения', 'date': '14.02.2024', 'avatar': 'photo/portfolio/portfolio-041.jpg'},
-            {'title': 'Репортаж', 'text': 'Моменты пойманы честно: движение, реакции людей и атмосфера события выглядят живыми.', 'name': 'Иван', 'date': '07.12.2023', 'avatar': 'photo/portfolio/portfolio-072.jpg'},
-            {'title': 'Студийная съемка', 'text': 'Все было организовано заранее: образ, свет, локация и спокойный темп работы.', 'name': 'Мария', 'date': '28.09.2023', 'avatar': 'photo/portfolio/portfolio-095.jpg'},
-            {'title': 'Семейная серия', 'text': 'Даже тем, кто обычно смущается камеры, было комфортно. В результате получились теплые и естественные фотографии.', 'name': 'Екатерина', 'date': '16.08.2023', 'avatar': 'photo/portfolio/portfolio-053.jpg'},
-            {'title': 'Предметная съемка', 'text': 'Аккуратные кадры с вниманием к деталям, фактуре и тому, как продукт будет смотреться в публикациях.', 'name': 'Анна', 'date': '04.06.2023', 'avatar': 'photo/portfolio/portfolio-097.jpg'},
-            {'title': 'Фото и видео', 'text': 'Удобно, когда один процесс закрывает сразу два формата: фотографии и короткие ролики в одном настроении.', 'name': 'Софья', 'date': '12.04.2023', 'avatar': 'photo/portfolio/portfolio-021.jpg'}
+            {'text': 'Большое спасибо Владимиру за замечательную фотосессию! Очень комфортная и душевная атмосфера, снимки красивые, качество 🔥, очень всё понравилось!🥰👍🏻', 'name': 'Юлия Митягина', 'date': '20 дек 2025', 'avatar': 'photo/portfolio/portfolio-038.jpg'},
+            {'text': 'Владимир, хочется выразить огромную благодарность за твои потрясающие фотографии! Они действительно невероятны: каждая деталь, свет, композиция — всё выполнено безупречно. Ты умеешь поймать самые искренние эмоции и создать атмосферу, которая вызывает восторг и восхищение. От всей души желаю дальнейших творческих успехов и вдохновляющих проектов!', 'name': 'Наталья Неверова', 'date': '25 сен 2025', 'avatar': 'photo/portfolio/portfolio-040.jpg'},
+            {'text': 'Огромное спасибо Владимиру за прекрасные фотографии! Вы настоящий профессионал: все было организовано четко, атмосфера на съемке была легкой и позитивной, а результат превзошел все ожидания! Фото получились живыми, эмоциональными и очень красивыми. Рекомендую Владимира всем, кто ищет качество и душевный подход!', 'name': 'Людмила Головкова', 'date': '7 авг 2025', 'avatar': 'photo/portfolio/portfolio-041.jpg'},
+            {'text': 'Обращалась к Владимиру не первый раз, все как всегда на высшем уровне 😎очень нравиться подход к детям , фото просто восторг 🤩 обращусь ещё не раз 🔥', 'name': 'Елена Коняева', 'date': '17 июл 2025', 'avatar': 'photo/portfolio/portfolio-072.jpg'},
+            {'text': 'Обратились к Владимиру для видеосъемки на свадьбе. Видео Владимир отправил очень оперативно, вежливо общался. Видео получились даже лучше, чем я ожидала. Спасибо большое 😊', 'name': 'Галина Перова', 'date': '27 июн 2025', 'avatar': 'photo/portfolio/portfolio-095.jpg'},
+            {'text': 'Владимир, огромное спасибо за Вашу работу! Участие в фотопроекте благодаря Вам стало очень комфортным, лёгким и запоминающимся! Результат-огонь🔥🔥🔥😇', 'name': 'Анастасия Дубошина', 'date': '24 июл 2025', 'avatar': 'photo/portfolio/portfolio-053.jpg'},
+            {'text': 'обращалась к Владимиру не первый раз, все как всегда на высшем уровне 😎очень нравиться подход к детям , фото просто восторг 😇 обращусь ещё не раз 🔥', 'name': 'Елена Коняева', 'date': '17 июл 2025', 'avatar': 'photo/portfolio/portfolio-097.jpg'},
+            {'text': 'Спасибо огромное за прекрасную фотосессию с лошадью. И за чудесные фотографии. Вся семья довольна, особенно дети', 'name': 'Екатерина Телокина', 'date': '24 июл 2025', 'avatar': 'photo/portfolio/portfolio-021.jpg'}
         ] %}
         <section class="ph-reviews" id="reviews">
             <header class="ph-reviews-heading">
@@ -291,11 +291,12 @@
                 <article class="ph-review-feature">
                     <div class="ph-review-top">
                         <div class="ph-review-person">
-                            <img src="{{ url_for('static', filename=ph_reviews[0].avatar) }}" alt="">
+                            <span class="ph-review-avatar" aria-hidden="true">{{ ph_reviews[0].name[:1] }}</span>
                             <span><strong>{{ ph_reviews[0].name }}</strong><small>{{ ph_reviews[0].date }}</small></span>
                         </div>
                         <div class="ph-review-rating" aria-label="Оценка 5 из 5"><span aria-hidden="true">★★★★★</span><b>5.0</b></div>
                     </div>
+                    <div class="ph-review-feature-accent" aria-hidden="true"><span>“</span><i></i></div>
                     <blockquote>{{ ph_reviews[0].text }}</blockquote>
                 </article>
                 <div class="ph-review-grid">
@@ -303,12 +304,14 @@
                 <article>
                     <div class="ph-review-top">
                         <div class="ph-review-person">
-                            <img src="{{ url_for('static', filename=review.avatar) }}" alt="">
+                            <span class="ph-review-avatar" aria-hidden="true">{{ review.name[:1] }}</span>
                             <span><strong>{{ review.name }}</strong><small>{{ review.date }}</small></span>
                         </div>
                         <div class="ph-review-rating" aria-label="Оценка 5 из 5"><span aria-hidden="true">★★★★★</span><b>5.0</b></div>
                     </div>
+                    {% if review.title is defined and review.title %}
                     <h3>{{ review.title }}</h3>
+                    {% endif %}
                     <p>{{ review.text }}</p>
                 </article>
                 {% endfor %}
@@ -414,6 +417,6 @@
         <p>Нажмите Esc, чтобы закрыть</p>
     </div>
 
-    <script src="{{ url_for('static', filename='js/photo.js') }}?v=16" defer></script>
+    <script src="{{ url_for('static', filename='js/photo.js') }}?v=17" defer></script>
 </body>
 </html>

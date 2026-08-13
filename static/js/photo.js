@@ -65,31 +65,17 @@
         lastBookingTrigger?.focus();
     };
 
-    const renderVideoPlayer = () => {
-        if (!videoPlayer) return;
-        const activeCard = videoCards.find((card) => card.classList.contains("is-active"));
-        const src = videoPlayer.dataset.videoSrc || activeCard?.dataset.videoSrc || "";
-        const title = videoPlayer.dataset.videoTitle || activeCard?.dataset.videoTitle || "Видеоработа";
-        if (!src) return;
-
-        const iframe = document.createElement("iframe");
-        iframe.src = src.includes("autoplay=1") ? src : `${src}${src.includes("?") ? "&" : "?"}autoplay=1`;
-        iframe.title = title;
-        iframe.loading = "lazy";
-        iframe.allow = "autoplay; encrypted-media; fullscreen; picture-in-picture; screen-wake-lock";
-        iframe.allowFullscreen = true;
-        videoPlayer.replaceChildren(iframe);
-    };
-
-    const setActiveVideo = (button, shouldPlay = false) => {
+    const setActiveVideo = (button) => {
         if (!button || !videoPlayer) return;
         videoCards.forEach((card) => card.classList.toggle("is-active", card === button));
-        videoPlayer.dataset.videoSrc = button.dataset.videoSrc || "";
         videoPlayer.dataset.videoTitle = button.dataset.videoTitle || "";
         if (videoPlayerTitle && videoPlayer.dataset.videoTitle) {
             videoPlayerTitle.textContent = videoPlayer.dataset.videoTitle;
         }
-        if (shouldPlay) renderVideoPlayer();
+        if (videoPlayButton) {
+            videoPlayButton.href = button.dataset.videoUrl || "#";
+            videoPlayButton.setAttribute("aria-label", `Смотреть работу «${videoPlayer.dataset.videoTitle}» в VK Video`);
+        }
     };
 
     const showBookingNudge = () => {
@@ -265,9 +251,8 @@
     if (videoCards.length) {
         setActiveVideo(videoCards.find((card) => card.classList.contains("is-active")) || videoCards[0]);
         videoCards.forEach((button) => {
-            button.addEventListener("click", () => setActiveVideo(button, true));
+            button.addEventListener("click", () => setActiveVideo(button));
         });
-        videoPlayButton?.addEventListener("click", renderVideoPlayer);
     }
 
     initCustomSelects();

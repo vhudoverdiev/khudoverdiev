@@ -12,6 +12,7 @@
     --desktop-canvas-width: 1920px;
     --desktop-canvas-height: 1080px;
     --desktop-scale: 1;
+    --mobile-hero-height: 720px;
     --mobile-hero-bg: #070907;
     --mobile-hero-bottom-space: calc(38px + env(safe-area-inset-bottom));
     --mobile-console-height: 320px;
@@ -2754,7 +2755,8 @@ footer p:last-child {
     }
 
     .hero {
-        min-height: 0;
+        height: var(--mobile-hero-height);
+        min-height: 704px;
         background: var(--mobile-hero-bg);
     }
 
@@ -2763,7 +2765,8 @@ footer p:last-child {
     }
 
     .hero-grid {
-        min-height: 0;
+        height: var(--mobile-hero-height);
+        min-height: 704px;
         width: calc(100% - 32px);
         grid-template-columns: minmax(0, 1fr);
         grid-template-rows: auto auto auto auto auto auto;
@@ -2949,6 +2952,63 @@ footer p:last-child {
         padding: 0 18px 0 20px;
         border-radius: 16px;
         box-shadow: 0 18px 44px rgba(206, 255, 51, 0.16);
+    }
+
+    html.is-mobile-compact-hero .hero-grid {
+        padding-top: 92px;
+        padding-bottom: calc(18px + env(safe-area-inset-bottom));
+    }
+
+    html.is-mobile-compact-hero .code-console {
+        margin-bottom: 14px;
+    }
+
+    html.is-mobile-compact-hero .code-console-bar,
+    html.is-mobile-compact-hero .code-console-status {
+        min-height: 24px;
+    }
+
+    html.is-mobile-compact-hero .code-console-line {
+        min-height: 38px;
+    }
+
+    html.is-mobile-compact-hero .eyebrow {
+        margin-bottom: 10px;
+        font-size: 8px;
+        line-height: 1.35;
+    }
+
+    html.is-mobile-compact-hero .lead {
+        margin-top: 8px;
+        font-size: 14px;
+        line-height: 1.36;
+    }
+
+    html.is-mobile-compact-hero .mobile-action-console {
+        height: 260px;
+        margin-top: 14px;
+        grid-template-rows: 24px repeat(8, minmax(20px, 1fr)) 24px;
+    }
+
+    html.is-mobile-compact-hero .mobile-console-bar,
+    html.is-mobile-compact-hero .mobile-console-status {
+        min-height: 24px;
+        padding-inline: 10px;
+        font-size: 6px;
+    }
+
+    html.is-mobile-compact-hero .mobile-code-line {
+        min-height: 20px;
+        padding-inline: 10px;
+        font-size: 8px;
+    }
+
+    html.is-mobile-compact-hero .hero-actions {
+        margin-top: 16px;
+    }
+
+    html.is-mobile-compact-hero .button {
+        min-height: 52px;
     }
 
     .button > .ui-icon {
