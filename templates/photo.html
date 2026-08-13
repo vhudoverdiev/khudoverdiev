@@ -11,22 +11,28 @@
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='photo/ph-favicon.svg') }}?v=5">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='photo/ph-favicon.png') }}?v=2">
     <link rel="preload" as="image" type="image/webp" href="{{ url_for('static', filename='photo/portrait-cutout.webp') }}?v=1" fetchpriority="high">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/photo.css') }}?v=51">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/photo.css') }}?v=52">
 </head>
 <body>
     <a class="ph-skip" href="#portfolio">Перейти к портфолио</a>
 
     <header class="ph-header">
         <a class="ph-brand" href="#top" aria-label="В начало страницы">PH<span>.</span></a>
-        <nav aria-label="Основная навигация">
+        <nav id="ph-mobile-nav" aria-label="Основная навигация">
             <a href="#portfolio">Портфолио</a>
             <a href="#services">Фото</a>
             <a href="#video">Видео</a>
             <a href="#reviews">Отзывы</a>
             <a href="#contact">Контакты</a>
         </nav>
-        <a class="ph-header-cta" href="#booking" data-booking-open>Записаться <span>↘</span></a>
+        <a class="ph-header-cta" href="#booking" data-booking-open aria-label="Записаться на съемку">
+            <span class="ph-header-cta-label">Записаться</span><span aria-hidden="true">↘</span>
+        </a>
+        <button class="ph-menu-toggle" type="button" aria-controls="ph-mobile-nav" aria-expanded="false" aria-label="Открыть меню">
+            <span aria-hidden="true"></span><span aria-hidden="true"></span>
+        </button>
     </header>
+    <button class="ph-menu-backdrop" type="button" tabindex="-1" aria-hidden="true" aria-label="Закрыть меню"></button>
 
     <main id="top">
         <section class="ph-hero" aria-labelledby="ph-title">
@@ -434,6 +440,6 @@
         <p>Нажмите Esc, чтобы закрыть</p>
     </div>
 
-    <script src="{{ url_for('static', filename='js/photo.js') }}?v=20" defer></script>
+    <script src="{{ url_for('static', filename='js/photo.js') }}?v=21" defer></script>
 </body>
 </html>

@@ -2987,3 +2987,180 @@ h2 em {
         transition: none !important;
     }
 }
+
+/* Purpose-built phone layout: fixed type scale and a single 760px mode switch. */
+.ph-menu-toggle,
+.ph-menu-backdrop { display: none; }
+
+@media (max-width: 760px) {
+    body.ph-menu-open { overflow: hidden; }
+
+    .ph-header {
+        position: fixed;
+        z-index: 92;
+        top: 10px;
+        width: calc(100% - 24px);
+        height: 62px;
+        grid-template-columns: 1fr auto auto;
+        gap: 8px;
+        padding: 7px 8px 7px 14px;
+        border: 1px solid rgba(255, 255, 255, .2);
+        border-radius: 8px;
+        background: rgba(61, 42, 34, .88);
+        box-shadow: 0 16px 42px rgba(24, 16, 12, .18);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+    }
+
+    .ph-header nav {
+        position: fixed;
+        z-index: 94;
+        top: 82px;
+        left: 12px;
+        right: 12px;
+        display: grid;
+        gap: 2px;
+        padding: 8px;
+        border: 1px solid rgba(255, 255, 255, .16);
+        border-radius: 8px;
+        background: #33231d;
+        box-shadow: 0 24px 60px rgba(20, 13, 10, .3);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: opacity .2s ease, transform .2s var(--ph-ease), visibility .2s;
+    }
+
+    .ph-header nav a {
+        min-height: 52px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        border-radius: 6px;
+        font-size: 16px;
+        opacity: 1;
+    }
+
+    .ph-header nav a::after { content: "\2198"; color: #f4d0b4; font-size: 18px; }
+    .ph-header nav a:hover,
+    .ph-header nav a:focus-visible,
+    .ph-header nav a:active { background: rgba(255, 255, 255, .1); outline: none; }
+    .ph-menu-open .ph-header nav { opacity: 1; visibility: visible; transform: translateY(0); }
+
+    .ph-menu-backdrop {
+        position: fixed;
+        z-index: 90;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+        background: rgba(24, 18, 15, .62);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity .2s ease, visibility .2s;
+    }
+    .ph-menu-open .ph-menu-backdrop { display: block; opacity: 1; visibility: visible; }
+
+    .ph-menu-toggle {
+        position: relative;
+        width: 48px;
+        height: 48px;
+        display: grid;
+        place-items: center;
+        padding: 0;
+        border: 1px solid rgba(255, 255, 255, .28);
+        border-radius: 6px;
+        background: rgba(255, 255, 255, .08);
+        cursor: pointer;
+    }
+    .ph-menu-toggle span {
+        position: absolute;
+        width: 20px;
+        height: 2px;
+        border-radius: 2px;
+        background: #fff;
+        transition: transform .2s ease;
+    }
+    .ph-menu-toggle span:first-child { transform: translateY(-4px); }
+    .ph-menu-toggle span:last-child { transform: translateY(4px); }
+    .ph-menu-open .ph-menu-toggle span:first-child { transform: rotate(45deg); }
+    .ph-menu-open .ph-menu-toggle span:last-child { transform: rotate(-45deg); }
+    .ph-menu-toggle:focus-visible { outline: 2px solid #f4d0b4; outline-offset: 2px; }
+
+    .ph-header-cta { min-height: 48px; padding: 0 15px; border-radius: 6px; }
+    .ph-hero { min-height: 0; grid-template-columns: 1fr; gap: 20px; padding: 108px 16px 0; }
+    .ph-hero-copy { padding-bottom: 18px; }
+    .ph-kicker { margin-bottom: 22px; font-size: 10px; letter-spacing: 1.4px; }
+    .ph-actions { gap: 10px; margin-top: 30px; }
+    .ph-hero-stage { width: min(400px, 100%); height: 400px; margin: 0 auto 28px; }
+    .ph-hero-person { bottom: -146px; }
+
+    .ph-trust { gap: 18px; padding: 30px 16px; }
+    .ph-trust div { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .ph-trust span { width: auto; min-height: 56px; padding: 8px 10px; font-size: 13px; }
+    .ph-trust span:last-child { grid-column: 1 / -1; }
+
+    .ph-about,
+    .ph-portfolio,
+    .ph-services,
+    .ph-video,
+    .ph-reviews { padding-top: 64px; padding-bottom: 64px; }
+    .ph-section-heading,
+    .ph-services > header,
+    .ph-video-heading,
+    .ph-reviews-heading { gap: 22px; margin-bottom: 30px; }
+
+    .ph-work-card,
+    .ph-service-list article,
+    .ph-video-grid article,
+    .ph-review-feature,
+    .ph-review-grid article,
+    .ph-contact-card { border-radius: 8px; }
+    .ph-work-card-link h3 { font-size: 30px; }
+    .ph-service-list article,
+    .ph-video-grid article,
+    .ph-review-grid article { padding: 20px; }
+    .ph-review-feature { padding: 24px 20px; }
+    .ph-review-feature blockquote { font-size: 28px; }
+
+    .ph-video-player,
+    .ph-video-placeholder,
+    .ph-video-player iframe,
+    .ph-video-player video { height: 356px; border-radius: 8px; object-fit: contain; background: #17120f; }
+    .ph-video-work { height: auto; min-height: 112px; }
+
+    .ph-contact { gap: 28px; padding: 56px 0 36px; }
+    .ph-footer { justify-items: center; text-align: center; }
+
+    .ph-booking-modal { padding: 8px; }
+    .ph-booking-form { max-height: calc(100svh - 16px); padding: 24px 16px 16px; border-radius: 8px; overflow-y: auto; }
+    .ph-booking-fields input,
+    .ph-booking-fields select,
+    .ph-custom-select-trigger { min-height: 56px; }
+    .ph-booking-close,
+    .ph-booking-success-close,
+    .ph-lightbox-close { width: 44px; height: 44px; }
+}
+
+@media (max-width: 430px) {
+    .ph-header-cta { width: 48px; justify-content: center; padding: 0; }
+    .ph-header-cta-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .ph-trust div { flex-direction: initial; align-items: initial; }
+    .ph-trust span { width: auto; }
+}
+
+@media (max-width: 360px) {
+    .ph-hero h1,
+    .ph-about h2,
+    .ph-section-heading h2,
+    .ph-services h2,
+    .ph-video-heading h2,
+    .ph-reviews h2,
+    .ph-contact h2 { font-size: 38px; }
+    .ph-review-feature blockquote { font-size: 26px; }
+    .ph-video-player,
+    .ph-video-placeholder,
+    .ph-video-player iframe,
+    .ph-video-player video { height: 330px; }
+}

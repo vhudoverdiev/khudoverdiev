@@ -15,12 +15,27 @@
     const bookingNudge = document.querySelector("[data-booking-nudge]");
     const bookingNudgeOpen = bookingNudge?.querySelector("[data-booking-nudge-open]");
     const bookingNudgeClose = bookingNudge?.querySelector("[data-booking-nudge-close]");
+    const menuToggle = document.querySelector(".ph-menu-toggle");
+    const menuBackdrop = document.querySelector(".ph-menu-backdrop");
+    const mobileNav = document.getElementById("ph-mobile-nav");
     const scrollTargets = ["#about", "#portfolio", "#services", "#video", "#reviews", "#contact", "#ph-site-footer"]
         .map((selector) => document.querySelector(selector))
         .filter(Boolean);
     let lastTrigger = null;
     let lastBookingTrigger = null;
     let bookingNudgeDismissed = false;
+
+    const setMobileMenu = (isOpen, restoreFocus = false) => {
+        if (!menuToggle || !mobileNav) return;
+        document.body.classList.toggle("ph-menu-open", isOpen);
+        menuToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        menuToggle.setAttribute("aria-label", isOpen ? "\u0417\u0430\u043a\u0440\u044b\u0442\u044c \u043c\u0435\u043d\u044e" : "\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u043c\u0435\u043d\u044e");
+        if (isOpen) {
+            requestAnimationFrame(() => mobileNav.querySelector("a")?.focus());
+        } else if (restoreFocus) {
+            menuToggle.focus();
+        }
+    };
 
     const updateScrollCue = () => {
         if (!scrollCue) return;
@@ -335,8 +350,17 @@
     document.querySelectorAll("[data-booking-open]").forEach((button) => {
         button.addEventListener("click", (event) => {
             event.preventDefault();
+            setMobileMenu(false);
             openBooking(button);
         });
+    });
+
+    menuToggle?.addEventListener("click", () => {
+        setMobileMenu(menuToggle.getAttribute("aria-expanded") !== "true");
+    });
+    menuBackdrop?.addEventListener("click", () => setMobileMenu(false, true));
+    mobileNav?.querySelectorAll("a").forEach((link) => {
+        link.addEventListener("click", () => setMobileMenu(false));
     });
 
     document.querySelectorAll("[data-booking-close]").forEach((button) => {
@@ -417,6 +441,7 @@
     });
 
     document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && document.body.classList.contains("ph-menu-open")) setMobileMenu(false, true);
         if (event.key === "Escape") closeAllCustomSelects();
         if (event.key === "Escape" && lightbox?.classList.contains("is-open")) closeLightbox();
         if (event.key === "Escape" && bookingSuccessModal?.classList.contains("is-open")) closeBookingSuccess();
@@ -426,4 +451,8 @@
     if (window.location.hash === "#booking") {
         openBooking();
     }
+
+    window.matchMedia("(min-width: 761px)").addEventListener("change", (event) => {
+        if (event.matches) setMobileMenu(false);
+    });
 })();

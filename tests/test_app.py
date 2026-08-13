@@ -250,7 +250,7 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert b"portfolio/vh-favicon.svg" in portfolio.data
     assert b"vh-favicon.svg?v=7" in portfolio.data
     assert b'content="width=device-width, initial-scale=1, viewport-fit=cover"' in portfolio.data
-    assert b"css/it.css?v=104" in portfolio.data
+    assert b"css/it.css?v=105" in portfolio.data
     assert b'id="project-prompt"' in portfolio.data
     assert b'class="project-prompt-close"' in portfolio.data
     assert b'data-close-project-prompt' in portfolio.data
@@ -397,9 +397,9 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert ".hero h1 {\n        max-width: 100%;\n        align-self: flex-start;\n        text-align: left;" in css
     assert "@media (min-width: 400px) and (max-width: 499px) {" in css
     assert ".hero-grid {\n        padding-top: 82px;" in css
-    assert ".mobile-action-console {\n        height: 252px;" in css
+    assert ".mobile-action-console {\n        height: 244px;" in css
     assert ".mobile-code-line {\n        font-size: 10px;" in css
-    assert ".hero-actions {\n        margin-top: 0;" in css
+    assert ".hero-actions {\n        margin-top: 8px;" in css
     assert ".portrait-wrap {\n        display: none;" in css
     assert ".mobile-action-console {\n    display: none;" in css
     assert ".mobile-action-console {\n        width: 100%;" in css
@@ -503,9 +503,12 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "default-src 'self'" in response.headers["Content-Security-Policy"]
     assert "frame-src https://vk.com https://vk.ru https://vkvideo.ru" in response.headers["Content-Security-Policy"]
     assert b"css/photo.css" in response.data
-    assert b"photo.css?v=51" in response.data
+    assert b"photo.css?v=52" in response.data
     assert b"js/photo.js" in response.data
-    assert b"photo.js?v=20" in response.data
+    assert b"photo.js?v=21" in response.data
+    assert b'id="ph-mobile-nav"' in response.data
+    assert b'class="ph-menu-toggle"' in response.data
+    assert b'class="ph-menu-backdrop"' in response.data
     assert "Архангельск, Северодвинск".encode() in response.data
     assert b"photo/ph-favicon.ico" in response.data
     assert b"photo/ph-favicon.svg" in response.data
