@@ -250,7 +250,7 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert b"portfolio/vh-favicon.svg" in portfolio.data
     assert b"vh-favicon.svg?v=7" in portfolio.data
     assert b'content="width=device-width, initial-scale=1, viewport-fit=cover"' in portfolio.data
-    assert b"css/it.css?v=102" in portfolio.data
+    assert b"css/it.css?v=104" in portfolio.data
     assert b'id="project-prompt"' in portfolio.data
     assert b'class="project-prompt-close"' in portfolio.data
     assert b'data-close-project-prompt' in portfolio.data
@@ -295,7 +295,7 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "--desktop-canvas-width: 1920px;" in css
     assert "--desktop-canvas-height: 1080px;" in css
     assert "--desktop-scale: 1;" in css
-    assert "--mobile-hero-height: 956px;" in css
+    assert "--mobile-hero-height: 720px;" in css
     assert "--mobile-hero-bg: #070907;" in css
     assert "--mobile-hero-bottom-space: calc(38px + env(safe-area-inset-bottom));" in css
     assert "--mobile-console-height: 320px;" in css
@@ -397,8 +397,9 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert ".hero h1 {\n        max-width: 100%;\n        align-self: flex-start;\n        text-align: left;" in css
     assert "@media (min-width: 400px) and (max-width: 499px) {" in css
     assert ".hero-grid {\n        padding-top: 82px;" in css
-    assert "height: clamp(240px, calc(100svh - 516px), 440px);" in css
-    assert "margin-top: clamp(12px, calc(100svh - 892px), 64px);" in css
+    assert ".mobile-action-console {\n        height: 252px;" in css
+    assert ".mobile-code-line {\n        font-size: 10px;" in css
+    assert ".hero-actions {\n        margin-top: 0;" in css
     assert ".portrait-wrap {\n        display: none;" in css
     assert ".mobile-action-console {\n    display: none;" in css
     assert ".mobile-action-console {\n        width: 100%;" in css
@@ -467,7 +468,7 @@ def test_it_mobile_hero_height_does_not_follow_browser_viewport(client):
     assert mobile_css is not None
     assert "--mobile-viewport-height" not in css
     assert "visualViewport" not in portfolio_text
-    assert "--mobile-hero-height: 956px;" in css
+    assert "--mobile-hero-height: 720px;" in css
     assert "--mobile-console-height: 320px;" in css
     assert ".hero {\n        height: var(--mobile-hero-height);\n        min-height: var(--mobile-hero-height);" in css
     assert ".hero {\n        height: var(--mobile-hero-height);\n        min-height: var(--mobile-hero-height);\n        position: relative;\n        z-index: 1;\n        overflow: hidden;" in css
@@ -1830,7 +1831,7 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
     assert "Запечатленные моменты".encode() in response.data
     assert "Готовая серия".encode() not in response.data
     assert "скидку 15%".encode() in response.data
-    assert b"css/styles.css?v=21" in response.data
+    assert b"css/styles.css?v=32" in response.data
     assert b"photo/portrait-cutout.png" in response.data
     assert b"class=\"client-photo-stage\"" in response.data
     assert b"class=\"client-link-icon\"" in response.data
@@ -1856,7 +1857,7 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
     assert ".client-photo-stage::before,\n.client-photo-stage::after {" in css
     assert "background: none;" in css
     assert "clip-path: none;" in css
-    assert "width: 468px;" in css
+    assert "width: 444px;" in css
     assert ".client-button-primary {\n    border-color: rgba(49, 36, 24, 0.95);" in css
     assert b"https://reviews.example/ivanova" not in response.data
     assert b"<form" not in response.data
