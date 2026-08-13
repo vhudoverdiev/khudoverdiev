@@ -3,6 +3,8 @@ set -Eeuo pipefail
 umask 022
 
 APP_DIR="${APP_DIR:-/opt/khudoverdiev}"
+DATA_DIR="${DATA_DIR:-/var/lib/khudoverdiev}"
+DB_PATH="${SITE_DB_PATH:-$DATA_DIR/site.db}"
 REPO_URL="${REPO_URL:-https://github.com/vhudoverdiev/khudoverdiev.git}"
 BRANCH="${BRANCH:-main}"
 SERVICE="${SERVICE:-khudoverdiev.service}"
@@ -21,8 +23,11 @@ ensure_runtime_permissions() {
   log "ensuring runtime permissions"
 
   chmod 0755 "$(dirname "$APP_DIR")"
-  chown www-data:www-data "$APP_DIR" || true
+  chown root:www-data "$APP_DIR" || true
   chmod 0755 "$APP_DIR"
+  mkdir -p "$(dirname "$DB_PATH")"
+  chown www-data:www-data "$(dirname "$DB_PATH")" || true
+  chmod 0750 "$(dirname "$DB_PATH")" || true
 
   if [[ -d "$APP_DIR/venv" ]]; then
     find "$APP_DIR/venv" -type d -exec chmod a+rx {} +
@@ -36,9 +41,13 @@ ensure_runtime_permissions() {
     chmod +x "$APP_DIR/deploy.sh"
   fi
 
-  if [[ -f "$APP_DIR/site.db" ]]; then
-    chown www-data:www-data "$APP_DIR/site.db" || true
-    chmod 0660 "$APP_DIR/site.db" || true
+  if [[ -f "$APP_DIR/site.db" && ! -f "$DB_PATH" ]]; then
+    mv "$APP_DIR/site.db" "$DB_PATH"
+  fi
+
+  if [[ -f "$DB_PATH" ]]; then
+    chown www-data:www-data "$DB_PATH" || true
+    chmod 0660 "$DB_PATH" || true
   fi
 }
 
@@ -68,34 +77,6 @@ fi
 cd "$APP_DIR"
 git config --global --add safe.directory "$APP_DIR" || true
 
-if [[ ! -f "$APP_DIR/.env" ]]; then
-  log "creating .env"
-  flask_secret="$(
-    python3 - <<'PY'
-import secrets
-print(secrets.token_urlsafe(48))
-PY
-  )"
-  admin_password="$(
-    python3 - <<'PY'
-import secrets
-print(secrets.token_urlsafe(18))
-PY
-  )"
-  (
-    umask 077
-    cat > "$APP_DIR/.env" <<EOF
-FLASK_SECRET_KEY=$flask_secret
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=$admin_password
-ADMIN_PASSWORD_HASH=
-FLASK_COOKIE_SECURE=1
-FORCE_HTTPS=1
-EOF
-  )
-  log "generated ADMIN_PASSWORD in $APP_DIR/.env"
-fi
-
 if [[ ! -x "$APP_DIR/venv/bin/python" ]]; then
   log "creating virtual environment"
   python3 -m venv "$APP_DIR/venv"
@@ -104,6 +85,39 @@ fi
 log "installing Python dependencies"
 "$APP_DIR/venv/bin/python" -m pip install --upgrade pip
 "$APP_DIR/venv/bin/python" -m pip install -r requirements.txt "gunicorn==23.0.0"
+
+if [[ ! -f "$APP_DIR/.env" ]]; then
+  log "creating .env"
+  flask_secret="$(
+    python3 - <<'PY'
+import secrets
+print(secrets.token_urlsafe(48))
+PY
+  )"
+  admin_password_hash="$(
+    "$APP_DIR/venv/bin/python" - <<'PY'
+import secrets
+from werkzeug.security import generate_password_hash
+
+print(generate_password_hash(secrets.token_urlsafe(24)))
+PY
+  )"
+  (
+    umask 077
+    cat > "$APP_DIR/.env" <<EOF
+FLASK_SECRET_KEY=$flask_secret
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=
+ADMIN_PASSWORD_HASH=$admin_password_hash
+REQUIRE_ADMIN_PASSWORD_HASH=1
+FLASK_COOKIE_SECURE=1
+FORCE_HTTPS=1
+SITE_DB_PATH=$DB_PATH
+EOF
+  )
+  log "generated ADMIN_PASSWORD_HASH in $APP_DIR/.env"
+fi
+
 ensure_runtime_permissions
 
 log "initializing database"

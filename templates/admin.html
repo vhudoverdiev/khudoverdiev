@@ -9,7 +9,7 @@
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}?v=2" sizes="any">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}?v=2">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}?v=2">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=32">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=59">
 </head>
 <body class="admin-body{% if not authorized %} admin-login-body{% endif %}">
     <main class="admin-page{% if not authorized %} admin-login-page{% endif %}">
@@ -180,129 +180,160 @@
                 </div>
 
                 <section class="client-panel is-active" id="client-panel-create" data-client-panel="create" role="tabpanel">
-                    <div class="client-create-panel">
-                        <div class="client-create-intro">
-                            <span>Новая ссылка</span>
-                            <strong>Создать страницу клиента</strong>
+                    <div class="client-create-panel client-section-shell">
+                        <div class="client-create-intro client-create-intro-compact">
+                            <span class="client-create-label"><b>Новая</b><b>ссылка</b></span>
                         </div>
-                        <form class="client-form client-create-form" action="{{ url_for('admin_clients') }}" method="post">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <label>
-                                <span>Имя клиента</span>
-                                <input type="text" name="client_name" maxlength="120" value="{{ client_form.client_name }}" placeholder="Введите имя клиента" required>
-                            </label>
-                            <div class="client-link-note">
-                                <span>Ссылка</span>
-                                <p>Случайный код без имени клиента появится после создания.</p>
-                            </div>
-                            <label class="client-form-wide">
-                                <span>Внешняя ссылка на фотографии</span>
-                                <div class="client-url-field">
-                                    <input type="url" name="photo_link" maxlength="500" value="{{ client_form.photo_link }}" placeholder="https://drive.google.com/..." required>
-                                </div>
-                            </label>
-                            <div class="client-discount-controls">
-                                <label>
-                                    <span>Скидка</span>
-                                    <input type="text" name="discount_text" maxlength="160" value="{{ client_form.discount_text }}">
-                                </label>
-                                <label class="client-switch client-discount-toggle">
-                                    <input type="checkbox" name="has_discount" value="1" {% if client_form.has_discount %}checked{% endif %}>
-                                    <span>Дать скидку</span>
-                                </label>
-                            </div>
-                            <label class="client-form-wide">
-                                <span>Текст на странице</span>
-                                <textarea name="message_text" maxlength="700">{{ client_form.message_text }}</textarea>
-                            </label>
-                            <div class="client-create-actions">
-                                <label class="client-switch">
-                                    <input type="checkbox" name="is_active" value="1" {% if client_form.is_active %}checked{% endif %}>
-                                    <span>Страница включена</span>
-                                </label>
-                                <button type="submit">Создать клиента</button>
-                            </div>
-                        </form>
-                    </div>
-                </section>
-
-                <section class="client-panel" id="client-panel-links" data-client-panel="links" role="tabpanel" hidden>
-                    {% if photo_clients %}
-                    <div class="client-list">
-                        {% for client in photo_clients %}
-                        <details class="client-item">
-                            <summary>
-                                <span>
-                                    <strong>{{ client.client_name }}</strong>
-                                    <small data-client-summary-link>{{ photo_client_public_url(client.slug) }}</small>
-                                </span>
-                                <b class="{{ 'is-on' if client.is_active else 'is-off' }}">{{ 'Включена' if client.is_active else 'Выключена' }}</b>
-                            </summary>
-                            <form class="client-form" action="{{ url_for('update_photo_client', client_id=client.id) }}" method="post" data-client-edit-form>
+                        <div class="client-section-content">
+                            <form class="client-form client-create-form" action="{{ url_for('admin_clients') }}" method="post">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <label>
                                     <span>Имя клиента</span>
-                                    <input type="text" name="client_name" maxlength="120" value="{{ client.client_name }}" placeholder="Введите имя клиента" required>
+                                    <input type="text" name="client_name" maxlength="120" value="{{ client_form.client_name }}" placeholder="Введите имя клиента" required>
                                 </label>
-                                <div class="client-link-note client-link-note-actions" data-client-link-note>
-                                    <span>Ссылка</span>
-                                    <p data-client-url>{{ photo_client_public_url(client.slug) }}</p>
-                                    <div class="client-link-actions">
-                                        <button type="button" class="client-link-action is-copy" data-copy-client-link>Скопировать ссылку</button>
-                                        <button type="button" class="client-link-action is-rotate" data-rotate-client-link data-rotate-url="{{ url_for('rotate_photo_client_link', client_id=client.id) }}">Сменить</button>
+                                <fieldset class="client-delivery-fieldset">
+                                    <legend>Готовые материалы</legend>
+                                    <div class="client-delivery-options">
+                                        <label><input type="radio" name="delivery_type" value="photo" {% if client_form.delivery_type == 'photo' %}checked{% endif %} required><span>Фото</span></label>
+                                        <label><input type="radio" name="delivery_type" value="video" {% if client_form.delivery_type == 'video' %}checked{% endif %}><span>Видео</span></label>
+                                        <label><input type="radio" name="delivery_type" value="photo_video" {% if client_form.delivery_type == 'photo_video' %}checked{% endif %}><span>Фото и видео</span></label>
                                     </div>
+                                </fieldset>
+                                <div class="client-link-note">
+                                    <span>Ссылка</span>
+                                    <p>Случайный код без имени клиента появится после создания.</p>
                                 </div>
                                 <label class="client-form-wide">
                                     <span>Внешняя ссылка на фотографии</span>
                                     <div class="client-url-field">
-                                        <input type="url" name="photo_link" maxlength="500" value="{{ client.photo_link }}" required>
+                                        <input type="url" name="photo_link" maxlength="500" value="{{ client_form.photo_link }}" placeholder="https://drive.google.com/..." required>
                                     </div>
                                 </label>
                                 <div class="client-discount-controls">
                                     <label>
                                         <span>Скидка</span>
-                                        <input type="text" name="discount_text" maxlength="160" value="{{ client.discount_text or '' }}">
+                                        <input type="text" name="discount_text" maxlength="160" value="{{ client_form.discount_text }}">
                                     </label>
                                     <label class="client-switch client-discount-toggle">
-                                        <input type="checkbox" name="has_discount" value="1" {% if client.discount_text %}checked{% endif %}>
+                                        <input type="checkbox" name="has_discount" value="1" {% if client_form.has_discount %}checked{% endif %}>
                                         <span>Дать скидку</span>
                                     </label>
                                 </div>
-                                <label class="client-switch">
-                                    <input type="checkbox" name="is_active" value="1" {% if client.is_active %}checked{% endif %}>
-                                    <span>Страница включена</span>
-                                </label>
                                 <label class="client-form-wide">
                                     <span>Текст на странице</span>
-                                    <textarea name="message_text" maxlength="700">{{ client.message_text or '' }}</textarea>
+                                    <textarea name="message_text" maxlength="700">{{ client_form.message_text }}</textarea>
                                 </label>
+                                <div class="client-create-actions">
+                                    <label class="client-switch">
+                                        <input type="checkbox" name="is_active" value="1" {% if client_form.is_active %}checked{% endif %}>
+                                        <span>Страница включена</span>
+                                    </label>
+                                    <button type="submit">Создать клиента</button>
+                                </div>
                             </form>
-                            <form class="client-delete-form" action="{{ url_for('delete_photo_client', client_id=client.id) }}" method="post" data-client-delete-form data-client-name="{{ client.client_name|e }}" data-client-url="{{ photo_client_public_url(client.slug) }}">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="button" data-client-delete-trigger>Удалить</button>
-                            </form>
-                        </details>
-                        {% endfor %}
+                        </div>
                     </div>
-                    {% else %}
-                    <p class="empty">Клиентские страницы пока не созданы.</p>
-                    {% endif %}
+                </section>
+
+                <section class="client-panel" id="client-panel-links" data-client-panel="links" role="tabpanel" hidden>
+                    <div class="client-section-shell">
+                        <div class="client-create-intro client-section-intro client-create-intro-compact">
+                            <span class="client-create-label"><b>Все</b><b>ссылки</b></span>
+                        </div>
+                        <div class="client-section-content">
+                            {% if photo_clients %}
+                            <div class="client-list">
+                                {% for client in photo_clients %}
+                                <details class="client-item">
+                                    <summary>
+                                        <span>
+                                            <strong>{{ client.client_name }}</strong>
+                                            <small data-client-summary-link>{{ photo_client_public_url(client.slug) }}</small>
+                                        </span>
+                                        <b class="{{ 'is-on' if client.is_active else 'is-off' }}">{{ 'Включена' if client.is_active else 'Выключена' }}</b>
+                                    </summary>
+                                    <form class="client-form" action="{{ url_for('update_photo_client', client_id=client.id) }}" method="post" data-client-edit-form>
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <label>
+                                            <span>Имя клиента</span>
+                                            <input type="text" name="client_name" maxlength="120" value="{{ client.client_name }}" placeholder="Введите имя клиента" required>
+                                        </label>
+                                        <fieldset class="client-delivery-fieldset">
+                                            <legend>Готовые материалы</legend>
+                                            <div class="client-delivery-options">
+                                                <label><input type="radio" name="delivery_type" value="photo" {% if client.delivery_type == 'photo' %}checked{% endif %} required><span>Фото</span></label>
+                                                <label><input type="radio" name="delivery_type" value="video" {% if client.delivery_type == 'video' %}checked{% endif %}><span>Видео</span></label>
+                                                <label><input type="radio" name="delivery_type" value="photo_video" {% if client.delivery_type == 'photo_video' %}checked{% endif %}><span>Фото и видео</span></label>
+                                            </div>
+                                        </fieldset>
+                                        <div class="client-link-note client-link-note-actions" data-client-link-note>
+                                            <span>Ссылка</span>
+                                            <p data-client-url>{{ photo_client_public_url(client.slug) }}</p>
+                                            <div class="client-link-actions">
+                                                <button type="button" class="client-link-action is-copy" data-copy-client-link>Скопировать ссылку</button>
+                                                <button type="button" class="client-link-action is-rotate" data-rotate-client-link data-rotate-url="{{ url_for('rotate_photo_client_link', client_id=client.id) }}">Сменить</button>
+                                            </div>
+                                        </div>
+                                        <label class="client-form-wide">
+                                            <span>Внешняя ссылка на фотографии</span>
+                                            <div class="client-url-field">
+                                                <input type="url" name="photo_link" maxlength="500" value="{{ client.photo_link }}" required>
+                                            </div>
+                                        </label>
+                                        <div class="client-discount-controls">
+                                            <label>
+                                                <span>Скидка</span>
+                                                <input type="text" name="discount_text" maxlength="160" value="{{ client.discount_text or '' }}">
+                                            </label>
+                                            <label class="client-switch client-discount-toggle">
+                                                <input type="checkbox" name="has_discount" value="1" {% if client.discount_text %}checked{% endif %}>
+                                                <span>Дать скидку</span>
+                                            </label>
+                                        </div>
+                                        <label class="client-switch">
+                                            <input type="checkbox" name="is_active" value="1" {% if client.is_active %}checked{% endif %}>
+                                            <span>Страница включена</span>
+                                        </label>
+                                        <label class="client-form-wide">
+                                            <span>Текст на странице</span>
+                                            <textarea name="message_text" maxlength="700">{{ client.message_text or '' }}</textarea>
+                                        </label>
+                                    </form>
+                                    <form class="client-delete-form" action="{{ url_for('delete_photo_client', client_id=client.id) }}" method="post" data-client-delete-form data-client-name="{{ client.client_name|e }}" data-client-url="{{ photo_client_public_url(client.slug) }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="button" data-client-delete-trigger>Удалить</button>
+                                    </form>
+                                </details>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="empty">Клиентские страницы пока не созданы.</p>
+                            {% endif %}
+                        </div>
+                    </div>
                 </section>
 
                 <section class="client-panel" id="client-panel-archive" data-client-panel="archive" role="tabpanel" hidden>
-                    <div class="client-archive" id="client-archive" aria-label="Архив клиентских ссылок">
-                        <div class="client-archive-list" id="client-archive-list">
-                        {% if archived_photo_clients %}
-                            {% for client in archived_photo_clients %}
-                            <article class="client-archive-item">
-                                <strong>{{ client.client_name }}</strong>
-                                <small>{{ photo_client_public_url(client.slug) }}</small>
-                                <time>{{ client.archived_at }}</time>
-                            </article>
-                            {% endfor %}
-                        {% else %}
-                            <p class="empty" id="client-archive-empty">Архив пока пуст.</p>
-                        {% endif %}
+                    <div class="client-section-shell">
+                        <div class="client-create-intro client-section-intro client-create-intro-compact">
+                            <span class="client-create-label"><b>Архив</b></span>
+                        </div>
+                        <div class="client-section-content">
+                            <div class="client-archive" id="client-archive" aria-label="Архив клиентских ссылок">
+                                <div class="client-archive-list" id="client-archive-list">
+                                {% if archived_photo_clients %}
+                                    {% for client in archived_photo_clients %}
+                                    <article class="client-archive-item">
+                                        <strong>{{ client.client_name }}</strong>
+                                        <small>{{ photo_client_public_url(client.slug) }}</small>
+                                        <time>{{ client.archived_at }}</time>
+                                    </article>
+                                    {% endfor %}
+                                {% else %}
+                                    <p class="empty" id="client-archive-empty">Архив пока пуст.</p>
+                                {% endif %}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>

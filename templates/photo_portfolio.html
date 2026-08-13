@@ -10,22 +10,27 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='photo/ph-favicon.ico') }}?v=1">
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='photo/ph-favicon.svg') }}?v=5">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='photo/ph-favicon.png') }}?v=2">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/photo.css') }}?v=48">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/photo.css') }}?v=70">
 </head>
 <body>
     <a class="ph-skip" href="#portfolio-grid">Перейти к фотографиям</a>
 
     <header class="ph-header ph-portfolio-header">
         <a class="ph-brand" href="{{ url_for('index') }}" aria-label="На главную страницу PH">PH<span>.</span></a>
-        <nav aria-label="Навигация портфолио">
+        <nav id="ph-mobile-nav" aria-label="Навигация портфолио">
             <a href="{{ url_for('index') }}#portfolio">Портфолио</a>
             <a href="{{ url_for('index') }}#services">Фото</a>
             <a href="{{ url_for('index') }}#video">Видео</a>
             <a href="{{ url_for('index') }}#reviews">Отзывы</a>
             <a href="{{ url_for('index') }}#contact">Контакты</a>
         </nav>
-        <a class="ph-header-cta" href="{{ url_for('index') }}#contact">Написать <span>↘</span></a>
+        <a class="ph-header-cta" href="{{ url_for('index') }}#contact">Написать <span class="ph-arrow ph-arrow-down-right" aria-hidden="true"></span></a>
+        <a class="ph-portfolio-back" href="{{ url_for('index') }}#portfolio"><span class="ph-arrow ph-arrow-left" aria-hidden="true"></span> Назад</a>
+        <button class="ph-menu-toggle" type="button" aria-controls="ph-mobile-nav" aria-expanded="false" aria-label="Открыть меню">
+            <span></span><span></span>
+        </button>
     </header>
+    <button class="ph-menu-backdrop" type="button" aria-label="Закрыть меню"></button>
 
     <main class="ph-full-portfolio">
         <section class="ph-full-hero" aria-labelledby="full-portfolio-title">
@@ -33,7 +38,6 @@
                 <p class="ph-kicker"><i></i> Полный альбом</p>
                 <h1 id="full-portfolio-title">Портфолио</h1>
             </div>
-            <a href="#portfolio-grid" class="ph-button ph-button-primary">Смотреть фотографии <span>↓</span></a>
         </section>
 
         <section class="ph-full-gallery" id="portfolio-grid" aria-label="Полное портфолио">
@@ -51,8 +55,8 @@
                 <h2>Нашли<br><em>свое настроение?</em></h2>
             </div>
             <div class="ph-full-bottom-actions">
-                <a class="ph-button ph-button-primary" href="{{ url_for('index') }}#contact">Обсудить съемку <span>↗</span></a>
-                <a class="ph-button ph-button-quiet" href="{{ source_album_url }}" target="_blank" rel="noopener">Открыть альбом VK <span>↗</span></a>
+                <a class="ph-button ph-button-primary" href="{{ url_for('index') }}#contact">Обсудить съемку <span class="ph-arrow ph-arrow-up-right" aria-hidden="true"></span></a>
+                <a class="ph-button ph-button-quiet" href="{{ source_album_url }}" target="_blank" rel="noopener">Открыть альбом VK <span class="ph-arrow ph-arrow-up-right" aria-hidden="true"></span></a>
             </div>
         </section>
     </main>
@@ -69,6 +73,6 @@
         <p>Нажмите Esc, чтобы закрыть</p>
     </div>
 
-    <script src="{{ url_for('static', filename='js/photo.js') }}?v=16" defer></script>
+    <script src="{{ url_for('static', filename='js/photo.js') }}?v=24" defer></script>
 </body>
 </html>

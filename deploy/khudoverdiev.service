@@ -8,9 +8,18 @@ Group=www-data
 WorkingDirectory=/opt/khudoverdiev
 EnvironmentFile=-/opt/khudoverdiev/.env
 Environment="PATH=/opt/khudoverdiev/venv/bin"
+Environment="SITE_DB_PATH=/var/lib/khudoverdiev/site.db"
 ExecStart=/opt/khudoverdiev/venv/bin/gunicorn --workers 3 --timeout 120 --bind 127.0.0.1:8000 app:app
 Restart=always
 RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/khudoverdiev
+CapabilityBoundingSet=
+LockPersonality=true
+RestrictSUIDSGID=true
 
 [Install]
 WantedBy=multi-user.target

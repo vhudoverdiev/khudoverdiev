@@ -6,6 +6,12 @@ htmlcov/
 .env
 .venv/
 venv/
-_codex_chat_files/
 site.db
+site.db-*
 *.log
+.mypy_cache/
+.ruff_cache/
+*.bak
+*.backup
+*.dump
+*.sql

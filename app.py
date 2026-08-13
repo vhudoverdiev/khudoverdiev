@@ -7,27 +7,32 @@ import secrets
 import sqlite3
 import time
 from datetime import datetime, timedelta
+from functools import wraps
 from pathlib import Path
-from ipaddress import ip_address
+from ipaddress import ip_address, ip_network
 from urllib.parse import urlparse
 import uuid
 
 from flask import Flask, abort, jsonify, make_response, redirect, render_template, request, session, url_for
+from werkzeug.exceptions import HTTPException
 from werkzeug.security import check_password_hash
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-only-change-this-secret-key")
 app.config.update(
     MAX_CONTENT_LENGTH=16 * 1024,
+    PERMANENT_SESSION_LIFETIME=timedelta(hours=2),
     SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SAMESITE="Strict",
     SESSION_COOKIE_SECURE=os.environ.get("FLASK_COOKIE_SECURE") == "1",
 )
 
-DB_PATH = Path(__file__).with_name("site.db")
+DB_PATH = Path(os.environ.get("SITE_DB_PATH", Path(__file__).with_name("site.db"))).expanduser()
 ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin")
 ADMIN_PASSWORD_HASH = os.environ.get("ADMIN_PASSWORD_HASH")
+ADMIN_IP_ALLOWLIST = {item.strip() for item in os.environ.get("ADMIN_IP_ALLOWLIST", "").split(",") if item.strip()}
+TRUSTED_PROXY_CIDRS = {item.strip() for item in os.environ.get("TRUSTED_PROXY_CIDRS", "").split(",") if item.strip()}
 ADMIN_PATH = "/st"
 LEGACY_ADMIN_PATH = "/sk"
 ROOT_MESSAGE_COOKIE = "root_message_device"
@@ -190,6 +195,29 @@ SLUG_RE = re.compile(r"^[a-z0-9-]{1,80}$")
 CLIENT_SLUG_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789"
 CLIENT_SLUG_LENGTH = 32
 RATE_LIMITS = {}
+BLOCKED_PATH_SUFFIXES = (
+    ".bak",
+    ".backup",
+    ".db",
+    ".dump",
+    ".env",
+    ".ini",
+    ".log",
+    ".map",
+    ".old",
+    ".orig",
+    ".py",
+    ".pyc",
+    ".save",
+    ".sql",
+    ".sqlite",
+    ".swp",
+    ".tar",
+    ".tgz",
+    ".zip",
+)
+LOCAL_HOSTNAMES = {"localhost", "localhost.localdomain"}
+AUDIT_METADATA_LIMIT = 1200
 
 
 SOCIAL_LINKS = [
@@ -230,7 +258,27 @@ def is_allowed_host():
 
 
 def get_client_ip():
-    return request.headers.get("X-Forwarded-For", request.remote_addr or "").split(",", 1)[0].strip()
+    remote_addr = (request.remote_addr or "").strip()
+    forwarded_for = (request.headers.get("X-Forwarded-For") or "").split(",", 1)[0].strip()
+    if forwarded_for and is_trusted_proxy(remote_addr):
+        return forwarded_for
+    return remote_addr
+
+
+def is_trusted_proxy(remote_addr):
+    try:
+        parsed = ip_address(remote_addr)
+    except ValueError:
+        return False
+    if parsed.is_loopback:
+        return True
+    for entry in TRUSTED_PROXY_CIDRS:
+        try:
+            if parsed in ip_network(entry, strict=False):
+                return True
+        except ValueError:
+            continue
+    return False
 
 
 def check_rate_limit(scope, limit, window_seconds):
@@ -434,10 +482,32 @@ def photo_client_public_url(slug):
 app.jinja_env.globals["photo_client_public_url"] = photo_client_public_url
 
 
+def is_private_or_local_host(hostname):
+    hostname = (hostname or "").strip().rstrip(".").lower()
+    if not hostname:
+        return True
+    if hostname in LOCAL_HOSTNAMES or hostname.endswith((".localhost", ".local", ".internal")):
+        return True
+    try:
+        parsed_ip = ip_address(hostname)
+    except ValueError:
+        return False
+    return (
+        parsed_ip.is_private
+        or parsed_ip.is_loopback
+        or parsed_ip.is_link_local
+        or parsed_ip.is_multicast
+        or parsed_ip.is_reserved
+        or parsed_ip.is_unspecified
+    )
+
+
 def clean_external_url(value, max_length=500):
     value = clean_text(value, max_length)
     parsed = urlparse(value)
-    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc or not parsed.hostname:
+        return ""
+    if parsed.username or parsed.password or is_private_or_local_host(parsed.hostname):
         return ""
     return value
 
@@ -452,10 +522,111 @@ def verify_admin_credentials(username, password):
     return hmac.compare_digest(username or "", ADMIN_USERNAME) and verify_admin_password(password)
 
 
+def is_admin_ip_allowed():
+    if not ADMIN_IP_ALLOWLIST:
+        return True
+    client_ip = get_client_ip()
+    try:
+        parsed_ip = ip_address(client_ip)
+    except ValueError:
+        return False
+    for entry in ADMIN_IP_ALLOWLIST:
+        try:
+            if "/" in entry and parsed_ip in ip_network(entry, strict=False):
+                return True
+            if parsed_ip == ip_address(entry):
+                return True
+        except ValueError:
+            continue
+    return False
+
+
+def path_looks_sensitive(path):
+    lowered = (path or "").lower()
+    parts = [part for part in lowered.split("/") if part]
+    if any(part.startswith(".") and part != ".well-known" for part in parts):
+        return True
+    return lowered.endswith(BLOCKED_PATH_SUFFIXES)
+
+
+def should_force_https():
+    if os.environ.get("FORCE_HTTPS") != "1":
+        return False
+    host = normalize_host(request.host)
+    if host in {"127.0.0.1", "localhost", "0.0.0.0", "::1"}:
+        return False
+    return not request.is_secure and request.headers.get("X-Forwarded-Proto", "http") != "https"
+
+
+def validate_runtime_security():
+    if app.config.get("TESTING"):
+        return
+    production_like = os.environ.get("FORCE_HTTPS") == "1" or os.environ.get("FLASK_ENV") == "production"
+    if not production_like:
+        return
+    if app.secret_key == "dev-only-change-this-secret-key":
+        raise RuntimeError("FLASK_SECRET_KEY must be set to a strong random value in production.")
+    if os.environ.get("REQUIRE_ADMIN_PASSWORD_HASH") == "1" and not ADMIN_PASSWORD_HASH:
+        raise RuntimeError("ADMIN_PASSWORD_HASH is required in production.")
+    if not ADMIN_PASSWORD_HASH and ADMIN_USERNAME == "admin" and ADMIN_PASSWORD == "admin":
+        raise RuntimeError("Default admin credentials are not allowed in production.")
+
+
+def audit_event(event_type, subject="", metadata=None):
+    metadata = metadata or {}
+    safe_metadata = {
+        key: clean_text(str(value), 240)
+        for key, value in metadata.items()
+        if key not in {"password", "csrf_token", "token", "secret"}
+    }
+    try:
+        init_db()
+        with get_db() as db:
+            db.execute(
+                """
+                INSERT INTO security_events (created_at, event_type, ip, user_agent, path, subject, metadata)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    now(),
+                    clean_text(event_type, 80),
+                    clean_text(get_client_ip(), 80),
+                    clean_text(request.headers.get("User-Agent", ""), 240),
+                    clean_text(request.path, 240),
+                    clean_text(subject, 160),
+                    clean_text(json.dumps(safe_metadata, ensure_ascii=False, sort_keys=True), AUDIT_METADATA_LIMIT),
+                ),
+            )
+    except Exception:
+        app.logger.exception("Could not write security audit event")
+
+
+def admin_required(view):
+    @wraps(view)
+    def wrapper(*args, **kwargs):
+        if not session.get("admin"):
+            return redirect(url_for("admin"))
+        return view(*args, **kwargs)
+
+    return wrapper
+
+
 @app.before_request
 def security_gate():
+    try:
+        validate_runtime_security()
+    except RuntimeError:
+        app.logger.exception("Unsafe runtime security configuration")
+        abort(500)
     if not is_allowed_host():
         abort(400)
+    if path_looks_sensitive(request.path):
+        abort(404)
+    if should_force_https():
+        return redirect(request.url.replace("http://", "https://", 1), code=308)
+    if request.path.startswith((ADMIN_PATH, LEGACY_ADMIN_PATH, "/admin")) and not is_admin_ip_allowed():
+        audit_event("admin_ip_blocked")
+        abort(404)
     if request.endpoint != "static" and request.method == "GET":
         csrf_token()
 
@@ -468,17 +639,24 @@ def add_security_headers(response):
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
     response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
+    response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
+    response.headers["X-Permitted-Cross-Domain-Policies"] = "none"
     frame_ancestors = "'self'" if is_portfolio_pdf else "'none'"
+    upgrade = "upgrade-insecure-requests; " if os.environ.get("FORCE_HTTPS") == "1" else ""
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
         "script-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline'; "
+        "script-src-attr 'none'; "
         "style-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline'; "
         "font-src 'self' https://cdnjs.cloudflare.com data:; "
         "img-src 'self' data:; "
+        "media-src 'self'; "
         "connect-src 'self'; "
         "frame-src https://vk.com https://vk.ru https://vkvideo.ru; "
+        "object-src 'none'; "
         "base-uri 'self'; "
         "form-action 'self'; "
+        f"{upgrade}"
         f"frame-ancestors {frame_ancestors}"
     )
     if request.is_secure or os.environ.get("FORCE_HTTPS") == "1":
@@ -489,6 +667,7 @@ def add_security_headers(response):
 
 
 def get_db():
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
@@ -575,10 +754,31 @@ def init_db():
             ON daily_submission_limits (scope, day)
             """
         )
+        db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS security_events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                created_at TEXT NOT NULL,
+                event_type TEXT NOT NULL,
+                ip TEXT,
+                user_agent TEXT,
+                path TEXT,
+                subject TEXT,
+                metadata TEXT
+            )
+            """
+        )
+        db.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_security_events_created_type
+            ON security_events (created_at, event_type)
+            """
+        )
         ensure_column(db, "visits", "site_source", "TEXT NOT NULL DEFAULT 'khudoverdiev.ru'")
         ensure_column(db, "messages", "message_type", "TEXT NOT NULL DEFAULT 'message'")
         ensure_column(db, "messages", "site_source", "TEXT NOT NULL DEFAULT 'khudoverdiev.ru'")
         ensure_column(db, "photo_clients", "archived_at", "TEXT")
+        ensure_column(db, "photo_clients", "delivery_type", "TEXT NOT NULL DEFAULT 'photo'")
 
 
 def ensure_column(db, table, column, definition):
@@ -646,7 +846,7 @@ def get_photo_client_by_slug(slug):
     with get_db() as db:
         return db.execute(
             """
-            SELECT id, client_name, slug, photo_link, review_link, discount_text, message_text, is_active, created_at, updated_at, archived_at
+            SELECT id, client_name, slug, photo_link, review_link, discount_text, message_text, delivery_type, is_active, created_at, updated_at, archived_at
             FROM photo_clients
             WHERE slug = ? AND archived_at IS NULL
             """,
@@ -659,7 +859,7 @@ def get_photo_clients():
     with get_db() as db:
         return db.execute(
             """
-            SELECT id, client_name, slug, photo_link, review_link, discount_text, message_text, is_active, created_at, updated_at, archived_at
+            SELECT id, client_name, slug, photo_link, review_link, discount_text, message_text, delivery_type, is_active, created_at, updated_at, archived_at
             FROM photo_clients
             WHERE archived_at IS NULL
             ORDER BY created_at DESC, id DESC
@@ -672,7 +872,7 @@ def get_archived_photo_clients():
     with get_db() as db:
         return db.execute(
             """
-            SELECT id, client_name, slug, photo_link, review_link, discount_text, message_text, is_active, created_at, updated_at, archived_at
+            SELECT id, client_name, slug, photo_link, review_link, discount_text, message_text, delivery_type, is_active, created_at, updated_at, archived_at
             FROM photo_clients
             WHERE archived_at IS NOT NULL
             ORDER BY archived_at DESC, id DESC
@@ -684,12 +884,14 @@ def build_photo_client_payload(form):
     photo_link = clean_external_url(form.get("photo_link"))
     review_link = clean_external_url(form.get("review_link")) if form.get("review_link") else ""
     has_discount = form.get("has_discount") == "1"
+    delivery_type = clean_text(form.get("delivery_type"), 20) or "photo"
     payload = {
         "client_name": clean_text(form.get("client_name"), 120),
         "photo_link": photo_link,
         "review_link": review_link,
         "discount_text": clean_text(form.get("discount_text"), 160) if has_discount else "",
         "message_text": clean_text(form.get("message_text"), 700),
+        "delivery_type": delivery_type,
         "has_discount": 1 if has_discount else 0,
         "is_active": 1 if form.get("is_active") == "1" else 0,
     }
@@ -698,6 +900,8 @@ def build_photo_client_payload(form):
         errors.append("Укажите имя клиента.")
     if not photo_link:
         errors.append("Укажите корректную внешнюю ссылку на фотографии.")
+    if delivery_type not in {"photo", "video", "photo_video"}:
+        errors.append("Выберите тип готовых материалов.")
     if form.get("review_link") and not review_link:
         errors.append("Ссылка для отзыва должна начинаться с http:// или https://.")
     return payload, " ".join(errors)
@@ -711,6 +915,7 @@ def photo_client_form_defaults(payload=None):
         "discount_text": "10%",
         "has_discount": 1,
         "message_text": "Мне было очень приятно работать с вами. Ниже вы найдете ссылку на готовые фотографии.",
+        "delivery_type": "photo",
         "is_active": 1,
     }
     if payload:
@@ -964,6 +1169,28 @@ def photo_client(slug):
     client_data = dict(client)
     client_data["photo_link"] = photo_link
     client_data["review_link"] = PHOTO_REVIEW_URL
+    delivery_copy = {
+        "photo": {
+            "title": "Фотографии готовы!",
+            "lead_noun": "готовые фотографии",
+            "button": "Скачать фотографии",
+        },
+        "video": {
+            "title": "Видео готово!",
+            "lead_noun": "готовое видео",
+            "button": "Скачать видео",
+        },
+        "photo_video": {
+            "title": "Фото и видео готовы!",
+            "lead_noun": "готовые фото и видео",
+            "button": "Скачать фото и видео",
+        },
+    }
+    client_data["delivery_copy"] = delivery_copy.get(client_data.get("delivery_type"), delivery_copy["photo"])
+    discount_text = (client_data.get("discount_text") or "").strip()
+    if re.fullmatch(r"\d+(?:[.,]\d+)?", discount_text):
+        discount_text = f"{discount_text}%"
+    client_data["discount_text"] = discount_text
     return render_template("client_photos.html", client=client_data)
 
 
@@ -1039,14 +1266,19 @@ def admin():
 
     if request.method == "POST":
         if not validate_csrf():
+            audit_event("admin_login_csrf_failed")
             abort(400)
         if not check_rate_limit("admin-login", limit=5, window_seconds=600):
+            audit_event("admin_login_rate_limited", request.form.get("username"))
             abort(429)
         if verify_admin_credentials(request.form.get("username"), request.form.get("password")):
             session.clear()
+            session.permanent = True
             session["admin"] = True
             session["_csrf_token"] = secrets.token_urlsafe(32)
+            audit_event("admin_login_success", request.form.get("username"))
             return redirect(url_for("admin"))
+        audit_event("admin_login_failed", request.form.get("username"))
         error = "Неверный логин или пароль"
 
     if not session.get("admin"):
@@ -1056,21 +1288,20 @@ def admin():
 
 
 @app.route(f"{ADMIN_PATH}/messages")
+@admin_required
 def admin_messages():
     init_db()
-    if not session.get("admin"):
-        return redirect(url_for("admin"))
     return render_template("admin.html", **admin_messages_context())
 
 
 @app.route(f"{ADMIN_PATH}/clients", methods=["GET", "POST"])
+@admin_required
 def admin_clients():
     init_db()
-    if not session.get("admin"):
-        return redirect(url_for("admin"))
     if request.method == "GET":
         return render_template("admin.html", **admin_clients_context())
     if not validate_csrf():
+        audit_event("admin_client_create_csrf_failed")
         abort(400)
 
     payload, error = build_photo_client_payload(request.form)
@@ -1087,8 +1318,8 @@ def admin_clients():
             db.execute(
                 """
                 INSERT INTO photo_clients (
-                    client_name, slug, photo_link, review_link, discount_text, message_text, is_active, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    client_name, slug, photo_link, review_link, discount_text, message_text, delivery_type, is_active, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     payload["client_name"],
@@ -1097,6 +1328,7 @@ def admin_clients():
                     payload["review_link"],
                     payload["discount_text"],
                     payload["message_text"],
+                    payload["delivery_type"],
                     payload["is_active"],
                     timestamp,
                     timestamp,
@@ -1111,15 +1343,16 @@ def admin_clients():
             ),
         ), 409
 
+    audit_event("photo_client_created", payload["client_name"])
     return redirect(url_for("admin_clients"))
 
 
 @app.route(f"{ADMIN_PATH}/clients/<int:client_id>", methods=["POST"])
+@admin_required
 def update_photo_client(client_id):
     init_db()
-    if not session.get("admin"):
-        return redirect(url_for("admin"))
     if not validate_csrf():
+        audit_event("admin_client_update_csrf_failed", str(client_id))
         abort(400)
 
     is_fetch_request = request.headers.get("X-Requested-With") == "fetch"
@@ -1138,7 +1371,7 @@ def update_photo_client(client_id):
                 """
                 UPDATE photo_clients
                 SET client_name = ?, photo_link = ?, review_link = ?, discount_text = ?,
-                    message_text = ?, is_active = ?, updated_at = ?
+                    message_text = ?, delivery_type = ?, is_active = ?, updated_at = ?
                 WHERE id = ?
                 """,
                 (
@@ -1147,6 +1380,7 @@ def update_photo_client(client_id):
                     payload["review_link"],
                     payload["discount_text"],
                     payload["message_text"],
+                    payload["delivery_type"],
                     payload["is_active"],
                     now(),
                     client_id,
@@ -1171,6 +1405,7 @@ def update_photo_client(client_id):
     if is_fetch_request:
         if updated is None:
             abort(404)
+        audit_event("photo_client_updated", str(client_id), {"fetch": "1"})
         return jsonify(
             {
                 "id": updated["id"],
@@ -1183,15 +1418,16 @@ def update_photo_client(client_id):
             }
         )
 
+    audit_event("photo_client_updated", str(client_id))
     return redirect(url_for("admin_clients"))
 
 
 @app.route(f"{ADMIN_PATH}/clients/<int:client_id>/delete", methods=["POST"])
+@admin_required
 def delete_photo_client(client_id):
     init_db()
-    if not session.get("admin"):
-        return redirect(url_for("admin"))
     if not validate_csrf():
+        audit_event("admin_client_delete_csrf_failed", str(client_id))
         abort(400)
 
     archived_at = now()
@@ -1215,6 +1451,7 @@ def delete_photo_client(client_id):
     if request.headers.get("X-Requested-With") == "fetch":
         if archived is None:
             abort(404)
+        audit_event("photo_client_archived", str(client_id), {"fetch": "1"})
         return jsonify(
             {
                 "id": archived["id"],
@@ -1223,15 +1460,16 @@ def delete_photo_client(client_id):
                 "archived_at": archived["archived_at"],
             }
         )
+    audit_event("photo_client_archived", str(client_id))
     return redirect(url_for("admin_clients"))
 
 
 @app.route(f"{ADMIN_PATH}/clients/<int:client_id>/rotate-link", methods=["POST"])
+@admin_required
 def rotate_photo_client_link(client_id):
     init_db()
-    if not session.get("admin"):
-        return redirect(url_for("admin"))
     if not validate_csrf():
+        audit_event("admin_client_rotate_csrf_failed", str(client_id))
         abort(400)
 
     with get_db() as db:
@@ -1240,21 +1478,23 @@ def rotate_photo_client_link(client_id):
             "UPDATE photo_clients SET slug = ?, updated_at = ? WHERE id = ?",
             (slug, now(), client_id),
         )
+    audit_event("photo_client_link_rotated", str(client_id))
     if request.headers.get("X-Requested-With") == "fetch":
         return jsonify({"slug": slug, "url": photo_client_public_url(slug)})
     return redirect(url_for("admin_clients"))
 
 
 @app.route(f"{ADMIN_PATH}/messages/<int:message_id>/delete", methods=["POST"])
+@admin_required
 def delete_message(message_id):
-    if not session.get("admin"):
-        return redirect(url_for("admin"))
     if not validate_csrf():
+        audit_event("admin_message_delete_csrf_failed", str(message_id))
         abort(400)
 
     init_db()
     with get_db() as db:
         db.execute("DELETE FROM messages WHERE id = ?", (message_id,))
+    audit_event("message_deleted", str(message_id))
     if request.headers.get("X-Requested-With") == "fetch":
         return ("", 204)
     return redirect(url_for("admin_messages"))
@@ -1269,6 +1509,15 @@ def legacy_delete_message(message_id):
 def admin_logout():
     session.pop("admin", None)
     return redirect(url_for("admin"))
+
+
+@app.errorhandler(HTTPException)
+def handle_http_exception(error):
+    if error.code in {400, 401, 403, 405, 413, 429, 500}:
+        if request.headers.get("X-Requested-With") == "fetch":
+            return jsonify({"error": error.name}), error.code
+        return f"{error.name}\n", error.code
+    return error
 
 
 @app.route(f"{LEGACY_ADMIN_PATH}/logout")

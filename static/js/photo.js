@@ -24,6 +24,26 @@
     let lastTrigger = null;
     let lastBookingTrigger = null;
     let bookingNudgeDismissed = false;
+    const desktopCanvasWidth = 1920;
+
+    const isDesktopCanvas = () => window.matchMedia("(min-width: 500px)").matches;
+    const getDesktopScale = () => isDesktopCanvas() ? Math.min(1, window.innerWidth / desktopCanvasWidth) : 1;
+    const updateDesktopScale = () => {
+        document.documentElement.style.setProperty("--ph-desktop-scale", getDesktopScale().toFixed(5));
+    };
+    const getScaledOffsetTop = (element) => {
+        const scale = getDesktopScale();
+        const scrollMargin = Number.parseFloat(getComputedStyle(element).scrollMarginTop) || 0;
+        return Math.max(0, (element.offsetTop - scrollMargin) * scale);
+    };
+    const scrollToTarget = (element, behavior = "smooth") => {
+        if (!element) return;
+        if (isDesktopCanvas()) {
+            window.scrollTo({ top: getScaledOffsetTop(element), behavior });
+            return;
+        }
+        element.scrollIntoView({ behavior, block: "start" });
+    };
 
     const setMobileMenu = (isOpen, restoreFocus = false) => {
         if (!menuToggle || !mobileNav) return;
@@ -48,7 +68,9 @@
 
         scrollCue.classList.toggle("is-up", atBottom);
         scrollCue.dataset.direction = atBottom ? "up" : "down";
-        scrollCue.querySelector("span").textContent = atBottom ? "\u2191" : "\u2193";
+        const arrow = scrollCue.querySelector("span");
+        arrow?.classList.toggle("ph-arrow-up", atBottom);
+        arrow?.classList.toggle("ph-arrow-down", !atBottom);
         scrollCue.setAttribute("aria-label", atBottom ? "\u0412\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f \u0432 \u043d\u0430\u0447\u0430\u043b\u043e \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u044b" : "\u041f\u0435\u0440\u0435\u0439\u0442\u0438 \u043a \u0441\u043b\u0435\u0434\u0443\u044e\u0449\u0435\u043c\u0443 \u0431\u043b\u043e\u043a\u0443");
     };
 
@@ -311,7 +333,13 @@
     if (videoCards.length) {
         setActiveVideo(videoCards.find((card) => card.classList.contains("is-active")) || videoCards[0]);
         videoCards.forEach((button) => {
-            button.addEventListener("click", () => setActiveVideo(button, true));
+            button.addEventListener("click", () => {
+                setActiveVideo(button, true);
+                if (window.matchMedia("(max-width: 760px)").matches && videoPlayer) {
+                    const targetTop = videoPlayer.getBoundingClientRect().top + window.scrollY - 84;
+                    window.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
+                }
+            });
         });
     }
 
@@ -359,8 +387,15 @@
         setMobileMenu(menuToggle.getAttribute("aria-expanded") !== "true");
     });
     menuBackdrop?.addEventListener("click", () => setMobileMenu(false, true));
-    mobileNav?.querySelectorAll("a").forEach((link) => {
-        link.addEventListener("click", () => setMobileMenu(false));
+    document.querySelectorAll('a[href^="#"]:not([href="#"]):not([href="#booking"])').forEach((link) => {
+        link.addEventListener("click", (event) => {
+            const target = document.querySelector(link.getAttribute("href"));
+            if (!target) return;
+            event.preventDefault();
+            setMobileMenu(false);
+            window.history.pushState(null, "", link.getAttribute("href"));
+            scrollToTarget(target);
+        });
     });
 
     document.querySelectorAll("[data-booking-close]").forEach((button) => {
@@ -391,12 +426,16 @@
 
         const current = window.scrollY + window.innerHeight * 0.28;
         const target = scrollTargets.find((section) => section.offsetTop > current);
-        (target || document.getElementById("ph-site-footer"))?.scrollIntoView({ behavior: "smooth", block: "start" });
+        scrollToTarget(target || document.getElementById("ph-site-footer"));
     });
 
+    updateDesktopScale();
     updateScrollCue();
     window.addEventListener("scroll", updateScrollCue, { passive: true });
-    window.addEventListener("resize", updateScrollCue);
+    window.addEventListener("resize", () => {
+        updateDesktopScale();
+        updateScrollCue();
+    });
 
     bookingForm?.addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -452,7 +491,7 @@
         openBooking();
     }
 
-    window.matchMedia("(min-width: 761px)").addEventListener("change", (event) => {
+    window.matchMedia("(min-width: 500px)").addEventListener("change", (event) => {
         if (event.matches) setMobileMenu(false);
     });
 })();

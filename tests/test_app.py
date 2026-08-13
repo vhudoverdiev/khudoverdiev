@@ -63,6 +63,7 @@ def insert_photo_client(
     review_link="https://reviews.example/ivanova",
     discount_text="10%",
     message_text="Ваши фотографии готовы.",
+    delivery_type="photo",
     is_active=1,
 ):
     site.init_db()
@@ -70,8 +71,8 @@ def insert_photo_client(
         cursor = db.execute(
             """
             INSERT INTO photo_clients (
-                client_name, slug, photo_link, review_link, discount_text, message_text, is_active, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                client_name, slug, photo_link, review_link, discount_text, message_text, delivery_type, is_active, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 client_name,
@@ -80,6 +81,7 @@ def insert_photo_client(
                 review_link,
                 discount_text,
                 message_text,
+                delivery_type,
                 is_active,
                 "2099-01-02 03:04:05",
                 "2099-01-02 03:04:05",
@@ -103,6 +105,9 @@ def test_index_records_visit_sets_stable_visitor_cookie_and_security_headers(cli
     assert response.headers["X-Content-Type-Options"] == "nosniff"
     assert response.headers["X-Frame-Options"] == "DENY"
     assert "default-src 'self'" in response.headers["Content-Security-Policy"]
+    assert "object-src 'none'" in response.headers["Content-Security-Policy"]
+    assert "script-src-attr 'none'" in response.headers["Content-Security-Policy"]
+    assert response.headers["Cross-Origin-Resource-Policy"] == "same-origin"
     visits = db_rows("visits")
     assert len(visits) == 1
     assert visits[0]["site_source"] == "khudoverdiev.ru"
@@ -176,6 +181,13 @@ def test_unknown_host_is_rejected_before_side_effects(client):
     assert not site.DB_PATH.exists()
 
 
+@pytest.mark.parametrize("path", ["/.env", "/site.db", "/backup.sql", "/static/app.js.map", "/static/.secret"])
+def test_sensitive_files_are_not_served_by_flask(client, path):
+    response = client.get(path)
+
+    assert response.status_code == 404
+
+
 def test_allowed_host_with_port_is_accepted(client):
     response = client.get("/", base_url="http://localhost:5000")
 
@@ -201,6 +213,18 @@ def test_force_https_env_adds_hsts_header(client, monkeypatch):
     response = client.get("/")
 
     assert response.headers["Strict-Transport-Security"] == "max-age=31536000; includeSubDomains"
+    assert "upgrade-insecure-requests" in response.headers["Content-Security-Policy"]
+
+
+def test_force_https_redirects_public_http_requests_but_keeps_local_health(client, monkeypatch):
+    monkeypatch.setenv("FORCE_HTTPS", "1")
+
+    public_response = client.get("/", base_url="http://khudoverdiev.ru")
+    health_response = client.get("/health", base_url="http://127.0.0.1")
+
+    assert public_response.status_code == 308
+    assert public_response.headers["Location"].startswith("https://khudoverdiev.ru/")
+    assert health_response.status_code == 200
 
 
 def test_secure_cookie_flag_is_applied_to_visitor_cookie_when_enabled(client, monkeypatch):
@@ -210,6 +234,24 @@ def test_secure_cookie_flag_is_applied_to_visitor_cookie_when_enabled(client, mo
     visitor_cookie = next(cookie for cookie in response.headers.getlist("Set-Cookie") if cookie.startswith("visitor_id="))
 
     assert "Secure" in visitor_cookie
+
+
+def test_get_client_ip_ignores_spoofed_forwarded_for_without_trusted_proxy(client):
+    with site.app.test_request_context(
+        "/",
+        environ_base={"REMOTE_ADDR": "198.51.100.9"},
+        headers={"X-Forwarded-For": "203.0.113.77"},
+    ):
+        assert site.get_client_ip() == "198.51.100.9"
+
+
+def test_get_client_ip_accepts_forwarded_for_from_local_proxy(client):
+    with site.app.test_request_context(
+        "/",
+        environ_base={"REMOTE_ADDR": "127.0.0.1"},
+        headers={"X-Forwarded-For": "203.0.113.77, 127.0.0.1"},
+    ):
+        assert site.get_client_ip() == "203.0.113.77"
 
 
 def test_large_message_payload_is_rejected_before_persisting_body(client):
@@ -503,9 +545,9 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "default-src 'self'" in response.headers["Content-Security-Policy"]
     assert "frame-src https://vk.com https://vk.ru https://vkvideo.ru" in response.headers["Content-Security-Policy"]
     assert b"css/photo.css" in response.data
-    assert b"photo.css?v=52" in response.data
+    assert b"photo.css?v=71" in response.data
     assert b"js/photo.js" in response.data
-    assert b"photo.js?v=21" in response.data
+    assert b"photo.js?v=23" in response.data
     assert b'id="ph-mobile-nav"' in response.data
     assert b'class="ph-menu-toggle"' in response.data
     assert b'class="ph-menu-backdrop"' in response.data
@@ -580,6 +622,23 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert response.data.count(b"data-booking-open") == 2
     assert "Работал с".encode() in response.data
     assert b"Ozon" in response.data
+    css = Path("static/css/photo.css").read_text(encoding="utf-8")
+    assert ".ph-trust { display: none; }" in css
+    assert "@media (min-width: 390px) and (max-width: 499px)" in css
+    assert "--ph-desktop-canvas-width: 1920px;" in css
+    assert "@media (min-width: 500px)" in css
+    assert "zoom: var(--ph-desktop-scale);" in css
+    assert "@media (max-width: 760px)" not in css
+    assert "@media (max-width: 1100px)" not in css
+    assert b'class="ph-desktop-scale-shell"' in response.data
+    assert b'class="ph-desktop-scale-stage"' in response.data
+    js = Path("static/js/photo.js").read_text(encoding="utf-8")
+    assert 'window.matchMedia("(min-width: 500px)")' in js
+    assert 'const desktopCanvasWidth = 1920;' in js
+    assert ".ph-booking-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }" in css
+    assert ".ph-header-cta {\n        display: none;" in css
+    assert "grid-template-columns: 1fr auto;" in css
+    assert ".ph-review-all-button {\n        width: max-content;\n        min-height: 42px;\n        justify-self: end;" in css
     assert b"Black Star Burger" in response.data
     assert "Яндекс Маркет".encode() in response.data
     assert "Руки Вверх! Бар".encode() in response.data
@@ -592,8 +651,8 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "Все сделаем за тебя".encode() in response.data
     assert "Фото+видео".encode() in response.data
     assert "Подарочный сертификат".encode() in response.data
-    assert "4 000 ₽/час при заказе от 4х часов".encode() in response.data
-    assert "от 4 000 ₽/час".encode() not in response.data
+    assert "от 4 000 ₽/час".encode() in response.data
+    assert "4 000 ₽/час при заказе".encode() not in response.data
     assert "от 13 000 ₽".encode() in response.data
     assert b"https://vk.ru/market-190646738?screen=group" not in response.data
     assert "Дополнительно можно заказать".encode() not in response.data
@@ -624,7 +683,7 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "Контент для бренда".encode() in response.data
     assert "от 5 000 ₽/час".encode() in response.data
     assert "от 6 000 ₽/час".encode() in response.data
-    assert "4 000 ₽/час при заказе от 4х часов".encode() in response.data
+    assert "от 4 000 ₽".encode() in response.data
     assert "4 000 ₽/час при заказе от 2 часов".encode() not in response.data
     assert "От 4х часов".encode() in response.data
     assert "От 2 часов".encode() not in response.data
@@ -676,7 +735,9 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert b"https://vk.ru/reviews-190646738" in response.data
     assert "06 / Контакты".encode() in response.data
     assert "Открыть полное портфолио".encode() in response.data
-    assert "Владимир Худовердиев · Все права защищены".encode() in response.data
+    assert "Владимир Худовердиев".encode() in response.data
+    assert "Все права защищены".encode() in response.data
+    assert b'class="ph-footer-owner"' in response.data
     assert b'href="#gallery"' not in response.data
     assert b'id="gallery"' not in response.data
     assert "Снимаю".encode() not in response.data
@@ -692,9 +753,9 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
 
     assert response.status_code == 200
     assert b"css/photo.css" in response.data
-    assert b"photo.css?v=48" in response.data
+    assert b"photo.css?v=70" in response.data
     assert b"js/photo.js" in response.data
-    assert b"photo.js?v=16" in response.data
+    assert b"photo.js?v=24" in response.data
     assert "Портфолио".encode() in response.data
     assert "126 фотографий".encode() not in response.data
     assert "Собрал сюда все снимки из альбома ВКонтакте".encode() not in response.data
@@ -709,6 +770,9 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert response.data.find(b"photo/portfolio/portfolio-042.jpg") > response.data.find(b"photo/portfolio/portfolio-126.jpg")
     assert b"data-lightbox" in response.data
     assert b">PH<span>.</span></a>" in response.data
+    assert b'id="ph-mobile-nav"' in response.data
+    assert b'class="ph-portfolio-back"' in response.data
+    assert b'class="ph-menu-toggle"' in response.data
     assert '<a href="/#services">Фото</a>'.encode() in response.data
     assert '<a href="/#video">Видео</a>'.encode() in response.data
     assert '<a href="/#reviews">Отзывы</a>'.encode() in response.data
@@ -793,7 +857,9 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert "window.setTimeout(showBookingNudge, 120000);" in js
     assert 'const bookingSuccessModal = document.getElementById("booking-success");' in js
     assert "openBookingSuccess()" in js
-    assert 'textContent = atBottom ? "\\u2191" : "\\u2193";' in js
+    assert 'arrow?.classList.toggle("ph-arrow-up", atBottom);' in js
+    assert 'arrow?.classList.toggle("ph-arrow-down", !atBottom);' in js
+    assert 'textContent = atBottom ? "\\u2191" : "\\u2193";' not in js
     assert "â" not in js
     assert "Ð" not in js
     assert "closeBookingSuccess()" in js
@@ -1454,7 +1520,7 @@ def test_admin_login_page_is_no_store_and_contains_csrf(client):
     assert b'name="csrf_token"' in response.data
     assert b'name="username"' in response.data
     assert b'autocomplete="username"' in response.data
-    assert b"css/styles.css?v=32" in response.data
+    assert b"css/styles.css?v=59" in response.data
     assert "<title>Админ-панель</title>".encode() in response.data
     assert "Админ-панель — KHUDOVERDIEV".encode() not in response.data
     assert "Фотография сохраняет тишину момента".encode() in response.data
@@ -1477,6 +1543,7 @@ def test_admin_dashboard_layout_keeps_shell_height_stable_and_scrolls_content():
     assert ".admin-page {\n    min-height: 100svh;" in css
     assert "overflow: visible;" in css
     assert "grid-template-rows: auto auto auto;" in css
+    assert "grid-template-rows: auto auto auto;\n    align-content: start;" in css
     assert ".click-list div {\n    display: flex;" in css
     assert "min-width: 0;" in css
     assert ".click-list strong {\n    flex: 0 0 auto;" in css
@@ -1542,9 +1609,50 @@ def test_admin_accepts_plain_password_and_rotates_csrf(client):
 
     assert response.status_code == 302
     assert response.headers["Location"] == site.ADMIN_PATH
+    session_cookie = next(cookie for cookie in response.headers.getlist("Set-Cookie") if cookie.startswith("session="))
+    assert "HttpOnly" in session_cookie
+    assert "SameSite=Strict" in session_cookie
     with client.session_transaction() as session:
         assert session["admin"] is True
         assert session["_csrf_token"] != old_csrf
+
+
+def test_admin_login_and_admin_actions_are_written_to_security_audit_log(client):
+    client_id = insert_photo_client(slug="audit-client")
+    login_as_admin(client)
+    with client.session_transaction() as session:
+        csrf = session["_csrf_token"]
+
+    client.post(f"{site.ADMIN_PATH}/clients/{client_id}/rotate-link", data={"csrf_token": csrf})
+
+    events = db_rows("security_events")
+    event_types = [event["event_type"] for event in events]
+    assert "admin_login_success" in event_types
+    assert "photo_client_link_rotated" in event_types
+    assert all("secret" not in (event["metadata"] or "") for event in events)
+
+
+def test_admin_ip_allowlist_hides_admin_from_unlisted_addresses(client, monkeypatch):
+    monkeypatch.setattr(site, "ADMIN_IP_ALLOWLIST", {"203.0.113.0/24"})
+
+    blocked = client.get(site.ADMIN_PATH, environ_base={"REMOTE_ADDR": "198.51.100.10"})
+    allowed = client.get(site.ADMIN_PATH, environ_base={"REMOTE_ADDR": "203.0.113.10"})
+
+    assert blocked.status_code == 404
+    assert allowed.status_code == 200
+
+
+def test_production_runtime_rejects_default_secret_and_admin_credentials(client, monkeypatch):
+    monkeypatch.setenv("FORCE_HTTPS", "1")
+    monkeypatch.setitem(site.app.config, "TESTING", False)
+    monkeypatch.setattr(site.app, "secret_key", "dev-only-change-this-secret-key")
+    monkeypatch.setattr(site, "ADMIN_USERNAME", "admin")
+    monkeypatch.setattr(site, "ADMIN_PASSWORD", "admin")
+    monkeypatch.setattr(site, "ADMIN_PASSWORD_HASH", None)
+
+    response = client.get("/health")
+
+    assert response.status_code == 500
 
 
 def test_admin_login_clears_preexisting_session_state_to_prevent_fixation(client):
@@ -1708,9 +1816,14 @@ def test_admin_clients_tab_lists_photo_clients_and_creation_form_without_file_st
     assert b'id="client-panel-archive"' in response.data
     assert "Создание".encode() in response.data
     assert "Все ссылки".encode() in response.data
+    assert b'class="client-section-shell"' in response.data
+    assert b'class="client-section-content"' in response.data
     assert 'href="/st"'.encode() in response.data
     assert 'href="/st/clients"'.encode() in response.data
     assert b'name="photo_link"' in response.data
+    assert "Создать страницу клиента".encode() not in response.data
+    assert b'class="client-create-label"' in response.data
+    assert "<b>Новая</b><b>ссылка</b>".encode() in response.data
     assert b'name="review_link"' not in response.data
     assert b'name="has_discount"' in response.data
     assert "Дать скидку".encode() in response.data
@@ -1748,6 +1861,9 @@ def test_admin_client_form_layout_removes_decorative_icons_and_keeps_fields_stab
     assert '.client-link-note {\n    display: grid;\n    grid-template-columns: minmax(0, 1fr);\n    grid-template-areas:\n        "title"\n        "url";' in css
     assert ".client-link-note span {\n    grid-area: title;" in css
     assert ".client-link-note p {\n    grid-area: url;" in css
+    assert ".client-link-note-actions {\n    grid-column: 1 / -1;" in css
+    assert ".client-section-shell {\n    display: grid;\n    grid-template-columns: 250px minmax(0, 1fr);" in css
+    assert ".client-section-content {\n    display: grid;\n    align-content: start;\n    gap: 0;\n    min-width: 0;\n    min-height: 0;\n    padding: 22px 20px 20px;" in css
     assert ".client-create-panel {\n    display: grid;\n    grid-template-columns: 250px minmax(0, 1fr);" in css
     assert ".client-create-visual" not in css
     assert ".client-url-field {\n    display: block;" in css
@@ -1758,6 +1874,8 @@ def test_admin_client_form_layout_removes_decorative_icons_and_keeps_fields_stab
     assert ".client-form textarea {\n        min-height: 112px;" in css
     assert "@media (max-width: 900px) {\n    .client-form {\n        grid-template-columns: 1fr;" in css
     assert ".client-discount-controls,\n    .client-create-actions {\n        grid-template-columns: 1fr;" in css
+    assert ".client-list {\n    display: grid;\n    grid-auto-rows: max-content;\n    align-content: start;\n    gap: 10px;\n    padding: 0;\n    border: 0;\n    border-radius: 0;\n    background: transparent;\n    box-shadow: none;" in css
+    assert ".client-archive {\n    margin-top: 0;\n    padding: 0;\n    border: 0;\n    border-radius: 0;\n    background: transparent;\n    box-shadow: none;" in css
 
 
 def test_admin_tabs_use_inline_icons_without_dot_markers():
@@ -1822,7 +1940,7 @@ def test_admin_messages_tab_groups_recent_messages_by_source(client, monkeypatch
 
 
 def test_photo_client_page_renders_personal_redirect_buttons_without_storing_photos(client):
-    insert_photo_client(client_name="Алина", slug="wedding-alina-2026", discount_text="скидку 15%")
+    insert_photo_client(client_name="Алина", slug="wedding-alina-2026", discount_text="15%")
 
     response = client.get("/client/wedding-alina-2026", base_url="http://ph.khudoverdiev.ru")
 
@@ -1833,8 +1951,13 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
     assert "Алина!".encode() in response.data
     assert "Запечатленные моменты".encode() in response.data
     assert "Готовая серия".encode() not in response.data
-    assert "скидку 15%".encode() in response.data
-    assert b"css/styles.css?v=32" in response.data
+    assert "Оставьте отзыв и".encode() in response.data
+    assert "получите скидку 15%".encode() in response.data
+    assert "Получите скидку 15%%".encode() not in response.data
+    assert b"css/styles.css?v=54" in response.data
+    assert b"client-camera-body" in response.data
+    assert b"client-camera-lens-core" in response.data
+    assert b"client-aperture" not in response.data
     assert b"photo/portrait-cutout.png" in response.data
     assert b"class=\"client-photo-stage\"" in response.data
     assert b"class=\"client-link-icon\"" in response.data
@@ -1855,13 +1978,29 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
     assert "Страница фотографа".encode() in response.data
     assert b"class=\"client-header-link\"" in response.data
     css = Path("static/css/styles.css").read_text(encoding="utf-8")
+    template = Path("templates/client_photos.html").read_text(encoding="utf-8")
+    assert "<span>Мне было очень приятно работать с вами.</span>" in template
+    assert "<span>Ниже вы найдете ссылку на {{ client.delivery_copy.lead_noun }}.</span>" in template
+    assert ".client-lead > span {\n    display: block;" in css
     assert ".client-link-icon {\n    width: 28px;" in css
-    assert ".client-card h1 span:last-child {\n    color: #7a5034;" in css
+    assert "background: rgba(23, 19, 16, 0.78);" in css
+    assert "color: #ffffff;" in css
+    assert ".client-card h1 span:last-child {\n    margin-top: 10px;\n    color: var(--client-ink);" in css
+    assert "font-family: Georgia, \"Times New Roman\", serif;" in css
+    assert "text-transform: none;" in css
     assert ".client-photo-stage::before,\n.client-photo-stage::after {" in css
     assert "background: none;" in css
-    assert "clip-path: none;" in css
+    assert "width: 284px;\n    height: 284px;" in css
+    assert "overflow: hidden;\n    background: none;\n    border-radius: 50%;" in css
+    assert "bottom: -86px;" in css
+    assert "margin-top: -48px;" in css
     assert "width: 444px;" in css
-    assert ".client-button-primary {\n    border-color: rgba(49, 36, 24, 0.95);" in css
+    assert "min-height: min(820px, calc(100svh - 146px));" not in css
+    assert "padding: 42px 46px 28px;" in css
+    assert ".client-button-primary {\n    min-height: 56px;" in css
+    assert "background: linear-gradient(135deg, #1d1712, #49301e);" in css
+    assert ".client-button-primary i {" in css
+    assert ".client-button-primary i {\n    width: auto;\n    height: auto;\n    border-radius: 0;\n    background: transparent;\n    color: #ffffff;" in css
     assert b"https://reviews.example/ivanova" not in response.data
     assert b"<form" not in response.data
     assert b'type="file"' not in response.data
@@ -1873,9 +2012,61 @@ def test_photo_client_page_hides_discount_when_admin_disables_it(client):
     response = client.get("/client/no-discount-client", base_url="http://ph.khudoverdiev.ru")
 
     assert response.status_code == 200
-    assert "Благодарность".encode() not in response.data
+    assert "Оставьте отзыв".encode() not in response.data
+    assert "Получите скидку".encode() not in response.data
     assert "на следующую съемку".encode() not in response.data
     assert b'class="client-discount"' not in response.data
+
+
+def test_photo_client_page_adds_percent_sign_to_numeric_discount(client):
+    insert_photo_client(slug="numeric-discount", discount_text="1")
+
+    response = client.get("/client/numeric-discount", base_url="http://ph.khudoverdiev.ru")
+
+    assert response.status_code == 200
+    assert "Оставьте отзыв и".encode() in response.data
+    assert "получите скидку 1%".encode() in response.data
+    assert "Получите скидку 1</strong>".encode() not in response.data
+    assert "❧".encode() not in response.data
+
+
+@pytest.mark.parametrize(
+    ("delivery_type", "title", "lead", "button"),
+    [
+        ("video", "Видео готово!", "готовое видео", "Скачать видео"),
+        ("photo_video", "Фото и видео готовы!", "готовые фото и видео", "Скачать фото и видео"),
+    ],
+)
+def test_photo_client_page_uses_selected_delivery_type(client, delivery_type, title, lead, button):
+    slug = f"delivery-{delivery_type.replace('_', '-')}"
+    insert_photo_client(
+        slug=slug,
+        delivery_type=delivery_type,
+        message_text="Мне было очень приятно работать с вами. Ниже вы найдете ссылку на готовые фотографии.",
+    )
+
+    response = client.get(f"/client/{slug}", base_url="http://ph.khudoverdiev.ru")
+
+    assert response.status_code == 200
+    assert f"<title>{title}</title>".encode() in response.data
+    assert f"Ниже вы найдете ссылку на {lead}.".encode() in response.data
+    assert button.encode() in response.data
+
+
+def test_photo_client_delivery_type_defaults_to_photo_and_is_available_in_admin(client):
+    insert_photo_client(slug="legacy-photo")
+    login_as_admin(client)
+
+    response = client.get(f"{site.ADMIN_PATH}/clients")
+    columns = table_columns("photo_clients")
+
+    assert columns["delivery_type"]["notnull"] == 1
+    assert db_rows("photo_clients")[0]["delivery_type"] == "photo"
+    assert b'name="delivery_type"' in response.data
+    assert b'class="client-delivery-options"' in response.data
+    assert b'type="radio" name="delivery_type" value="photo"' in response.data
+    assert b'type="radio" name="delivery_type" value="video"' in response.data
+    assert b'type="radio" name="delivery_type" value="photo_video"' in response.data
 
 
 def test_old_phh_client_page_is_not_part_of_project(client):
@@ -2020,6 +2211,37 @@ def test_photo_client_admin_ignores_submitted_slug_and_rejects_unsafe_external_l
     assert re.fullmatch(r"[a-z0-9]{32}", rows[1]["slug"])
 
 
+@pytest.mark.parametrize(
+    "unsafe_url",
+    [
+        "http://127.0.0.1/admin",
+        "http://localhost:8000/secret",
+        "http://10.0.0.5/file",
+        "http://172.16.0.2/file",
+        "http://192.168.1.20/file",
+        "https://user:pass@example.com/private",
+        "ftp://example.com/file",
+    ],
+)
+def test_photo_client_admin_rejects_local_private_and_credentialed_external_links(client, unsafe_url):
+    login_as_admin(client)
+    with client.session_transaction() as session:
+        csrf = session["_csrf_token"]
+
+    response = client.post(
+        f"{site.ADMIN_PATH}/clients",
+        data={
+            "csrf_token": csrf,
+            "client_name": "Unsafe",
+            "photo_link": unsafe_url,
+            "is_active": "1",
+        },
+    )
+
+    assert response.status_code == 400
+    assert db_rows("photo_clients") == []
+
+
 def test_photo_client_admin_updates_and_archives_client_records(client):
     client_id = insert_photo_client(slug="old-slug")
     login_as_admin(client)
@@ -2078,6 +2300,14 @@ def test_photo_client_admin_fetch_delete_archives_link_without_losing_record(cli
     assert rows[0]["archived_at"]
     assert rows[0]["is_active"] == 0
     assert client.get("/client/ivanova-2026").status_code == 404
+
+
+def test_client_delete_modal_wraps_long_public_urls_inside_card():
+    css = Path("static/css/styles.css").read_text(encoding="utf-8")
+
+    assert ".delete-card {\n    position: relative;\n    width: min(420px, 100%);\n    min-width: 0;" in css
+    assert "overflow-wrap: anywhere;" in css
+    assert "word-break: break-word;" in css
 
 
 def test_photo_client_admin_can_rotate_existing_client_link(client):
@@ -2186,6 +2416,7 @@ def test_init_db_creates_expected_not_null_schema_contract(client):
     unique_visits = table_columns("unique_visits")
     photo_clients = table_columns("photo_clients")
     daily_submission_limits = table_columns("daily_submission_limits")
+    security_events = table_columns("security_events")
     assert messages["name"]["notnull"] == 1
     assert messages["text"]["notnull"] == 1
     assert messages["message_type"]["notnull"] == 1
@@ -2206,6 +2437,8 @@ def test_init_db_creates_expected_not_null_schema_contract(client):
     assert daily_submission_limits["count"]["notnull"] == 1
     assert daily_submission_limits["first_seen_at"]["notnull"] == 1
     assert daily_submission_limits["last_seen_at"]["notnull"] == 1
+    assert security_events["event_type"]["notnull"] == 1
+    assert security_events["created_at"]["notnull"] == 1
 
 
 def test_unauthorized_delete_redirects_to_admin_without_deleting(client):

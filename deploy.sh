@@ -5,6 +5,8 @@ umask 022
 SCRIPT_PATH="$(readlink -f -- "${BASH_SOURCE[0]}")"
 SCRIPT_DIR="$(cd -- "$(dirname -- "$SCRIPT_PATH")" && pwd)"
 APP_DIR="${APP_DIR:-$SCRIPT_DIR}"
+DATA_DIR="${DATA_DIR:-/var/lib/khudoverdiev}"
+DB_PATH="${SITE_DB_PATH:-$DATA_DIR/site.db}"
 BRANCH="${BRANCH:-main}"
 REMOTE="${REMOTE:-origin}"
 SERVICE="${SERVICE:-khudoverdiev.service}"
@@ -150,8 +152,11 @@ ensure_runtime_permissions() {
   log "ensuring runtime permissions"
 
   root_cmd chmod 0755 "$(dirname "$APP_DIR")"
-  root_cmd chown www-data:www-data "$APP_DIR" || true
+  root_cmd chown root:www-data "$APP_DIR" || true
   root_cmd chmod 0755 "$APP_DIR"
+  root_cmd mkdir -p "$(dirname "$DB_PATH")"
+  root_cmd chown www-data:www-data "$(dirname "$DB_PATH")" || true
+  root_cmd chmod 0750 "$(dirname "$DB_PATH")" || true
 
   if [[ -d "$VENV_DIR" ]]; then
     root_cmd find "$VENV_DIR" -type d -exec chmod a+rx {} +
@@ -163,9 +168,13 @@ ensure_runtime_permissions() {
 
   root_cmd chmod +x "$SCRIPT_PATH"
 
-  if [[ -f "$APP_DIR/site.db" ]]; then
-    root_cmd chown www-data:www-data "$APP_DIR/site.db" || true
-    root_cmd chmod 0660 "$APP_DIR/site.db" || true
+  if [[ -f "$APP_DIR/site.db" && ! -f "$DB_PATH" ]]; then
+    root_cmd mv "$APP_DIR/site.db" "$DB_PATH"
+  fi
+
+  if [[ -f "$DB_PATH" ]]; then
+    root_cmd chown www-data:www-data "$DB_PATH" || true
+    root_cmd chmod 0660 "$DB_PATH" || true
   fi
 }
 
@@ -245,7 +254,7 @@ main() {
   BEFORE_HEAD="$(git rev-parse HEAD)"
   log "current version: ${BEFORE_HEAD:0:12}"
 
-  backup_file "$APP_DIR/site.db" "database"
+  backup_file "$DB_PATH" "database"
   backup_file "$APP_DIR/.env" "environment"
 
   log "fetching $REMOTE/$BRANCH from GitHub"

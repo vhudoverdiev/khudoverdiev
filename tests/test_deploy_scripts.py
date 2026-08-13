@@ -36,13 +36,15 @@ def test_server_deploy_is_safe_and_verified():
     assert "existing SSL nginx config detected" in script
     assert "ssl_certificate|managed by Certbot" in script
     assert "ensure_runtime_permissions" in script
-    assert "chown www-data:www-data \"$APP_DIR\"" in script
+    assert "chown root:www-data \"$APP_DIR\"" in script
+    assert "DB_PATH=\"${SITE_DB_PATH:-$DATA_DIR/site.db}\"" in script
+    assert "mkdir -p \"$(dirname \"$DB_PATH\")\"" in script
     assert 'find "$VENV_DIR" -type d -exec chmod a+rx {} +' in script
     assert 'find "$VENV_DIR/bin" -maxdepth 1 -type f -exec chmod a+rx {} +' in script
-    assert "chown www-data:www-data \"$APP_DIR/site.db\"" in script
+    assert "chown www-data:www-data \"$DB_PATH\"" in script
     assert "git merge --ff-only" in script
     assert "git clean -fd" not in script
-    assert "backup_file \"$APP_DIR/site.db\"" in script
+    assert "backup_file \"$DB_PATH\"" in script
     assert "backup_file \"$APP_DIR/.env\"" in script
     assert "pytest -q" in script
     assert "wait_for_health" in script
@@ -54,8 +56,13 @@ def test_systemd_service_runs_this_flask_app():
 
     assert "WorkingDirectory=/opt/khudoverdiev" in service
     assert "EnvironmentFile=-/opt/khudoverdiev/.env" in service
+    assert "SITE_DB_PATH=/var/lib/khudoverdiev/site.db" in service
     assert "gunicorn" in service
     assert "app:app" in service
+    assert "NoNewPrivileges=true" in service
+    assert "ProtectSystem=strict" in service
+    assert "ReadWritePaths=/var/lib/khudoverdiev" in service
+    assert "CapabilityBoundingSet=" in service
 
 
 def test_nginx_config_routes_all_site_hosts_to_gunicorn():
@@ -67,6 +74,10 @@ def test_nginx_config_routes_all_site_hosts_to_gunicorn():
     assert "phh.khudoverdiev.ru" not in config
     assert "proxy_pass http://127.0.0.1:8000" in config
     assert "alias /opt/khudoverdiev/static/" in config
+    assert "server_tokens off" in config
+    assert "location ~ /\\.(?!well-known/)" in config
+    assert "return 404" in config
+    assert "X-Content-Type-Options" in config
 
 
 def test_server_bootstrap_installs_project_and_deploy_command():
@@ -77,11 +88,16 @@ def test_server_bootstrap_installs_project_and_deploy_command():
     assert "git clone --branch" in script
     assert "python3 -m venv" in script
     assert "ADMIN_USERNAME=admin" in script
+    assert "ADMIN_PASSWORD=" in script
+    assert "ADMIN_PASSWORD_HASH=$admin_password_hash" in script
+    assert "REQUIRE_ADMIN_PASSWORD_HASH=1" in script
+    assert "SITE_DB_PATH=$DB_PATH" in script
     assert "ensure_runtime_permissions" in script
-    assert "chown www-data:www-data \"$APP_DIR\"" in script
+    assert "chown root:www-data \"$APP_DIR\"" in script
+    assert "DB_PATH=\"${SITE_DB_PATH:-$DATA_DIR/site.db}\"" in script
     assert 'find "$APP_DIR/venv" -type d -exec chmod a+rx {} +' in script
     assert 'find "$APP_DIR/venv/bin" -maxdepth 1 -type f -exec chmod a+rx {} +' in script
-    assert "chown www-data:www-data \"$APP_DIR/site.db\"" in script
+    assert "chown www-data:www-data \"$DB_PATH\"" in script
     assert "systemctl enable \"$SERVICE\"" in script
     assert "existing SSL nginx config detected" in script
     assert "ssl_certificate|managed by Certbot" in script
