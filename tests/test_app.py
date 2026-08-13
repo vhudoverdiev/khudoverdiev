@@ -586,21 +586,20 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert b"data-video-player" in response.data
     assert b"data-video-card" in response.data
     assert b"data-video-frame" in response.data
-    assert b"https://vk.com/video_ext.php?oid=-229443984&amp;id=456239042&amp;hd=2" in response.data
-    assert b"https://vk.com/video_ext.php?oid=-229443984&amp;id=456239046&amp;hd=2" in response.data
-    assert b'data-video-embed="https://vk.com/video_ext.php?oid=-229443984&amp;id=' in response.data
+    assert b"portfolio/slides/peredacha/slide-1.png" in response.data
+    assert b"portfolio/slides/shans/slide-1.png" in response.data
+    assert b"data-video-src=" in response.data
     assert b"data-video-url" not in response.data
     assert b"data-video-play>" not in response.data
     assert b'target="_blank" rel="noopener noreferrer" data-video-play' not in response.data
-    assert "откройте ее в VK Video".encode() not in response.data
-    assert "Видеопортфолио".encode() in response.data
-    assert "Николай &amp; Галина".encode() in response.data
-    assert "Промоакция магазина «Пятёрочка»".encode() in response.data
-    assert "VK Клип".encode() in response.data
-    assert "Видеосъемка".encode() in response.data
-    assert "с живым дыханием".encode() in response.data
-    assert "Сохраняю движение, голос, атмосферу".encode() not in response.data
-    assert "Свадебный фильм".encode() in response.data
+    assert b"portfolio/slides/peredacha/slide-1.png" in response.data
+    assert b"portfolio/slides/shans/slide-1.png" in response.data
+    assert b"data-video-src=" in response.data
+    assert response.data.count(b"data-video-title=") == 2
+    assert response.data.count(b"data-video-poster=") == 2
+    assert response.data.count(b"data-video-card") == 2
+    assert b"<video" in response.data
+    assert b"data-video-play>" not in response.data
     assert "Главный эпизод".encode() in response.data
     assert "Творческий ролик".encode() in response.data
     assert "Контент для бренда".encode() in response.data
@@ -1789,7 +1788,7 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
     assert "Запечатленные моменты".encode() in response.data
     assert "Готовая серия".encode() not in response.data
     assert "скидку 15%".encode() in response.data
-    assert b"css/styles.css?v=20" in response.data
+    assert b"css/styles.css?v=21" in response.data
     assert b"photo/portrait-cutout.png" in response.data
     assert b"class=\"client-photo-stage\"" in response.data
     assert b"class=\"client-link-icon\"" in response.data

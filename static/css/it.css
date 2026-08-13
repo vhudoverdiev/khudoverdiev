@@ -12,7 +12,7 @@
     --desktop-canvas-width: 1920px;
     --desktop-canvas-height: 1080px;
     --desktop-scale: 1;
-    --mobile-hero-height: 720px;
+    --mobile-hero-height: 904px;
     --mobile-hero-bg: #070907;
     --mobile-hero-bottom-space: calc(38px + env(safe-area-inset-bottom));
     --mobile-console-height: 320px;

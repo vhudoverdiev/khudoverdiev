@@ -9,7 +9,7 @@
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}?v=2" sizes="any">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}?v=2">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}?v=2">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=29">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=30">
 </head>
 <body class="admin-body{% if not authorized %} admin-login-body{% endif %}">
     <main class="admin-page{% if not authorized %} admin-login-page{% endif %}">
@@ -88,10 +88,8 @@
                 <a class="{{ 'is-active' if active_admin_tab == 'clients' else '' }}" href="{{ url_for('admin_clients') }}">
                     <span class="admin-tab-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" focusable="false">
-                            <path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"></path>
-                            <path d="M3.5 20a4.5 4.5 0 0 1 9 0"></path>
-                            <path d="M17 10.5a2.5 2.5 0 1 0 0-5"></path>
-                            <path d="M15 15.5c2.5.3 4.5 1.7 5 4.5"></path>
+                            <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"></path>
+                            <path d="M6 20a6 6 0 0 1 12 0"></path>
                         </svg>
                     </span>
                     <span class="admin-tab-label">Клиенты</span>
@@ -240,7 +238,7 @@
                                 </span>
                                 <b class="{{ 'is-on' if client.is_active else 'is-off' }}">{{ 'Включена' if client.is_active else 'Выключена' }}</b>
                             </summary>
-                            <form class="client-form" action="{{ url_for('update_photo_client', client_id=client.id) }}" method="post">
+                            <form class="client-form" action="{{ url_for('update_photo_client', client_id=client.id) }}" method="post" data-client-edit-form>
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <label>
                                     <span>Имя клиента</span>
@@ -278,9 +276,6 @@
                                     <span>Текст на странице</span>
                                     <textarea name="message_text" maxlength="700">{{ client.message_text or '' }}</textarea>
                                 </label>
-                                <div class="client-form-actions">
-                                    <button type="submit">Сохранить</button>
-                                </div>
                             </form>
                             <form class="client-delete-form" action="{{ url_for('delete_photo_client', client_id=client.id) }}" method="post" data-client-delete-form data-client-name="{{ client.client_name|e }}" data-client-url="{{ photo_client_public_url(client.slug) }}">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -534,8 +529,119 @@
                 }, 1400);
             }
 
+            const clientAutoSaveState = new WeakMap();
+
+            function getClientAutoSaveState(form) {
+                if (!clientAutoSaveState.has(form)) {
+                    clientAutoSaveState.set(form, {
+                        timer: null,
+                        saving: false,
+                        queued: false,
+                        lastSnapshot: null,
+                    });
+                }
+                return clientAutoSaveState.get(form);
+            }
+
+            function snapshotClientForm(form) {
+                return new URLSearchParams(new FormData(form)).toString();
+            }
+
+            function updateClientItemFromPayload(form, payload) {
+                const item = form.closest('.client-item');
+                if (!item) return;
+                const summaryName = item.querySelector('summary strong');
+                if (summaryName && typeof payload.client_name === 'string') {
+                    summaryName.textContent = payload.client_name;
+                }
+                const summaryLink = item.querySelector('[data-client-summary-link]');
+                if (summaryLink && typeof payload.url === 'string') {
+                    summaryLink.textContent = payload.url;
+                }
+                const status = item.querySelector('summary b');
+                if (status && typeof payload.status_label === 'string') {
+                    status.textContent = payload.status_label;
+                    status.className = payload.is_active ? 'is-on' : 'is-off';
+                }
+                const deleteForm = item.querySelector('[data-client-delete-form]');
+                if (deleteForm) {
+                    if (typeof payload.client_name === 'string') deleteForm.dataset.clientName = payload.client_name;
+                    if (typeof payload.url === 'string') deleteForm.dataset.clientUrl = payload.url;
+                }
+            }
+
+            async function saveClientEditForm(form) {
+                const state = getClientAutoSaveState(form);
+                if (state.saving) {
+                    state.queued = true;
+                    return;
+                }
+                if (!form.checkValidity()) return;
+                const snapshot = snapshotClientForm(form);
+                if (snapshot === state.lastSnapshot) return;
+
+                state.saving = true;
+                form.dataset.saving = '1';
+                try {
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'X-Requested-With': 'fetch',
+                            'X-CSRF-Token': csrfToken,
+                        },
+                        body: new FormData(form),
+                    });
+                    const payload = await response.json().catch(() => null);
+                    if (!response.ok) {
+                        throw new Error(payload?.error || 'save failed');
+                    }
+                    state.lastSnapshot = snapshot;
+                    if (payload) updateClientItemFromPayload(form, payload);
+                } catch (error) {
+                    console.warn(error);
+                } finally {
+                    state.saving = false;
+                    delete form.dataset.saving;
+                    if (state.queued) {
+                        state.queued = false;
+                        scheduleClientEditAutosave(form, 0);
+                    } else {
+                        state.timer = null;
+                    }
+                }
+            }
+
+            function scheduleClientEditAutosave(form, delay = 450) {
+                const state = getClientAutoSaveState(form);
+                if (state.timer) window.clearTimeout(state.timer);
+                state.timer = window.setTimeout(() => {
+                    state.timer = null;
+                    saveClientEditForm(form);
+                }, delay);
+            }
+
             document.querySelectorAll('[data-close-delete]').forEach((button) => {
                 button.addEventListener('click', closeDeleteModal);
+            });
+
+            document.addEventListener('input', (event) => {
+                const form = event.target.closest('[data-client-edit-form]');
+                if (!form || event.target.matches('input[type="checkbox"]')) return;
+                scheduleClientEditAutosave(form);
+            });
+
+            document.addEventListener('change', (event) => {
+                const form = event.target.closest('[data-client-edit-form]');
+                if (!form) return;
+                scheduleClientEditAutosave(form, 0);
+            });
+
+            document.addEventListener('submit', (event) => {
+                const form = event.target.closest('[data-client-edit-form]');
+                if (!form) return;
+                event.preventDefault();
+                saveClientEditForm(form);
             });
 
             deleteConfirm.addEventListener('click', async () => {

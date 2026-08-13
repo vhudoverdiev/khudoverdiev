@@ -1122,8 +1122,11 @@ def update_photo_client(client_id):
     if not validate_csrf():
         abort(400)
 
+    is_fetch_request = request.headers.get("X-Requested-With") == "fetch"
     payload, error = build_photo_client_payload(request.form)
     if error:
+        if is_fetch_request:
+            return jsonify({"error": error}), 400
         return render_template(
             "admin.html",
             **admin_clients_context(client_error=error),
@@ -1149,11 +1152,36 @@ def update_photo_client(client_id):
                     client_id,
                 ),
             )
+            updated = db.execute(
+                """
+                SELECT id, client_name, slug, is_active, archived_at, updated_at
+                FROM photo_clients
+                WHERE id = ?
+                """,
+                (client_id,),
+            ).fetchone()
     except sqlite3.IntegrityError:
+        if is_fetch_request:
+            return jsonify({"error": "Такой адрес страницы уже занят."}), 409
         return render_template(
             "admin.html",
             **admin_clients_context(client_error="Такой адрес страницы уже занят."),
         ), 409
+
+    if is_fetch_request:
+        if updated is None:
+            abort(404)
+        return jsonify(
+            {
+                "id": updated["id"],
+                "client_name": updated["client_name"],
+                "slug": updated["slug"],
+                "url": photo_client_public_url(updated["slug"]),
+                "is_active": bool(updated["is_active"]),
+                "status_label": "Включена" if updated["is_active"] else "Выключена",
+                "updated_at": updated["updated_at"],
+            }
+        )
 
     return redirect(url_for("admin_clients"))
 

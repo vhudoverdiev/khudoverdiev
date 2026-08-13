@@ -1091,7 +1091,8 @@ h2 em {
         linear-gradient(145deg, rgba(86, 61, 48, .95), rgba(37, 29, 25, .94));
     box-shadow: 0 30px 80px rgba(44, 33, 26, .15);
 }
-.ph-video-player iframe {
+.ph-video-player iframe,
+.ph-video-player video {
     width: 100%;
     height: 100%;
     min-height: 520px;
@@ -2448,7 +2449,8 @@ h2 em {
 
     .ph-video-player,
     .ph-video-placeholder,
-    .ph-video-player iframe {
+    .ph-video-player iframe,
+    .ph-video-player video {
         min-height: 480px;
     }
 
@@ -2766,7 +2768,8 @@ h2 em {
 
     .ph-video-player,
     .ph-video-placeholder,
-    .ph-video-player iframe {
+    .ph-video-player iframe,
+    .ph-video-player video {
         min-height: 360px;
         border-radius: 22px;
     }

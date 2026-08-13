@@ -1467,6 +1467,7 @@ a {
     position: relative;
     display: grid;
     align-content: center;
+    justify-items: center;
     gap: 9px;
     min-height: 0;
     padding: 28px;
@@ -1476,6 +1477,7 @@ a {
         rgba(255, 250, 245, 0.62);
     border-right: 1px solid rgba(94, 65, 43, 0.09);
     overflow: hidden;
+    text-align: center;
 }
 
 .client-create-intro span {
@@ -1572,7 +1574,6 @@ a {
 
 .client-form-wide,
 .client-form > button,
-.client-form-actions,
 .client-create-actions {
     grid-column: 1 / -1;
 }
@@ -1615,6 +1616,11 @@ a {
     border: 1px solid rgba(255, 255, 255, 0.54);
     border-radius: 18px;
     background: linear-gradient(145deg, rgba(246, 229, 210, 0.74), rgba(255, 250, 245, 0.52));
+}
+
+.client-create-form .client-link-note {
+    justify-items: center;
+    text-align: center;
 }
 
 .client-link-note-actions {
@@ -1694,7 +1700,6 @@ a {
 }
 
 .client-form button:not(.client-link-action),
-.client-form-actions a,
 .client-delete-form button {
     min-height: 46px;
     border: 1px solid transparent;
@@ -1707,7 +1712,6 @@ a {
 }
 
 .client-form button:not(.client-link-action):hover,
-.client-form-actions a:hover,
 .client-delete-form button:hover,
 .admin-header a:hover,
 .admin-tabs a:hover {
@@ -1750,27 +1754,9 @@ a {
     content: none;
 }
 
-.client-create-actions button,
-.client-form-actions button {
+.client-create-actions button {
     min-height: 54px;
     letter-spacing: 0;
-}
-
-.client-form-actions {
-    display: flex;
-    gap: 10px;
-}
-
-.client-form-actions button {
-    flex: 1;
-}
-
-.client-form-actions a {
-    display: grid;
-    place-items: center;
-    background: rgba(255, 250, 245, 0.72);
-    border: 1px solid rgba(94, 65, 43, 0.12);
-    color: var(--admin-cocoa);
 }
 
 .client-list {
@@ -2089,11 +2075,12 @@ a {
     position: relative;
     z-index: 1;
     width: min(1360px, 100%);
-    min-height: 0;
-    height: min(760px, calc(100svh - 122px));
+    min-height: min(760px, calc(100svh - 122px));
+    height: auto;
     display: grid;
     grid-template-columns: minmax(0, 1fr) 430px;
-    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    align-content: start;
     gap: 26px 62px;
     padding: 54px 58px 42px;
     border-radius: 36px;
@@ -2138,9 +2125,9 @@ a {
 }
 
 .client-copy {
-    align-self: center;
+    align-self: start;
     display: grid;
-    align-content: center;
+    align-content: start;
     gap: 22px;
     padding: 4px 0 10px;
 }
@@ -2225,7 +2212,7 @@ a {
     align-content: start;
     justify-items: center;
     gap: 0;
-    align-self: stretch;
+    align-self: start;
     isolation: isolate;
 }
 
@@ -2910,10 +2897,6 @@ a {
     .client-create-actions button {
         min-width: 0;
     }
-
-    .client-form-actions {
-        flex-direction: column;
-    }
 }
 
 @media (max-width: 720px) {
@@ -3050,10 +3033,6 @@ a {
 
     .client-create-actions button {
         min-width: 0;
-    }
-
-    .client-form-actions {
-        flex-direction: column;
     }
 
     .login-side-form {

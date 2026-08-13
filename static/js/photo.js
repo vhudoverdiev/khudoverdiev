@@ -6,6 +6,7 @@
     const bookingForm = bookingModal?.querySelector("[data-booking-form]");
     const bookingStatus = bookingModal?.querySelector("[data-booking-status]");
     const scrollCue = document.querySelector(".ph-scroll-cue");
+    const heroButtons = [...document.querySelectorAll(".ph-actions .ph-button")];
     const videoPlayer = document.querySelector("[data-video-player]");
     const videoFrame = document.querySelector("[data-video-frame]");
     const videoCards = [...document.querySelectorAll("[data-video-card]")];
@@ -32,8 +33,8 @@
 
         scrollCue.classList.toggle("is-up", atBottom);
         scrollCue.dataset.direction = atBottom ? "up" : "down";
-        scrollCue.querySelector("span").textContent = atBottom ? "↑" : "↓";
-        scrollCue.setAttribute("aria-label", atBottom ? "Вернуться в начало страницы" : "Перейти к следующему блоку");
+        scrollCue.querySelector("span").textContent = atBottom ? "â" : "â";
+        scrollCue.setAttribute("aria-label", atBottom ? "ÐÐµÑÐ½ÑÑÑÑÑ Ð² Ð½Ð°ÑÐ°Ð»Ð¾ ÑÑÑÐ°Ð½Ð¸ÑÑ" : "ÐÐµÑÐµÐ¹ÑÐ¸ Ðº ÑÐ»ÐµÐ´ÑÑÑÐµÐ¼Ñ Ð±Ð»Ð¾ÐºÑ");
     };
 
     const closeLightbox = () => {
@@ -88,22 +89,40 @@
         lastBookingTrigger?.focus();
     };
 
-    const setActiveVideo = (button) => {
+    const setHeroButtonState = (activeButton) => {
+        if (!heroButtons.length || !activeButton) return;
+        heroButtons.forEach((button) => {
+            const isActive = button === activeButton;
+            button.classList.toggle("ph-button-primary", isActive);
+            button.classList.toggle("ph-button-quiet", !isActive);
+            button.setAttribute("aria-pressed", isActive ? "true" : "false");
+        });
+    };
+
+    const setActiveVideo = (button, shouldPlay = false) => {
         if (!button || !videoPlayer || !videoFrame) return;
         const videoTitle = button.dataset.videoTitle || "Видео";
-        const videoEmbed = button.dataset.videoEmbed || "";
+        const videoSrc = button.dataset.videoSrc || "";
+        const videoPoster = button.dataset.videoPoster || "";
         videoCards.forEach((card) => {
             const isActive = card === button;
             card.classList.toggle("is-active", isActive);
             card.setAttribute("aria-pressed", isActive ? "true" : "false");
         });
         videoPlayer.dataset.videoTitle = videoTitle;
-        if (videoEmbed && videoFrame.getAttribute("src") !== videoEmbed) {
-            videoFrame.src = videoEmbed;
+        if (videoSrc && videoFrame.getAttribute("src") !== videoSrc) {
+            videoFrame.pause?.();
+            videoFrame.src = videoSrc;
+            if (videoPoster) videoFrame.poster = videoPoster;
+            videoFrame.load?.();
+        } else if (videoPoster) {
+            videoFrame.poster = videoPoster;
         }
         videoFrame.title = videoTitle;
+        if (shouldPlay) {
+            videoFrame.play?.().catch(() => {});
+        }
     };
-
     const showBookingNudge = () => {
         if (!bookingNudge || bookingNudgeDismissed || bookingModal?.classList.contains("is-open")) return;
         bookingNudge.classList.add("is-visible");
@@ -141,7 +160,7 @@
         bookingForm.querySelectorAll(".ph-booking-fields select").forEach((select) => {
             if (select.dataset.customSelectReady === "true") return;
 
-            const labelText = select.closest("label")?.querySelector("span")?.textContent?.trim() || "Выберите значение";
+            const labelText = select.closest("label")?.querySelector("span")?.textContent?.trim() || "ÐÑÐ±ÐµÑÐ¸ÑÐµ Ð·Ð½Ð°ÑÐµÐ½Ð¸Ðµ";
             const customSelect = document.createElement("div");
             const trigger = document.createElement("button");
             const value = document.createElement("span");
@@ -253,7 +272,7 @@
     });
 
     document.querySelectorAll('.ph-header nav a[href$="#services"], .ph-header nav a[href="#services"]').forEach((link) => {
-        if (link.textContent.trim() === "Съемки") link.textContent = "Фото";
+        if (link.textContent.trim() === "Ð¡ÑÐµÐ¼ÐºÐ¸") link.textContent = "Ð¤Ð¾ÑÐ¾";
     });
 
     const fixedWorkImages = [
@@ -277,7 +296,14 @@
     if (videoCards.length) {
         setActiveVideo(videoCards.find((card) => card.classList.contains("is-active")) || videoCards[0]);
         videoCards.forEach((button) => {
-            button.addEventListener("click", () => setActiveVideo(button));
+            button.addEventListener("click", () => setActiveVideo(button, true));
+        });
+    }
+
+    if (heroButtons.length) {
+        setHeroButtonState(heroButtons.find((button) => button.classList.contains("ph-button-primary")) || heroButtons[0]);
+        heroButtons.forEach((button) => {
+            button.addEventListener("click", () => setHeroButtonState(button));
         });
     }
 
@@ -292,7 +318,7 @@
             if (!lightbox || !lightboxImage) return;
             lastTrigger = button;
             lightboxImage.src = button.dataset.src || "";
-            lightboxImage.alt = button.getAttribute("aria-label")?.replace("Открыть фотографию: ", "") || "Фотография";
+            lightboxImage.alt = button.getAttribute("aria-label")?.replace("ÐÑÐºÑÑÑÑ ÑÐ¾ÑÐ¾Ð³ÑÐ°ÑÐ¸Ñ: ", "") || "Ð¤Ð¾ÑÐ¾Ð³ÑÐ°ÑÐ¸Ñ";
             lightbox.classList.add("is-open");
             lightbox.setAttribute("aria-hidden", "false");
             document.body.classList.add("ph-modal-open");
@@ -356,7 +382,7 @@
             if (bookingStatus) bookingStatus.textContent = text;
         };
         bookingForm.classList.remove("is-sent");
-        setBookingStatus("Отправляю заявку...");
+        setBookingStatus("ÐÑÐ¿ÑÐ°Ð²Ð»ÑÑ Ð·Ð°ÑÐ²ÐºÑ...");
         if (submitButton) submitButton.disabled = true;
 
         try {
@@ -383,7 +409,7 @@
             closeBooking();
             openBookingSuccess();
         } catch (error) {
-            setBookingStatus("Не получилось отправить заявку. Попробуйте ещё раз или напишите во ВКонтакте.");
+            setBookingStatus("ÐÐµ Ð¿Ð¾Ð»ÑÑÐ¸Ð»Ð¾ÑÑ Ð¾ÑÐ¿ÑÐ°Ð²Ð¸ÑÑ Ð·Ð°ÑÐ²ÐºÑ. ÐÐ¾Ð¿ÑÐ¾Ð±ÑÐ¹ÑÐµ ÐµÑÑ ÑÐ°Ð· Ð¸Ð»Ð¸ Ð½Ð°Ð¿Ð¸ÑÐ¸ÑÐµ Ð²Ð¾ ÐÐÐ¾Ð½ÑÐ°ÐºÑÐµ.");
         } finally {
             if (submitButton) submitButton.disabled = false;
         }
