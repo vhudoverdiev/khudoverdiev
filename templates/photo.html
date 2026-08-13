@@ -412,12 +412,24 @@
         </form>
     </div>
 
+    <div class="ph-booking-success" id="booking-success" aria-hidden="true">
+        <div class="ph-booking-success-backdrop" data-booking-success-close></div>
+        <div class="ph-booking-success-card" role="dialog" aria-modal="true" aria-labelledby="booking-success-title" aria-describedby="booking-success-desc">
+            <button class="ph-booking-success-close" type="button" data-booking-success-close aria-label="Закрыть подтверждение">×</button>
+            <span class="ph-booking-success-icon" aria-hidden="true">✓</span>
+            <p class="ph-section-index">Готово</p>
+            <h2 id="booking-success-title">Заявка принята</h2>
+            <p id="booking-success-desc">Спасибо! Я скоро напишу вам, чтобы согласовать дату, формат и детали съемки.</p>
+            <button class="ph-booking-success-button" type="button" data-booking-success-close>Отлично</button>
+        </div>
+    </div>
+
     <div class="ph-lightbox" id="ph-lightbox" aria-hidden="true">
         <button type="button" data-lightbox-close aria-label="Закрыть фотографию">×</button>
         <img alt="Открытая фотография">
         <p>Нажмите Esc, чтобы закрыть</p>
     </div>
 
-    <script src="{{ url_for('static', filename='js/photo.js') }}?v=18" defer></script>
+    <script src="{{ url_for('static', filename='js/photo.js') }}?v=19" defer></script>
 </body>
 </html>

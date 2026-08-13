@@ -616,6 +616,7 @@ a {
         rgba(255, 255, 255, 0.74);
     isolation: isolate;
     overflow: hidden;
+    height: min(720px, calc(100svh - 60px));
     min-height: min(720px, calc(100svh - 60px));
     transition: transform 0.18s ease;
 }
@@ -950,7 +951,7 @@ a {
 
 .admin-shell {
     display: grid;
-    grid-template-rows: auto auto auto;
+    grid-template-rows: auto auto minmax(0, 1fr);
     gap: 22px;
     padding: 34px;
     transition: filter 220ms ease, transform 220ms ease, opacity 220ms ease;
@@ -960,7 +961,8 @@ a {
     display: grid;
     align-content: start;
     gap: 22px;
-    overflow-y: visible;
+    min-height: 0;
+    overflow-y: auto;
     overflow-x: hidden;
     padding: 0 4px 4px;
     scrollbar-width: thin;
@@ -2856,6 +2858,25 @@ a {
 
     .login-side-preview {
         display: none;
+    }
+}
+
+@media (max-width: 900px) {
+    .client-form {
+        grid-template-columns: 1fr;
+    }
+
+    .client-discount-controls,
+    .client-create-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .client-create-actions button {
+        min-width: 0;
+    }
+
+    .client-form-actions {
+        flex-direction: column;
     }
 }
 

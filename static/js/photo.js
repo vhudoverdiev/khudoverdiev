@@ -9,6 +9,8 @@
     const videoPlayer = document.querySelector("[data-video-player]");
     const videoFrame = document.querySelector("[data-video-frame]");
     const videoCards = [...document.querySelectorAll("[data-video-card]")];
+    const bookingSuccessModal = document.getElementById("booking-success");
+    const bookingSuccessCloseButtons = [...document.querySelectorAll("[data-booking-success-close]")];
     const bookingNudge = document.querySelector("[data-booking-nudge]");
     const bookingNudgeOpen = bookingNudge?.querySelector("[data-booking-nudge-open]");
     const bookingNudgeClose = bookingNudge?.querySelector("[data-booking-nudge-close]");
@@ -45,6 +47,8 @@
 
     const openBooking = (trigger) => {
         if (!bookingModal || !bookingForm) return;
+        closeBookingSuccess();
+        bookingModal.classList.remove("is-hidden");
         bookingNudge?.classList.remove("is-visible");
         document.body.classList.remove("ph-nudge-open");
         lastBookingTrigger = trigger || document.activeElement;
@@ -60,6 +64,26 @@
         if (!bookingModal) return;
         bookingModal.classList.remove("is-open");
         bookingModal.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("ph-modal-open");
+        if (bookingStatus) bookingStatus.textContent = "";
+        lastBookingTrigger?.focus();
+    };
+
+    const openBookingSuccess = () => {
+        if (!bookingSuccessModal) return;
+        bookingModal?.classList.add("is-hidden");
+        bookingSuccessModal.classList.add("is-open");
+        bookingSuccessModal.setAttribute("aria-hidden", "false");
+        document.body.classList.add("ph-modal-open");
+        requestAnimationFrame(() => {
+            bookingSuccessCloseButtons[0]?.focus();
+        });
+    };
+
+    const closeBookingSuccess = () => {
+        if (!bookingSuccessModal) return;
+        bookingSuccessModal.classList.remove("is-open");
+        bookingSuccessModal.setAttribute("aria-hidden", "true");
         document.body.classList.remove("ph-modal-open");
         lastBookingTrigger?.focus();
     };
@@ -292,6 +316,13 @@
         button.addEventListener("click", closeBooking);
     });
 
+    bookingSuccessCloseButtons.forEach((button) => {
+        button.addEventListener("click", closeBookingSuccess);
+    });
+    bookingSuccessModal?.addEventListener("click", (event) => {
+        if (event.target === bookingSuccessModal) closeBookingSuccess();
+    });
+
     bookingNudgeOpen?.addEventListener("click", () => {
         closeBookingNudge();
         openBooking(bookingNudgeOpen);
@@ -346,8 +377,9 @@
                     select.dispatchEvent(new Event("change", { bubbles: true }));
                 });
             });
-            bookingForm.classList.add("is-sent");
-            bookingStatus.textContent = "Заявка отправлена. Я свяжусь с вами.";
+            if (bookingStatus) bookingStatus.textContent = "";
+            closeBooking();
+            openBookingSuccess();
         } catch (error) {
             bookingStatus.textContent = "Не получилось отправить заявку. Попробуйте ещё раз или напишите во ВКонтакте.";
         } finally {
@@ -358,6 +390,7 @@
     document.addEventListener("keydown", (event) => {
         if (event.key === "Escape") closeAllCustomSelects();
         if (event.key === "Escape" && lightbox?.classList.contains("is-open")) closeLightbox();
+        if (event.key === "Escape" && bookingSuccessModal?.classList.contains("is-open")) closeBookingSuccess();
         if (event.key === "Escape" && bookingModal?.classList.contains("is-open")) closeBooking();
     });
 

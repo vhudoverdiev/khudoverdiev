@@ -363,7 +363,7 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert ".hero {\n        height: var(--mobile-hero-height);\n        min-height: 704px;" in css
     assert "background: var(--mobile-hero-bg);" in css
     assert ".hero::before {\n        display: none;" in css
-    assert ".hero-grid {\n        height: var(--mobile-hero-height);\n        min-height: 704px;" in css
+    assert ".hero-grid {\n        position: relative;\n        z-index: 1;\n        height: var(--mobile-hero-height);\n        min-height: 704px;" in css
     assert "padding: 92px 0 calc(18px + env(safe-area-inset-bottom));" in css
     assert "transition:\n            background 180ms ease,\n            border-color 180ms ease,\n            box-shadow 180ms ease;" in css
     assert "@media (max-width: 499px) and (max-height: 820px)" not in css
@@ -372,7 +372,7 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "height: min(320px, 40svh);" not in css
     assert "grid-template-rows: 26px repeat(8, minmax(18px, 1fr)) 26px;" not in css
     assert "html.is-mobile-compact-hero" not in css
-    assert ".mobile-action-console {\n        grid-column: 1 / -1;\n        grid-row: 5;\n        width: 100%;\n        height: 260px;" in css
+    assert ".mobile-action-console {\n        width: 100%;\n        height: 260px;" in css
     assert "grid-template-rows: 24px repeat(8, minmax(20px, 1fr)) 24px;" in css
     assert "lockMobileHeroHeight" not in portfolio_text
     assert "resetMobileHeroState();" in portfolio_text
@@ -388,11 +388,12 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "grid-template-rows: auto auto auto auto auto auto;" in css
     assert "grid-template-rows: auto auto auto auto minmax(112px, 1fr) auto;" not in css
     assert "grid-template-columns: minmax(0, 1fr) 118px;" not in css
-    assert ".hero-copy {\n        display: contents;" in css
-    assert ".hero h1 {\n        grid-column: 1;\n        grid-row: 3;" in css
+    assert ".hero-copy {\n        display: flex;\n        flex-direction: column;\n        width: 100%;" in css
+    assert ".hero::after {\n        content: \"\";\n        position: absolute;\n        z-index: 0;" in css
+    assert ".hero h1 {\n        max-width: 100%;" in css
     assert ".portrait-wrap {\n        display: none;" in css
     assert ".mobile-action-console {\n    display: none;" in css
-    assert ".mobile-action-console {\n        grid-column: 1 / -1;\n        grid-row: 5;" in css
+    assert ".mobile-action-console {\n        width: 100%;" in css
     assert "height: var(--mobile-console-height);" not in css
     assert "height: calc(100% - 26px);" not in css
     assert "align-self: start;" in css
@@ -401,7 +402,6 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert ".mobile-console-bar,\n    .mobile-console-status {" in css
     assert ".mobile-console-bar + .mobile-code-line {\n        border-top: 0;" in css
     assert "animation: console-in 800ms var(--ease-out) 120ms both;" in css
-    assert ".hero-actions {\n        grid-column: 1 / -1;\n        grid-row: 6;" in css
     assert ".hero-actions {\n        grid-column: 1 / -1;\n        grid-row: 6;\n        margin-top: 16px;" in css
     assert ".about-mobile-line,\n    .about h2 em {\n        display: block;" in css
     assert ".about-desktop-copy {\n        display: none;" in css
@@ -462,7 +462,8 @@ def test_it_mobile_hero_height_does_not_follow_browser_viewport(client):
     assert "--mobile-hero-height: 720px;" in css
     assert "--mobile-console-height: 320px;" in css
     assert ".hero {\n        height: var(--mobile-hero-height);\n        min-height: 704px;" in css
-    assert ".hero-grid {\n        height: var(--mobile-hero-height);\n        min-height: 704px;" in css
+    assert ".hero {\n        position: relative;\n        z-index: 1;\n        overflow: visible;" in css
+    assert ".hero-grid {\n        position: relative;\n        z-index: 1;\n        height: var(--mobile-hero-height);\n        min-height: 704px;" in css
     assert "width: min(408px, calc(100% - 32px));" in css
     assert "padding: 92px 0 calc(18px + env(safe-area-inset-bottom));" in css
     assert "min-height: var(--mobile-viewport-height)" not in css
@@ -495,7 +496,7 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert b"css/photo.css" in response.data
     assert b"photo.css?v=49" in response.data
     assert b"js/photo.js" in response.data
-    assert b"photo.js?v=18" in response.data
+    assert b"photo.js?v=19" in response.data
     assert "Архангельск, Северодвинск".encode() in response.data
     assert b"photo/ph-favicon.ico" in response.data
     assert b"photo/ph-favicon.svg" in response.data
@@ -534,6 +535,8 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "Стоимость съемок".encode() not in response.data
     assert b'data-booking-open' in response.data
     assert b'data-booking-form' in response.data
+    assert b'id="booking-success"' in response.data
+    assert b'class="ph-booking-success-card"' in response.data
     assert b'data-booking-nudge' in response.data
     assert b'data-booking-nudge-open' in response.data
     assert b'class="ph-booking-nudge-card"' in response.data
@@ -541,6 +544,9 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "Желаете записаться на съемку?".encode() in response.data
     assert "Оставьте короткую заявку".encode() in response.data
     assert "Подробнее".encode() in response.data
+    assert "Заявка отправлена. Я свяжусь с вами.".encode() not in response.data
+    assert "Заявка принята".encode() in response.data
+    assert "Я скоро напишу вам, чтобы согласовать дату, формат и детали съемки.".encode() in response.data
     assert "data-booking-nudge-open>Записаться".encode() not in response.data
     assert "У вас есть проект?".encode() not in response.data
     assert "Связаться".encode() not in response.data
@@ -753,10 +759,14 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert 'value.className = "ph-custom-select-value";' in js
     assert "data-custom-select-option" in js
     assert "window.setTimeout(showBookingNudge, 120000);" in js
+    assert 'const bookingSuccessModal = document.getElementById("booking-success");' in js
+    assert "openBookingSuccess()" in js
+    assert "closeBookingSuccess()" in js
     assert "data-booking-nudge-open" in js
     assert "document.body.classList.add(\"ph-nudge-open\")" in js
     assert "document.body.classList.remove(\"ph-nudge-open\")" in js
     assert ".ph-booking-head > p:not(.ph-section-index)" in js
+    assert "bookingStatus.textContent = \"Заявка отправлена. Я свяжусь с вами.\";" not in js
     assert ".ph-about-copy {\n    position: relative;\n    z-index: 1;\n    align-self: start;" in css
     assert ".ph-hero,\n    .ph-about,\n    .ph-portfolio" not in css
     assert ".ph-about {\n        align-content: start;\n        padding-top: 112px;\n        padding-bottom: 48px;" in css
@@ -765,7 +775,7 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert ".ph-video-heading {\n    position: relative;\n    z-index: 1;\n    display: grid;\n    grid-template-columns: minmax(0, 1fr);\n    align-items: start;\n    gap: 18px;" in css
     assert ".ph-contact {\n    min-height: 0;\n    display: grid;\n    grid-template-columns: minmax(0, 1fr) minmax(300px, 420px);\n    align-items: start;" in css
     assert ".ph-contact > div:not(.ph-contact-actions) {\n    grid-column: 1;" in css
-    assert ".ph-contact-actions {\n    grid-column: 2;\n    grid-row: 1 / span 2;\n    width: 300px;\n    justify-self: start;" in css
+    assert ".ph-contact-actions {\n    grid-column: 2;\n    grid-row: 1 / span 2;\n    width: 300px;\n    justify-self: end;" in css
     assert ".ph-contact-actions {\n        grid-column: 1;\n        grid-row: auto;\n        width: 100%;" in css
     assert ".ph-contact {\n        padding-top: 52px;\n        padding-bottom: 48px;" in css
     assert ".ph-contact {\n        padding-top: 42px;" not in css
@@ -1401,21 +1411,23 @@ def test_admin_login_page_is_no_store_and_contains_csrf(client):
     assert "Фотография сохраняет тишину момента".encode() in response.data
     css = Path("static/css/styles.css").read_text(encoding="utf-8")
     assert "rgba(255, 255, 255, 0.74)" in css
+    assert "height: min(720px, calc(100svh - 60px));" in css
     assert "height: min(920px, calc(100svh - 60px));" not in css
     assert "min-height: min(720px, calc(100svh - 60px));" in css
     assert ".admin-content {\n    display: grid;" in css
-    assert "overflow-y: visible;" in css
+    assert "min-height: 0;" in css
+    assert "overflow-y: auto;" in css
     assert ".admin-period.is-placeholder {\n    visibility: hidden;\n    pointer-events: none;" in css
     assert '.login-aesthetic-note blockquote::after {\n    content: none;' in css
     assert '.login-aesthetic-note p::after {\n    content: "\\00BB";' in css
 
 
-def test_admin_dashboard_layout_allows_long_content_to_extend_page_without_inner_clipping():
+def test_admin_dashboard_layout_keeps_shell_height_stable_and_scrolls_content():
     css = Path("static/css/styles.css").read_text(encoding="utf-8")
 
     assert ".admin-page {\n    min-height: 100svh;" in css
     assert "overflow: visible;" in css
-    assert "grid-template-rows: auto auto auto;" in css
+    assert "grid-template-rows: auto auto minmax(0, 1fr);" in css
     assert ".click-list div {\n    display: flex;" in css
     assert "min-width: 0;" in css
     assert ".click-list strong {\n    flex: 0 0 auto;" in css
@@ -1695,6 +1707,8 @@ def test_admin_client_form_layout_removes_decorative_icons_and_keeps_fields_stab
     assert ".client-url-field input {\n    border-radius: 14px;" in css
     assert ".client-form textarea {\n    min-height: 96px;" in css
     assert ".client-form textarea {\n        min-height: 112px;" in css
+    assert "@media (max-width: 900px) {\n    .client-form {\n        grid-template-columns: 1fr;" in css
+    assert ".client-discount-controls,\n    .client-create-actions {\n        grid-template-columns: 1fr;" in css
 
 
 def test_admin_tabs_use_inline_icons_without_dot_markers():

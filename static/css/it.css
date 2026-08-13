@@ -2757,7 +2757,22 @@ footer p:last-child {
     .hero {
         height: var(--mobile-hero-height);
         min-height: 704px;
+        position: relative;
+        z-index: 1;
+        overflow: visible;
         background: var(--mobile-hero-bg);
+    }
+
+    .hero::after {
+        content: "";
+        position: absolute;
+        z-index: 0;
+        left: 0;
+        right: 0;
+        bottom: -240px;
+        height: 240px;
+        background: linear-gradient(180deg, rgba(7, 9, 7, 0.98) 0%, rgba(7, 9, 7, 0.94) 34%, rgba(7, 9, 7, 0) 100%);
+        pointer-events: none;
     }
 
     .hero::before {
@@ -2765,6 +2780,8 @@ footer p:last-child {
     }
 
     .hero-grid {
+        position: relative;
+        z-index: 1;
         height: var(--mobile-hero-height);
         min-height: 704px;
         width: min(408px, calc(100% - 32px));
@@ -2778,13 +2795,13 @@ footer p:last-child {
     }
 
     .hero-copy {
-        display: contents;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
         padding: 0;
     }
 
     .code-console {
-        grid-column: 1 / -1;
-        grid-row: 1;
         margin-bottom: 14px;
         border-radius: 18px;
         background:
@@ -2815,8 +2832,6 @@ footer p:last-child {
     }
 
     .eyebrow {
-        grid-column: 1 / -1;
-        grid-row: 2;
         max-width: 100%;
         margin-bottom: 10px;
         font-size: 8px;
@@ -2825,8 +2840,6 @@ footer p:last-child {
     }
 
     .hero h1 {
-        grid-column: 1;
-        grid-row: 3;
         max-width: 100%;
         align-self: center;
         font-size: 40px;
@@ -2835,8 +2848,6 @@ footer p:last-child {
     }
 
     .lead {
-        grid-column: 1;
-        grid-row: 4;
         max-width: 100%;
         margin-top: 8px;
         font-size: 14px;
@@ -2845,8 +2856,6 @@ footer p:last-child {
     }
 
     .mobile-action-console {
-        grid-column: 1 / -1;
-        grid-row: 5;
         width: 100%;
         height: 260px;
         min-height: 0;
@@ -2944,8 +2953,6 @@ footer p:last-child {
     }
 
     .hero-actions {
-        grid-column: 1 / -1;
-        grid-row: 6;
         margin-top: 16px;
     }
 
