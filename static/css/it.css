@@ -3369,7 +3369,7 @@ footer p:last-child {
 
 @media (min-width: 400px) and (max-width: 499px) {
     .hero-grid {
-        padding-top: 82px;
+        padding-top: 104px;
     }
 
     .code-console-bar,
@@ -3395,7 +3395,7 @@ footer p:last-child {
     }
 
     .mobile-action-console {
-        height: 220px;
+        height: 214px;
     }
 
     .mobile-console-bar,
@@ -3408,7 +3408,7 @@ footer p:last-child {
     }
 
     .hero-actions {
-        margin-top: 32px;
+        margin-top: 16px;
     }
 
     .button {
