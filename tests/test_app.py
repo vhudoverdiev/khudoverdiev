@@ -250,7 +250,7 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert b"portfolio/vh-favicon.svg" in portfolio.data
     assert b"vh-favicon.svg?v=7" in portfolio.data
     assert b'content="width=device-width, initial-scale=1, viewport-fit=cover"' in portfolio.data
-    assert b"css/it.css?v=100" in portfolio.data
+    assert b"css/it.css?v=102" in portfolio.data
     assert b'id="project-prompt"' in portfolio.data
     assert b'class="project-prompt-close"' in portfolio.data
     assert b'data-close-project-prompt' in portfolio.data
@@ -305,7 +305,7 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "min-width: var(--desktop-canvas-width);" not in css
     assert "overflow-x: auto;" not in css
     assert "min-height: var(--desktop-canvas-height);" in css
-    assert "clamp(" not in css
+    assert re.search(r"font-size:\s*clamp\(", css) is None
     assert "orbit-breathe" not in css
     assert ".portrait-photo {\n    position: absolute;\n    z-index: 2;\n    inset: 68px;" in css
     assert "clip-path: circle(50% at 50% 50%);" in css
@@ -396,7 +396,9 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert ".hero-copy {\n        display: flex;\n        flex-direction: column;\n        width: 100%;\n        padding: 0;\n        animation: none;" in css
     assert ".hero h1 {\n        max-width: 100%;\n        align-self: flex-start;\n        text-align: left;" in css
     assert "@media (min-width: 400px) and (max-width: 499px) {" in css
-    assert ".mobile-action-console {\n        height: 340px;" in css
+    assert ".hero-grid {\n        padding-top: 82px;" in css
+    assert "height: clamp(240px, calc(100svh - 516px), 440px);" in css
+    assert "margin-top: clamp(12px, calc(100svh - 892px), 64px);" in css
     assert ".portrait-wrap {\n        display: none;" in css
     assert ".mobile-action-console {\n    display: none;" in css
     assert ".mobile-action-console {\n        width: 100%;" in css
@@ -500,7 +502,7 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "default-src 'self'" in response.headers["Content-Security-Policy"]
     assert "frame-src https://vk.com https://vk.ru https://vkvideo.ru" in response.headers["Content-Security-Policy"]
     assert b"css/photo.css" in response.data
-    assert b"photo.css?v=49" in response.data
+    assert b"photo.css?v=51" in response.data
     assert b"js/photo.js" in response.data
     assert b"photo.js?v=20" in response.data
     assert "Архангельск, Северодвинск".encode() in response.data
@@ -514,6 +516,10 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert '<a href="#services">Съемки</a>'.encode() not in response.data
     assert '<a href="#reviews">Отзывы</a>'.encode() in response.data
     assert b"photo/portrait-cutout.png" in response.data
+    assert b"photo/portrait-cutout.webp" in response.data
+    assert b'rel="preload" as="image" type="image/webp"' in response.data
+    assert b'loading="eager" decoding="sync" fetchpriority="high"' in response.data
+    assert Path("static/photo/portrait-cutout.webp").stat().st_size < 100 * 1024
     assert b"class=\"ph-portrait-orbit\"" in response.data
     assert b"class=\"ph-portrait-orbit\" aria-hidden=\"true\"></div>" in response.data
     assert b"class=\"ph-hero-collage\"" not in response.data
@@ -749,9 +755,11 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert "grid-template-rows: auto minmax(59px, 1fr) auto;" not in css
     assert "grid-template-rows: auto minmax(118px, 1fr) auto;" not in css
     assert ".ph-review-feature-accent {\n    position: relative;" in css
+    assert "margin-top: 22px;" in css
     assert ".ph-review-feature-accent span {\n    font-family: Georgia" in css
     assert "transform: translateY(8px);" in css
     assert "transform: translateY(10px);" in css
+    assert "margin-top: 16px;" in css
     assert "align-self: start;" in css
     assert "margin-top: -4px;" in css
     assert ".ph-review-grid {\n    position: relative;" in css
@@ -797,9 +805,10 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert ".ph-section-heading {\n    display: grid;\n    grid-template-columns: max-content minmax(320px, 390px);\n    justify-content: start;" in css
     assert ".ph-services > header {\n    display: grid;\n    grid-template-columns: minmax(0, 1fr);\n    align-items: start;\n    gap: 18px;" in css
     assert ".ph-video-heading {\n    position: relative;\n    z-index: 1;\n    display: grid;\n    grid-template-columns: minmax(0, 1fr);\n    align-items: start;\n    gap: 18px;" in css
-    assert ".ph-contact {\n    min-height: 0;\n    display: grid;\n    grid-template-columns: minmax(0, 1fr) minmax(300px, 420px);\n    align-items: start;" in css
-    assert ".ph-contact > div:not(.ph-contact-actions) {\n    grid-column: 1;" in css
-    assert ".ph-contact-actions {\n    grid-column: 2;\n    grid-row: 1 / span 2;\n    width: 300px;\n    justify-self: end;" in css
+    assert ".ph-contact {\n    min-height: 0;\n    display: grid;\n    grid-template-columns: minmax(0, 1fr) minmax(360px, 420px);\n    align-items: start;" in css
+    assert ".ph-contact .ph-section-index {\n    grid-column: 1 / -1;" in css
+    assert ".ph-contact > div:not(.ph-contact-actions) {\n    grid-column: 1;\n    grid-row: 2;" in css
+    assert ".ph-contact-actions {\n    grid-column: 2;\n    grid-row: 2;\n    width: 100%;\n    align-self: center;\n    justify-self: stretch;" in css
     assert ".ph-contact-actions {\n        grid-column: 1;\n        grid-row: auto;\n        width: 100%;" in css
     assert ".ph-contact {\n        padding-top: 52px;\n        padding-bottom: 48px;" in css
     assert ".ph-contact {\n        padding-top: 42px;" not in css

@@ -1420,7 +1420,7 @@ h2 em {
     align-items: center;
     gap: 10px;
     min-height: 0;
-    margin-top: 8px;
+    margin-top: 22px;
     color: rgba(255, 250, 243, .2);
 }
 .ph-review-feature-accent span {
@@ -1562,22 +1562,24 @@ h2 em {
 .ph-contact {
     min-height: 0;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(300px, 420px);
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 420px);
     align-items: start;
-    column-gap: 24px;
-    row-gap: 18px;
-    padding: 42px 0 44px;
+    column-gap: 64px;
+    row-gap: 24px;
+    padding: 52px 0 48px;
     border-top: 1px solid var(--ph-line);
 }
 .ph-contact .ph-section-index {
+    grid-column: 1 / -1;
     align-self: start;
     margin: 0;
 }
 .ph-contact > div:not(.ph-contact-actions) {
     grid-column: 1;
+    grid-row: 2;
 }
 .ph-contact > div > p {
-    max-width: 530px;
+    max-width: 620px;
     margin: 20px 0 0;
     color: var(--ph-muted);
     font-size: 16px;
@@ -1585,9 +1587,10 @@ h2 em {
 }
 .ph-contact-actions {
     grid-column: 2;
-    grid-row: 1 / span 2;
-    width: 300px;
-    justify-self: end;
+    grid-row: 2;
+    width: 100%;
+    align-self: center;
+    justify-self: stretch;
     display: grid;
     gap: 9px;
 }
@@ -2424,7 +2427,8 @@ h2 em {
     }
 
     .ph-contact {
-        grid-template-columns: 120px 1fr 320px;
+        grid-template-columns: minmax(0, 1fr) 360px;
+        column-gap: 40px;
     }
 
     .ph-service-list {
@@ -2867,7 +2871,7 @@ h2 em {
     .ph-review-feature-accent {
         min-height: 54px;
         gap: 12px;
-        margin-top: 4px;
+        margin-top: 16px;
     }
 
     .ph-review-feature-accent span {

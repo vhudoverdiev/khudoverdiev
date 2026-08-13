@@ -615,9 +615,9 @@ a {
         linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 250, 244, 0.74)),
         rgba(255, 255, 255, 0.74);
     isolation: isolate;
-    overflow: hidden;
-    height: min(720px, calc(100svh - 60px));
     min-height: min(720px, calc(100svh - 60px));
+    height: auto;
+    overflow: visible;
     transition: transform 0.18s ease;
 }
 
@@ -951,7 +951,7 @@ a {
 
 .admin-shell {
     display: grid;
-    grid-template-rows: auto auto minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
     gap: 22px;
     padding: 34px;
     transition: filter 220ms ease, transform 220ms ease, opacity 220ms ease;
@@ -962,24 +962,8 @@ a {
     align-content: start;
     gap: 22px;
     min-height: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: visible;
     padding: 0 4px 4px;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(138, 96, 60, 0.32) transparent;
-}
-
-.admin-content::-webkit-scrollbar {
-    width: 8px;
-}
-
-.admin-content::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.admin-content::-webkit-scrollbar-thumb {
-    border-radius: 999px;
-    background: rgba(138, 96, 60, 0.28);
 }
 
 .admin-body.delete-open .admin-shell {
@@ -1084,7 +1068,7 @@ a {
     position: absolute;
     left: 22px;
     right: 22px;
-    bottom: 8px;
+    bottom: 10px;
     height: 2px;
     border-radius: 999px;
     background: transparent;

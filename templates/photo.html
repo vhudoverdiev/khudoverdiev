@@ -10,7 +10,8 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='photo/ph-favicon.ico') }}?v=1">
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='photo/ph-favicon.svg') }}?v=5">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='photo/ph-favicon.png') }}?v=2">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/photo.css') }}?v=49">
+    <link rel="preload" as="image" type="image/webp" href="{{ url_for('static', filename='photo/portrait-cutout.webp') }}?v=1" fetchpriority="high">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/photo.css') }}?v=51">
 </head>
 <body>
     <a class="ph-skip" href="#portfolio">Перейти к портфолио</a>
@@ -42,7 +43,10 @@
             <div class="ph-hero-stage" aria-label="Фотограф и примеры работ">
                 <div class="ph-portrait-orbit" aria-hidden="true"></div>
                 <div class="ph-person-plate">
-                    <img class="ph-hero-person" src="{{ url_for('static', filename='photo/portrait-cutout.png') }}" alt="Фотограф Владимир Худовердиев" width="1023" height="1537">
+                    <picture>
+                        <source srcset="{{ url_for('static', filename='photo/portrait-cutout.webp') }}?v=1" type="image/webp">
+                        <img class="ph-hero-person" src="{{ url_for('static', filename='photo/portrait-cutout.png') }}" alt="Фотограф Владимир Худовердиев" width="1023" height="1537" loading="eager" decoding="sync" fetchpriority="high">
+                    </picture>
                 </div>
             </div>
         </section>
