@@ -545,8 +545,9 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "Оставьте короткую заявку".encode() in response.data
     assert "Подробнее".encode() in response.data
     assert "Заявка отправлена. Я свяжусь с вами.".encode() not in response.data
-    assert "Заявка принята".encode() in response.data
-    assert "Я скоро напишу вам, чтобы согласовать дату, формат и детали съемки.".encode() in response.data
+    assert "Заявка принята".encode() not in response.data
+    assert "Ваша заявка отправлена".encode() in response.data
+    assert "Я свяжусь с вами.".encode() in response.data
     assert "data-booking-nudge-open>Записаться".encode() not in response.data
     assert "У вас есть проект?".encode() not in response.data
     assert "Связаться".encode() not in response.data
@@ -763,6 +764,7 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert 'const bookingSuccessModal = document.getElementById("booking-success");' in js
     assert "openBookingSuccess()" in js
     assert "closeBookingSuccess()" in js
+    assert "if (!bookingStatus) return;" not in js
     assert "data-booking-nudge-open" in js
     assert "document.body.classList.add(\"ph-nudge-open\")" in js
     assert "document.body.classList.remove(\"ph-nudge-open\")" in js
@@ -1779,14 +1781,19 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
     response = client.get("/client/wedding-alina-2026", base_url="http://ph.khudoverdiev.ru")
 
     assert response.status_code == 200
+    assert "<title>Фотографии готовы!</title>".encode() in response.data
+    assert "Фотографии для Алина — KHUDOVERDIEV PHOTO".encode() not in response.data
     assert "Спасибо за съемку,".encode() in response.data
     assert "Алина!".encode() in response.data
     assert "Запечатленные моменты".encode() in response.data
     assert "Готовая серия".encode() not in response.data
     assert "скидку 15%".encode() in response.data
-    assert b"css/styles.css?v=19" in response.data
+    assert b"css/styles.css?v=20" in response.data
     assert b"photo/portrait-cutout.png" in response.data
     assert b"class=\"client-photo-stage\"" in response.data
+    assert b"class=\"client-link-icon\"" in response.data
+    assert b"class=\"client-link-text\"" in response.data
+    assert b"class=\"client-portrait-orbit\"" not in response.data
     assert b"img/profile-new.jpg" not in response.data
     assert "Владимир Худовердиев</a>".encode() not in response.data
     assert "Фотограф".encode() in response.data
@@ -1801,6 +1808,14 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
     assert b'href="https://ph.khudoverdiev.ru"' in response.data
     assert "Страница фотографа".encode() in response.data
     assert b"class=\"client-header-link\"" in response.data
+    css = Path("static/css/styles.css").read_text(encoding="utf-8")
+    assert ".client-link-icon {\n    width: 28px;" in css
+    assert ".client-card h1 span:last-child {\n    color: #7a5034;" in css
+    assert ".client-photo-stage::before,\n.client-photo-stage::after {" in css
+    assert "background: none;" in css
+    assert "clip-path: none;" in css
+    assert "width: 468px;" in css
+    assert ".client-button-primary {\n    border-color: rgba(49, 36, 24, 0.95);" in css
     assert b"https://reviews.example/ivanova" not in response.data
     assert b"<form" not in response.data
     assert b'type="file"' not in response.data

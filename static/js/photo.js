@@ -349,12 +349,14 @@
 
     bookingForm?.addEventListener("submit", async (event) => {
         event.preventDefault();
-        if (!bookingStatus) return;
 
         const submitButton = bookingForm.querySelector("button[type='submit']");
         const csrfToken = bookingForm.querySelector("input[name='csrf_token']")?.value || "";
+        const setBookingStatus = (text) => {
+            if (bookingStatus) bookingStatus.textContent = text;
+        };
         bookingForm.classList.remove("is-sent");
-        bookingStatus.textContent = "Отправляю заявку...";
+        setBookingStatus("Отправляю заявку...");
         if (submitButton) submitButton.disabled = true;
 
         try {
@@ -377,11 +379,11 @@
                     select.dispatchEvent(new Event("change", { bubbles: true }));
                 });
             });
-            if (bookingStatus) bookingStatus.textContent = "";
+            setBookingStatus("");
             closeBooking();
             openBookingSuccess();
         } catch (error) {
-            bookingStatus.textContent = "Не получилось отправить заявку. Попробуйте ещё раз или напишите во ВКонтакте.";
+            setBookingStatus("Не получилось отправить заявку. Попробуйте ещё раз или напишите во ВКонтакте.");
         } finally {
             if (submitButton) submitButton.disabled = false;
         }

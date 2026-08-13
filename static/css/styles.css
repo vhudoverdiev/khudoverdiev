@@ -2028,6 +2028,32 @@ a {
     box-shadow: 0 20px 50px rgba(72, 48, 28, 0.12);
 }
 
+.client-link-icon {
+    width: 28px;
+    height: 28px;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 999px;
+    background: rgba(201, 147, 85, 0.12);
+    color: var(--client-cocoa);
+    flex: 0 0 auto;
+}
+
+.client-link-icon svg {
+    width: 14px;
+    height: 14px;
+    display: block;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.client-link-text {
+    white-space: nowrap;
+}
+
 .client-header > span i,
 .client-header-link i {
     color: var(--client-gold);
@@ -2182,7 +2208,7 @@ a {
 }
 
 .client-card h1 span:last-child {
-    color: var(--client-gold);
+    color: #7a5034;
 }
 
 .client-lead {
@@ -2213,70 +2239,55 @@ a {
 
 .client-photo-stage {
     position: relative;
-    width: 430px;
-    height: 356px;
+    width: 468px;
+    height: 392px;
     isolation: isolate;
+    overflow: visible;
     animation: clientFloat 8s ease-in-out infinite;
 }
 
-.client-portrait-orbit {
-    position: absolute;
-    z-index: 0;
-    top: -5px;
-    left: 42px;
-    width: 346px;
-    height: 346px;
-    border: 1px solid rgba(201, 147, 85, 0.3);
-    border-radius: 50%;
-    transform: rotate(-4deg);
-}
-
-.client-portrait-orbit::before,
-.client-portrait-orbit::after {
+.client-photo-stage::before,
+.client-photo-stage::after {
     content: "";
     position: absolute;
-    border: 1px solid rgba(122, 89, 70, 0.14);
-    border-radius: inherit;
-}
-
-.client-portrait-orbit::before { inset: 8%; }
-.client-portrait-orbit::after { inset: 17%; border-color: rgba(201, 147, 85, 0.16); }
-
-.client-portrait-orbit i {
-    position: absolute;
-    width: 8px;
-    height: 8px;
+    left: 50%;
+    top: 46%;
+    border: 1px solid rgba(201, 147, 85, 0.28);
     border-radius: 50%;
-    background: #eac397;
-    box-shadow: 0 0 0 6px rgba(234, 195, 151, 0.2), 0 0 22px rgba(156, 106, 56, 0.28);
+    pointer-events: none;
 }
 
-.client-portrait-orbit i:nth-child(1) { top: 14%; left: 9%; }
-.client-portrait-orbit i:nth-child(2) { top: 34%; right: -2px; }
-.client-portrait-orbit i:nth-child(3) { bottom: 12%; left: 23%; width: 6px; height: 6px; }
-.client-portrait-orbit i:nth-child(4) { top: -3px; left: 49%; width: 5px; height: 5px; opacity: 0.8; }
-.client-portrait-orbit i:nth-child(5) { right: 15%; bottom: 18%; width: 5px; height: 5px; opacity: 0.9; }
+.client-photo-stage::before {
+    width: 340px;
+    height: 340px;
+    transform: translate(-50%, -50%) rotate(-4deg);
+}
+
+.client-photo-stage::after {
+    width: 286px;
+    height: 286px;
+    border-color: rgba(122, 89, 70, 0.12);
+    transform: translate(-50%, -50%);
+}
 
 .client-person-plate {
     position: absolute;
     z-index: 1;
-    left: 78px;
-    right: 62px;
-    top: 42px;
-    bottom: 12px;
-    overflow: hidden;
-    border-radius: 50%;
-    clip-path: circle(50% at 50% 50%);
-    background:
-        radial-gradient(circle at 48% 47%, rgba(255, 250, 245, 0.68), rgba(255, 250, 245, 0.16) 58%, transparent 59%);
+    inset: 20px 70px 0 70px;
+    display: grid;
+    place-items: end center;
+    overflow: visible;
+    background: none;
+    border-radius: 0;
+    clip-path: none;
 }
 
 .client-hero-person {
     position: absolute;
     left: 50%;
-    bottom: -62px;
+    bottom: -74px;
     width: auto;
-    height: 380px;
+    height: 430px;
     display: block;
     object-fit: contain;
     object-position: 50% 100%;
@@ -2285,7 +2296,7 @@ a {
         grayscale(0.08)
         contrast(1.04)
         drop-shadow(0 0 1px rgba(255, 255, 255, 0.7))
-        drop-shadow(0 24px 28px rgba(44, 33, 26, 0.26));
+        drop-shadow(0 26px 34px rgba(44, 33, 26, 0.24));
 }
 
 .client-photographer-card {
@@ -2389,12 +2400,13 @@ a {
     align-items: center;
     justify-content: center;
     gap: 10px;
-    padding: 0 26px;
+    padding: 0 22px 0 16px;
     border-radius: 999px;
-    border: 1px solid rgba(156, 106, 56, 0.2);
+    border: 1px solid rgba(156, 106, 56, 0.18);
     font-size: 16px;
     font-weight: 850;
     transition: transform 200ms ease, background 200ms ease, color 200ms ease, box-shadow 200ms ease;
+    overflow: hidden;
 }
 
 .client-button:hover {
@@ -2402,23 +2414,31 @@ a {
 }
 
 .client-button i {
+    width: 30px;
+    height: 30px;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 999px;
+    background: rgba(201, 147, 85, 0.12);
     color: var(--client-gold);
     font-style: normal;
-    font-size: 24px;
+    font-size: 18px;
     line-height: 1;
+    flex: 0 0 auto;
 }
 
 .client-button-primary {
     border-color: rgba(49, 36, 24, 0.95);
     background:
-        radial-gradient(circle at 72% 50%, rgba(201, 147, 85, 0.88), transparent 33%),
-        linear-gradient(135deg, #151311, #2a2119 58%, #8d6032);
+        linear-gradient(135deg, rgba(34, 25, 18, 0.98), rgba(57, 40, 29, 0.98) 58%, rgba(177, 119, 59, 0.96));
     color: var(--client-white);
-    box-shadow: 0 16px 34px rgba(156, 106, 56, 0.24);
+    box-shadow:
+        0 18px 36px rgba(86, 58, 33, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .client-button-secondary {
-    background: rgba(255, 250, 245, 0.7);
+    background: rgba(255, 250, 245, 0.88);
     color: var(--client-cocoa);
 }
 
@@ -2777,25 +2797,17 @@ a {
     }
 
     .client-photo-stage {
-        width: 280px;
-        height: 280px;
-    }
-
-    .client-portrait-orbit {
-        inset: 12px;
-        width: auto;
-        height: auto;
+        width: 318px;
+        height: 320px;
     }
 
     .client-person-plate {
-        inset: 32px;
-        border-radius: 50%;
-        clip-path: circle(50% at 50% 50%);
+        inset: 18px 34px 0 34px;
     }
 
     .client-hero-person {
-        height: 260px;
-        bottom: -58px;
+        height: 296px;
+        bottom: -68px;
     }
 
     .client-photographer-card {
@@ -2844,6 +2856,30 @@ a {
 
     .client-card h1 {
         font-size: 25px;
+    }
+
+    .client-photo-stage {
+        width: 294px;
+        height: 300px;
+    }
+
+    .client-photo-stage::before {
+        width: 286px;
+        height: 286px;
+    }
+
+    .client-photo-stage::after {
+        width: 238px;
+        height: 238px;
+    }
+
+    .client-person-plate {
+        inset: 16px 26px 0 26px;
+    }
+
+    .client-hero-person {
+        height: 276px;
+        bottom: -64px;
     }
 }
 

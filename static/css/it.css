@@ -2771,7 +2771,7 @@ footer p:last-child {
         right: 0;
         bottom: -240px;
         height: 240px;
-        background: linear-gradient(180deg, rgba(7, 9, 7, 0.98) 0%, rgba(7, 9, 7, 0.94) 34%, rgba(7, 9, 7, 0) 100%);
+        background: rgba(7, 9, 7, 0.98);
         pointer-events: none;
     }
 
