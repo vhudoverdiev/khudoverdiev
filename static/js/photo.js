@@ -33,8 +33,8 @@
 
         scrollCue.classList.toggle("is-up", atBottom);
         scrollCue.dataset.direction = atBottom ? "up" : "down";
-        scrollCue.querySelector("span").textContent = atBottom ? "â" : "â";
-        scrollCue.setAttribute("aria-label", atBottom ? "ÐÐµÑÐ½ÑÑÑÑÑ Ð² Ð½Ð°ÑÐ°Ð»Ð¾ ÑÑÑÐ°Ð½Ð¸ÑÑ" : "ÐÐµÑÐµÐ¹ÑÐ¸ Ðº ÑÐ»ÐµÐ´ÑÑÑÐµÐ¼Ñ Ð±Ð»Ð¾ÐºÑ");
+        scrollCue.querySelector("span").textContent = atBottom ? "\u2191" : "\u2193";
+        scrollCue.setAttribute("aria-label", atBottom ? "\u0412\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f \u0432 \u043d\u0430\u0447\u0430\u043b\u043e \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u044b" : "\u041f\u0435\u0440\u0435\u0439\u0442\u0438 \u043a \u0441\u043b\u0435\u0434\u0443\u044e\u0449\u0435\u043c\u0443 \u0431\u043b\u043e\u043a\u0443");
     };
 
     const closeLightbox = () => {
@@ -160,7 +160,7 @@
         bookingForm.querySelectorAll(".ph-booking-fields select").forEach((select) => {
             if (select.dataset.customSelectReady === "true") return;
 
-            const labelText = select.closest("label")?.querySelector("span")?.textContent?.trim() || "ÐÑÐ±ÐµÑÐ¸ÑÐµ Ð·Ð½Ð°ÑÐµÐ½Ð¸Ðµ";
+            const labelText = select.closest("label")?.querySelector("span")?.textContent?.trim() || "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435";
             const customSelect = document.createElement("div");
             const trigger = document.createElement("button");
             const value = document.createElement("span");
@@ -272,7 +272,7 @@
     });
 
     document.querySelectorAll('.ph-header nav a[href$="#services"], .ph-header nav a[href="#services"]').forEach((link) => {
-        if (link.textContent.trim() === "Ð¡ÑÐµÐ¼ÐºÐ¸") link.textContent = "Ð¤Ð¾ÑÐ¾";
+        if (link.textContent.trim() === "\u0421\u044a\u0435\u043c\u043a\u0438") link.textContent = "\u0424\u043e\u0442\u043e";
     });
 
     const fixedWorkImages = [
@@ -319,7 +319,7 @@
             if (!lightbox || !lightboxImage) return;
             lastTrigger = button;
             lightboxImage.src = button.dataset.src || "";
-            lightboxImage.alt = button.getAttribute("aria-label")?.replace("ÐÑÐºÑÑÑÑ ÑÐ¾ÑÐ¾Ð³ÑÐ°ÑÐ¸Ñ: ", "") || "Ð¤Ð¾ÑÐ¾Ð³ÑÐ°ÑÐ¸Ñ";
+            lightboxImage.alt = button.getAttribute("aria-label")?.replace("\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u0444\u043e\u0442\u043e\u0433\u0440\u0430\u0444\u0438\u044e: ", "") || "\u0424\u043e\u0442\u043e\u0433\u0440\u0430\u0444\u0438\u044f";
             lightbox.classList.add("is-open");
             lightbox.setAttribute("aria-hidden", "false");
             document.body.classList.add("ph-modal-open");
@@ -383,7 +383,7 @@
             if (bookingStatus) bookingStatus.textContent = text;
         };
         bookingForm.classList.remove("is-sent");
-        setBookingStatus("ÐÑÐ¿ÑÐ°Ð²Ð»ÑÑ Ð·Ð°ÑÐ²ÐºÑ...");
+        setBookingStatus("\u041e\u0442\u043f\u0440\u0430\u0432\u043b\u044f\u044e \u0437\u0430\u044f\u0432\u043a\u0443...");
         if (submitButton) submitButton.disabled = true;
 
         try {
@@ -410,7 +410,7 @@
             closeBooking();
             openBookingSuccess();
         } catch (error) {
-            setBookingStatus("ÐÐµ Ð¿Ð¾Ð»ÑÑÐ¸Ð»Ð¾ÑÑ Ð¾ÑÐ¿ÑÐ°Ð²Ð¸ÑÑ Ð·Ð°ÑÐ²ÐºÑ. ÐÐ¾Ð¿ÑÐ¾Ð±ÑÐ¹ÑÐµ ÐµÑÑ ÑÐ°Ð· Ð¸Ð»Ð¸ Ð½Ð°Ð¿Ð¸ÑÐ¸ÑÐµ Ð²Ð¾ ÐÐÐ¾Ð½ÑÐ°ÐºÑÐµ.");
+            setBookingStatus("\u041d\u0435 \u043f\u043e\u043b\u0443\u0447\u0438\u043b\u043e\u0441\u044c \u043e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c \u0437\u0430\u044f\u0432\u043a\u0443. \u041f\u043e\u043f\u0440\u043e\u0431\u0443\u0439\u0442\u0435 \u0435\u0449\u0451 \u0440\u0430\u0437 \u0438\u043b\u0438 \u043d\u0430\u043f\u0438\u0448\u0438\u0442\u0435 \u0432\u043e \u0412\u041a\u043e\u043d\u0442\u0430\u043a\u0442\u0435.");
         } finally {
             if (submitButton) submitButton.disabled = false;
         }

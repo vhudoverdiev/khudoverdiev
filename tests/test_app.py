@@ -502,7 +502,7 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert b"css/photo.css" in response.data
     assert b"photo.css?v=49" in response.data
     assert b"js/photo.js" in response.data
-    assert b"photo.js?v=19" in response.data
+    assert b"photo.js?v=20" in response.data
     assert "Архангельск, Северодвинск".encode() in response.data
     assert b"photo/ph-favicon.ico" in response.data
     assert b"photo/ph-favicon.svg" in response.data
@@ -781,6 +781,9 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert "window.setTimeout(showBookingNudge, 120000);" in js
     assert 'const bookingSuccessModal = document.getElementById("booking-success");' in js
     assert "openBookingSuccess()" in js
+    assert 'textContent = atBottom ? "\\u2191" : "\\u2193";' in js
+    assert "â" not in js
+    assert "Ð" not in js
     assert "closeBookingSuccess()" in js
     assert "if (!bookingStatus) return;" not in js
     assert "data-booking-nudge-open" in js
