@@ -3146,6 +3146,7 @@ h2 em {
 @media (max-width: 430px) {
     .ph-header-cta { width: 48px; justify-content: center; padding: 0; }
     .ph-header-cta-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .ph-header-cta > span[aria-hidden="true"] { display: inline; }
     .ph-trust div { flex-direction: initial; align-items: initial; }
     .ph-trust span { width: auto; }
 }

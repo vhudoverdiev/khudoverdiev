@@ -1434,10 +1434,18 @@ a {
 
 .client-panel {
     display: grid;
+    align-content: start;
+    gap: 0;
 }
 
 .client-panel[hidden] {
     display: none;
+}
+
+.client-create-panel,
+.client-list,
+.client-archive {
+    min-height: 560px;
 }
 
 .client-create-panel {
@@ -1750,11 +1758,18 @@ a {
 .client-list {
     display: grid;
     gap: 10px;
+    padding: 18px;
+    border: 1px solid rgba(94, 65, 43, 0.1);
+    border-radius: 24px;
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.56), rgba(255, 250, 245, 0.48)),
+        rgba(255, 250, 245, 0.58);
+    box-shadow: 0 20px 48px rgba(69, 48, 31, 0.07);
 }
 
 .client-item {
-    border-radius: 18px;
-    background: rgba(255, 250, 245, 0.7);
+    border-radius: 20px;
+    background: rgba(255, 250, 245, 0.76);
     border: 1px solid rgba(94, 65, 43, 0.1);
     overflow: hidden;
     box-shadow: 0 12px 30px rgba(69, 48, 31, 0.05);
@@ -1847,9 +1862,12 @@ a {
 .client-archive {
     margin-top: 0;
     padding: 18px;
-    border: 1px solid rgba(94, 65, 43, 0.09);
-    border-radius: 20px;
-    background: rgba(255, 250, 245, 0.42);
+    border: 1px solid rgba(94, 65, 43, 0.1);
+    border-radius: 24px;
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.56), rgba(255, 250, 245, 0.46)),
+        rgba(255, 250, 245, 0.56);
+    box-shadow: 0 20px 48px rgba(69, 48, 31, 0.07);
 }
 
 .client-archive-heading {
