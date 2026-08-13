@@ -12,7 +12,7 @@
     --desktop-canvas-width: 1920px;
     --desktop-canvas-height: 1080px;
     --desktop-scale: 1;
-    --mobile-hero-height: 956px;
+    --mobile-hero-height: 720px;
     --mobile-hero-bg: #070907;
     --mobile-hero-bottom-space: calc(38px + env(safe-area-inset-bottom));
     --mobile-console-height: 320px;
@@ -3395,7 +3395,7 @@ footer p:last-child {
     }
 
     .mobile-action-console {
-        height: clamp(240px, calc(100svh - 516px), 440px);
+        height: 240px;
     }
 
     .mobile-console-bar,
@@ -3408,7 +3408,7 @@ footer p:last-child {
     }
 
     .hero-actions {
-        margin-top: clamp(12px, calc(100svh - 892px), 64px);
+        margin-top: 12px;
     }
 
     .button {
