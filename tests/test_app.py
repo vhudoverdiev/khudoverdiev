@@ -250,7 +250,7 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert b"portfolio/vh-favicon.svg" in portfolio.data
     assert b"vh-favicon.svg?v=7" in portfolio.data
     assert b'content="width=device-width, initial-scale=1, viewport-fit=cover"' in portfolio.data
-    assert b"css/it.css?v=106" in portfolio.data
+    assert b"css/it.css?v=107" in portfolio.data
     assert b'id="project-prompt"' in portfolio.data
     assert b'class="project-prompt-close"' in portfolio.data
     assert b'data-close-project-prompt' in portfolio.data
@@ -397,9 +397,9 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert ".hero h1 {\n        max-width: 100%;\n        align-self: flex-start;\n        text-align: left;" in css
     assert "@media (min-width: 400px) and (max-width: 499px) {" in css
     assert ".hero-grid {\n        padding-top: 82px;" in css
-    assert ".mobile-action-console {\n        height: 236px;" in css
+    assert ".mobile-action-console {\n        height: 220px;" in css
     assert ".mobile-code-line {\n        font-size: 10px;" in css
-    assert ".hero-actions {\n        margin-top: 16px;" in css
+    assert ".hero-actions {\n        margin-top: 32px;" in css
     assert ".portrait-wrap {\n        display: none;" in css
     assert ".mobile-action-console {\n    display: none;" in css
     assert ".mobile-action-console {\n        width: 100%;" in css
