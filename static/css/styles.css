@@ -586,6 +586,10 @@ a {
     overflow: visible;
 }
 
+.admin-page:not(.admin-login-page) {
+    place-items: start center;
+}
+
 .admin-page::before {
     content: "";
     position: fixed;

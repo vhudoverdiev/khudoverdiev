@@ -812,7 +812,7 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert ".ph-contact-actions {\n        grid-column: 1;\n        grid-row: auto;\n        width: 100%;" in css
     assert ".ph-contact {\n        padding-top: 52px;\n        padding-bottom: 48px;" in css
     assert ".ph-contact {\n        padding-top: 42px;" not in css
-    assert ".ph-contact .ph-section-index {\n    align-self: start;\n    margin: 0;" in css
+    assert ".ph-contact .ph-section-index {\n    grid-column: 1 / -1;\n    align-self: start;\n    margin: 0;" in css
     assert "min-height: calc(100svh - 150px);" in css
     assert ".ph-trust {\n        min-height: 150px;" in css
     assert ".ph-trust {\n        min-height: 0;\n        flex-direction: column;" in css
@@ -1450,7 +1450,7 @@ def test_admin_login_page_is_no_store_and_contains_csrf(client):
     assert b'name="csrf_token"' in response.data
     assert b'name="username"' in response.data
     assert b'autocomplete="username"' in response.data
-    assert b"css/styles.css?v=30" in response.data
+    assert b"css/styles.css?v=31" in response.data
     assert "<title>Админ-панель</title>".encode() in response.data
     assert "Админ-панель — KHUDOVERDIEV".encode() not in response.data
     assert "Фотография сохраняет тишину момента".encode() in response.data
@@ -1461,7 +1461,7 @@ def test_admin_login_page_is_no_store_and_contains_csrf(client):
     assert "min-height: min(720px, calc(100svh - 60px));" in css
     assert ".admin-content {\n    display: grid;" in css
     assert "min-height: 0;" in css
-    assert "overflow-y: auto;" in css
+    assert ".admin-content {\n    display: grid;\n    align-content: start;\n    gap: 22px;\n    min-height: 0;\n    overflow: visible;" in css
     assert ".admin-period.is-placeholder {\n    visibility: hidden;\n    pointer-events: none;" in css
     assert '.login-aesthetic-note blockquote::after {\n    content: none;' in css
     assert '.login-aesthetic-note p::after {\n    content: "\\00BB";' in css
@@ -1472,7 +1472,7 @@ def test_admin_dashboard_layout_keeps_shell_height_stable_and_scrolls_content():
 
     assert ".admin-page {\n    min-height: 100svh;" in css
     assert "overflow: visible;" in css
-    assert "grid-template-rows: auto auto minmax(0, 1fr);" in css
+    assert "grid-template-rows: auto auto auto;" in css
     assert ".click-list div {\n    display: flex;" in css
     assert "min-width: 0;" in css
     assert ".click-list strong {\n    flex: 0 0 auto;" in css
