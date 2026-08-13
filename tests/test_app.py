@@ -250,7 +250,7 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert b"portfolio/vh-favicon.svg" in portfolio.data
     assert b"vh-favicon.svg?v=7" in portfolio.data
     assert b'content="width=device-width, initial-scale=1, viewport-fit=cover"' in portfolio.data
-    assert b"css/it.css?v=97" in portfolio.data
+    assert b"css/it.css?v=98" in portfolio.data
     assert b'id="project-prompt"' in portfolio.data
     assert b'class="project-prompt-close"' in portfolio.data
     assert b'data-close-project-prompt' in portfolio.data
@@ -295,7 +295,7 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "--desktop-canvas-width: 1920px;" in css
     assert "--desktop-canvas-height: 1080px;" in css
     assert "--desktop-scale: 1;" in css
-    assert "--mobile-hero-height: 720px;" in css
+    assert "--mobile-hero-height: 956px;" in css
     assert "--mobile-hero-bg: #070907;" in css
     assert "--mobile-hero-bottom-space: calc(38px + env(safe-area-inset-bottom));" in css
     assert "--mobile-console-height: 320px;" in css
@@ -360,10 +360,10 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "scrollToScaledTarget(target || document.getElementById('site-footer'))" in portfolio_text
     assert "/* Mobile polish: one deliberate layout, not a squeezed desktop. */" in css
     assert "--mobile-viewport-height" not in css
-    assert ".hero {\n        height: var(--mobile-hero-height);\n        min-height: 704px;" in css
+    assert ".hero {\n        height: var(--mobile-hero-height);\n        min-height: var(--mobile-hero-height);" in css
     assert "background: var(--mobile-hero-bg);" in css
     assert ".hero::before {\n        display: none;" in css
-    assert ".hero-grid {\n        position: relative;\n        z-index: 1;\n        height: var(--mobile-hero-height);\n        min-height: 704px;" in css
+    assert ".hero-grid {\n        position: relative;\n        z-index: 1;\n        height: var(--mobile-hero-height);\n        min-height: var(--mobile-hero-height);" in css
     assert "padding: 92px 0 calc(18px + env(safe-area-inset-bottom));" in css
     assert "transition:\n            background 180ms ease,\n            border-color 180ms ease,\n            box-shadow 180ms ease;" in css
     assert "@media (max-width: 499px) and (max-height: 820px)" not in css
@@ -389,7 +389,8 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert "grid-template-rows: auto auto auto auto minmax(112px, 1fr) auto;" not in css
     assert "grid-template-columns: minmax(0, 1fr) 118px;" not in css
     assert ".hero-copy {\n        display: flex;\n        flex-direction: column;\n        width: 100%;" in css
-    assert ".hero::after {\n        content: \"\";\n        position: absolute;\n        z-index: 0;" in css
+    assert ".hero::after {\n        content: none;" in css
+    assert ".hero-copy {\n        display: flex;\n        flex-direction: column;\n        width: 100%;\n        padding: 0;\n        animation: none;" in css
     assert ".hero h1 {\n        max-width: 100%;" in css
     assert ".portrait-wrap {\n        display: none;" in css
     assert ".mobile-action-console {\n    display: none;" in css
@@ -459,11 +460,11 @@ def test_it_mobile_hero_height_does_not_follow_browser_viewport(client):
     assert mobile_css is not None
     assert "--mobile-viewport-height" not in css
     assert "visualViewport" not in portfolio_text
-    assert "--mobile-hero-height: 720px;" in css
+    assert "--mobile-hero-height: 956px;" in css
     assert "--mobile-console-height: 320px;" in css
-    assert ".hero {\n        height: var(--mobile-hero-height);\n        min-height: 704px;" in css
-    assert ".hero {\n        height: var(--mobile-hero-height);\n        min-height: 704px;\n        position: relative;\n        z-index: 1;\n        overflow: visible;" in css
-    assert ".hero-grid {\n        position: relative;\n        z-index: 1;\n        height: var(--mobile-hero-height);\n        min-height: 704px;" in css
+    assert ".hero {\n        height: var(--mobile-hero-height);\n        min-height: var(--mobile-hero-height);" in css
+    assert ".hero {\n        height: var(--mobile-hero-height);\n        min-height: var(--mobile-hero-height);\n        position: relative;\n        z-index: 1;\n        overflow: hidden;" in css
+    assert ".hero-grid {\n        position: relative;\n        z-index: 1;\n        height: var(--mobile-hero-height);\n        min-height: var(--mobile-hero-height);" in css
     assert "width: min(408px, calc(100% - 32px));" in css
     assert "padding: 92px 0 calc(18px + env(safe-area-inset-bottom));" in css
     assert "min-height: var(--mobile-viewport-height)" not in css
@@ -517,7 +518,7 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert b"photo/portfolio/portfolio-110.jpg" in response.data
     assert b"photo/portfolio/portfolio-058.jpg" in response.data
     assert b"photo/mikhail-" not in response.data
-    assert '<a class="ph-button ph-button-primary" href="#portfolio">Фото'.encode() in response.data
+    assert '<a class="ph-button ph-button-quiet" href="#portfolio" aria-pressed="false">Фото'.encode() in response.data
     assert "Смотреть портфолио".encode() not in response.data
     assert b"data-lightbox" in response.data
     assert b"data-photo-card" not in response.data
@@ -705,7 +706,10 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert ".ph-hero-stage {\n        width: min(640px, 100%);\n        height: 640px;" in css
     assert ".ph-portrait-orbit::after" not in css
     assert ".ph-portrait-orbit i" not in css
-    assert ".ph-person-plate {\n        inset: 64px;" in css
+    assert ".ph-person-plate {\n        inset: 86px;" in css
+    assert ".ph-person-plate {\n        inset: 82px;" in css
+    assert ".ph-person-plate {\n        inset: 56px;" in css
+    assert ".ph-person-plate {\n        inset: 50px;" in css
     assert ".ph-hero-person {\n        height: 700px;\n        bottom: -196px;" in css
     assert ".ph-hero-person {\n        height: 600px;\n        bottom: -164px;" in css
     assert ".ph-hero-person {\n        width: auto;\n        height: 460px;\n        max-width: none;\n        bottom: -158px;" in css
@@ -738,6 +742,8 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert "grid-template-rows: auto minmax(118px, 1fr) auto;" not in css
     assert ".ph-review-feature-accent {\n    position: relative;" in css
     assert ".ph-review-feature-accent span {\n    font-family: Georgia" in css
+    assert "transform: translateY(8px);" in css
+    assert "transform: translateY(10px);" in css
     assert "align-self: start;" in css
     assert "margin-top: -4px;" in css
     assert ".ph-review-grid {\n    position: relative;" in css
@@ -754,8 +760,12 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     js = Path("static/js/photo.js").read_text(encoding="utf-8")
     assert "initCustomSelects" in js
     assert 'const videoFrame = document.querySelector("[data-video-frame]");' in js
-    assert "button.dataset.videoEmbed" in js
-    assert "videoFrame.src = videoEmbed;" in js
+    assert "button.dataset.videoSrc" in js
+    assert "button.dataset.videoPoster" in js
+    assert "videoFrame.src = videoSrc;" in js
+    assert "videoFrame.load?.();" in js
+    assert "videoFrame.play?.().catch(() => {});" in js
+    assert "setHeroButtonState" in js
     assert "card.setAttribute(\"aria-pressed\", isActive ? \"true\" : \"false\");" in js
     assert "videoPlayButton" not in js
     assert 'value.className = "ph-custom-select-value";' in js
@@ -798,7 +808,8 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert "openReviews" not in js
     assert "closeReviews" not in js
     assert "data-reviews-open" not in js
-    assert 'link.textContent = "Фото";' in js
+    assert 'const heroButtons = [...document.querySelectorAll(".ph-actions .ph-button")];' in js
+    assert "setHeroButtonState(button)" in js
 
 
 def test_ph_localhost_maps_to_photographer_branch(client):

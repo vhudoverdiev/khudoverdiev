@@ -206,7 +206,8 @@ img { max-width: 100%; }
     background: rgba(255,255,255,.12);
     color: #fff;
 }
-.ph-button-quiet:hover {
+.ph-button-quiet:hover,
+.ph-button-quiet:active {
     background: #fff;
     color: var(--ph-ink);
 }
@@ -419,7 +420,7 @@ body.ph-modal-open .ph-booking-nudge {
 .ph-person-plate {
     position: absolute;
     z-index: 2;
-    inset: 76px;
+    inset: 86px;
     aspect-ratio: 1 / 1;
     pointer-events: none;
     overflow: hidden;
@@ -1423,6 +1424,7 @@ h2 em {
     font-family: Georgia, "Times New Roman", serif;
     font-size: 84px;
     line-height: .58;
+    transform: translateY(8px);
 }
 .ph-review-feature-accent i {
     height: 1px;
@@ -1697,7 +1699,7 @@ h2 em {
     }
 
     .ph-person-plate {
-        inset: 64px;
+        inset: 86px;
     }
 
     .ph-hero-person {
@@ -2459,7 +2461,7 @@ h2 em {
     }
 
     .ph-person-plate {
-        inset: 68px;
+        inset: 82px;
     }
 
     .ph-hero-person {
@@ -2535,7 +2537,7 @@ h2 em {
     }
 
     .ph-person-plate {
-        inset: 48px;
+        inset: 56px;
         clip-path: circle(50% at 50% 50%);
     }
 
@@ -2864,6 +2866,7 @@ h2 em {
 
     .ph-review-feature-accent span {
         font-size: 88px;
+        transform: translateY(10px);
     }
 
     .ph-review-feature blockquote {
@@ -2936,7 +2939,7 @@ h2 em {
     }
 
     .ph-person-plate {
-        inset: 40px;
+        inset: 50px;
     }
 
     .ph-hero-person {

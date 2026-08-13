@@ -90,7 +90,7 @@
     };
 
     const setHeroButtonState = (activeButton) => {
-        if (!heroButtons.length || !activeButton) return;
+        if (!heroButtons.length) return;
         heroButtons.forEach((button) => {
             const isActive = button === activeButton;
             button.classList.toggle("ph-button-primary", isActive);
@@ -301,7 +301,8 @@
     }
 
     if (heroButtons.length) {
-        setHeroButtonState(heroButtons.find((button) => button.classList.contains("ph-button-primary")) || heroButtons[0]);
+        const activeHeroButton = heroButtons.find((button) => button.getAttribute("href") === window.location.hash);
+        setHeroButtonState(activeHeroButton || null);
         heroButtons.forEach((button) => {
             button.addEventListener("click", () => setHeroButtonState(button));
         });

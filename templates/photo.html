@@ -34,8 +34,8 @@
                 <h1 id="ph-title">Фотографии<br>для вашей<br>истории</h1>
                 <p class="ph-lead">Портреты, репортажи, свадьбы и контент для брендов. Бережно работаю со светом, человеком и атмосферой кадра.</p>
                 <div class="ph-actions">
-                    <a class="ph-button ph-button-primary" href="#portfolio">Фото <span>↓</span></a>
-                    <a class="ph-button ph-button-quiet" href="#video">Видеосъемка <span>↓</span></a>
+                    <a class="ph-button ph-button-quiet" href="#portfolio" aria-pressed="false">Фото <span>↓</span></a>
+                    <a class="ph-button ph-button-quiet" href="#video" aria-pressed="false">Видеосъемка <span>↓</span></a>
                 </div>
             </div>
 
@@ -208,8 +208,8 @@
                 </div>
                 <div class="ph-video-works" aria-label="Работы">
                     {% for title, meta, video_src, poster, kind in [
-                        ('Николай & Галина', 'Свадебная история ? 2:40', 'portfolio/peredacha.mp4', 'portfolio/slides/peredacha/slide-1.png', 'Фильм'),
-                        ('Промоакция магазина «Пятёрочка»', 'Коммерческий ролик ? 3:00', 'portfolio/shans.mp4', 'portfolio/slides/shans/slide-1.png', 'Бренд')
+                        ('Николай & Галина', 'Свадебная история · 2:40', 'portfolio/peredacha.mp4', 'portfolio/slides/peredacha/slide-1.png', 'Фильм'),
+                        ('Промоакция магазина «Пятёрочка»', 'Коммерческий ролик · 3:00', 'portfolio/shans.mp4', 'portfolio/slides/shans/slide-1.png', 'Бренд')
                     ] %}
                     <button class="ph-video-work {{ 'is-active' if loop.first else '' }}" type="button" data-video-card data-video-src="{{ url_for('static', filename=video_src) }}" data-video-poster="{{ url_for('static', filename=poster) }}" data-video-title="{{ title }}" aria-pressed="{{ 'true' if loop.first else 'false' }}">
                         <span>{{ '%02d'|format(loop.index) }}</span>
