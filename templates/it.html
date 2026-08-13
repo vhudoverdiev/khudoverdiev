@@ -281,7 +281,9 @@
         }
 
         function getScaledOffsetTop(element) {
-            return isDesktopCanvas() ? element.offsetTop * getDesktopScale() : element.offsetTop;
+            const scale = isDesktopCanvas() ? getDesktopScale() : 1;
+            const scrollMargin = Number.parseFloat(getComputedStyle(element).scrollMarginTop) || 0;
+            return Math.max(0, (element.offsetTop - scrollMargin) * scale);
         }
 
         function scrollToScaledTarget(element, behavior = 'smooth') {
