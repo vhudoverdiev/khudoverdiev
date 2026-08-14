@@ -16,6 +16,9 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectHome=true
 ProtectSystem=strict
+# systemd creates this persistent directory before applying mount isolation.
+# Without it, ReadWritePaths fails with status=226/NAMESPACE on a fresh host.
+StateDirectory=khudoverdiev
 ReadWritePaths=/var/lib/khudoverdiev
 CapabilityBoundingSet=
 LockPersonality=true

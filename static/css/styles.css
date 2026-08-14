@@ -622,7 +622,6 @@ a {
     min-height: min(720px, calc(100svh - 60px));
     height: auto;
     overflow: visible;
-    transition: transform 0.18s ease;
 }
 
 .admin-shell::before {
@@ -637,8 +636,9 @@ a {
     pointer-events: none;
 }
 
-.admin-page.is-switching-tab .admin-shell {
-    transform: translateY(4px);
+.admin-page.is-switching-tab .admin-content {
+    opacity: 0.56;
+    pointer-events: none;
 }
 
 .login-panel {
@@ -969,6 +969,7 @@ a {
     min-height: 0;
     overflow: visible;
     padding: 0 4px 4px;
+    transition: opacity 140ms ease;
 }
 
 .admin-body.delete-open .admin-shell {
@@ -2010,7 +2011,7 @@ a {
 .client-header {
     position: fixed;
     z-index: 20;
-    top: 22px;
+    top: max(22px, calc(50svh - 390px));
     left: 50%;
     width: min(1360px, calc(100% - 44px));
     min-height: 52px;
@@ -2506,9 +2507,18 @@ a {
 }
 
 .client-discount > div {
+    width: 100%;
     display: grid;
     justify-items: center;
     gap: 4px;
+    text-align: center;
+}
+
+.client-discount > div > span,
+.client-discount > div > strong,
+.client-discount > div > p {
+    display: block;
+    width: 100%;
     text-align: center;
 }
 
@@ -2871,11 +2881,12 @@ a {
     .client-header {
         position: fixed;
         top: 16px;
-        left: 50%;
-        width: calc(100% - 32px);
+        right: 16px;
+        left: 16px;
+        width: auto;
         min-height: 48px;
         justify-content: center;
-        transform: translateX(-50%);
+        transform: none;
         pointer-events: none;
     }
 
@@ -3016,10 +3027,11 @@ a {
     }
 
     .client-kicker i svg {
-        width: 22px;
-        height: 22px;
+        width: 24px;
+        height: 24px;
         stroke: #d39a5d;
         stroke-width: 1.45;
+        transform: translateY(-0.5px);
     }
 
     .client-kicker i .client-camera-body,
@@ -3053,11 +3065,7 @@ a {
     }
 
     .client-portrait-panel {
-        width: 100%;
-        min-height: 320px;
-        gap: 16px;
-        margin-top: 20px;
-        justify-self: center;
+        display: none;
     }
 
     .client-portrait-panel::before {

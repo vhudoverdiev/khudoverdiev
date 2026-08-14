@@ -1691,7 +1691,7 @@ h2 em {
     align-content: end;
     align-items: end;
     gap: 10px;
-    padding: 16px;
+    padding: 16px 26px;
     overflow: hidden;
     border: 1px solid rgba(91, 63, 49, .18);
     border-radius: 18px;
@@ -1767,19 +1767,17 @@ h2 em {
     z-index: 1;
 }
 
-@media (min-width: 1180px) and (min-height: 680px) {
+@media (min-width: 500px) {
     .ph-hero,
     .ph-portfolio,
     .ph-services,
     .ph-video,
     .ph-reviews {
-        min-height: 100vh;
-        min-height: 100svh;
+        min-height: 1080px;
     }
 
     .ph-hero {
-        min-height: calc(100vh - 150px);
-        min-height: calc(100svh - 150px);
+        min-height: 930px;
         padding-top: 104px;
     }
 
@@ -3250,7 +3248,7 @@ h2 em {
         min-height: 104px;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
+        justify-content: flex-end;
         align-items: center;
         padding: 14px 10px 12px;
         border: 1px solid var(--ph-line);
@@ -3280,12 +3278,13 @@ h2 em {
     .ph-review-all-button {
         width: max-content;
         min-height: 42px;
-        justify-self: end;
+        justify-self: center;
         justify-content: center;
-        gap: 9px;
+        gap: 0;
         padding: 0 16px;
         font-size: 12px;
     }
+    .ph-review-all-button .ph-arrow { display: none; }
 
     .ph-work-card,
     .ph-service-list article,

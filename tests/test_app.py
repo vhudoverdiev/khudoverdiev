@@ -545,7 +545,7 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "default-src 'self'" in response.headers["Content-Security-Policy"]
     assert "frame-src https://vk.com https://vk.ru https://vkvideo.ru" in response.headers["Content-Security-Policy"]
     assert b"css/photo.css" in response.data
-    assert b"photo.css?v=73" in response.data
+    assert b"photo.css?v=77" in response.data
     assert b"js/photo.js" in response.data
     assert b"photo.js?v=23" in response.data
     assert b'id="ph-mobile-nav"' in response.data
@@ -631,6 +631,14 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "padding: 124px max(28px, calc((100% - 1240px) / 2)) 0;" in css
     assert "padding: 42px max(28px, calc((100% - 1240px) / 2));" in css
     assert "calc((100vw - 1240px) / 2)" not in css
+    assert "@media (min-width: 500px)" in css
+    assert "min-height: 1080px;" in css
+    assert "min-height: 930px;" in css
+    assert "@media (min-width: 1180px) and (min-height: 680px)" not in css
+    assert "padding: 16px 26px;" in css
+    assert "justify-content: flex-end;" in css
+    assert "justify-self: center;" in css
+    assert ".ph-review-all-button .ph-arrow { display: none; }" in css
     assert ".ph-booking-nudge-card {\n        width: min(560px, calc(100vw - 48px));" in css
     assert "@media (max-width: 760px)" not in css
     assert "@media (max-width: 1100px)" not in css
@@ -644,7 +652,7 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert ".ph-booking-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }" in css
     assert ".ph-header-cta {\n        display: none;" in css
     assert "grid-template-columns: 1fr auto;" in css
-    assert ".ph-review-all-button {\n        width: max-content;\n        min-height: 42px;\n        justify-self: end;" in css
+    assert ".ph-review-all-button {\n        width: max-content;\n        min-height: 42px;\n        justify-self: center;" in css
     assert b"Black Star Burger" in response.data
     assert "Яндекс Маркет".encode() in response.data
     assert "Руки Вверх! Бар".encode() in response.data
@@ -1526,7 +1534,7 @@ def test_admin_login_page_is_no_store_and_contains_csrf(client):
     assert b'name="csrf_token"' in response.data
     assert b'name="username"' in response.data
     assert b'autocomplete="username"' in response.data
-    assert b"css/styles.css?v=61" in response.data
+    assert b"css/styles.css?v=66" in response.data
     assert "<title>Админ-панель</title>".encode() in response.data
     assert "Админ-панель — KHUDOVERDIEV".encode() not in response.data
     assert "Фотография сохраняет тишину момента".encode() in response.data
@@ -1545,6 +1553,7 @@ def test_admin_login_page_is_no_store_and_contains_csrf(client):
 
 def test_admin_dashboard_layout_keeps_shell_height_stable_and_scrolls_content():
     css = Path("static/css/styles.css").read_text(encoding="utf-8")
+    template = Path("templates/admin.html").read_text(encoding="utf-8")
 
     assert ".admin-page {\n    min-height: 100svh;" in css
     assert "overflow: visible;" in css
@@ -1554,6 +1563,11 @@ def test_admin_dashboard_layout_keeps_shell_height_stable_and_scrolls_content():
     assert "min-width: 0;" in css
     assert ".click-list strong {\n    flex: 0 0 auto;" in css
     assert ".click-list span {\n    min-width: 0;\n    overflow-wrap: anywhere;" in css
+    assert ".admin-page.is-switching-tab .admin-content {\n    opacity: 0.56;\n    pointer-events: none;\n}" in css
+    assert ".admin-page.is-switching-tab .admin-shell" not in css
+    assert "transition: opacity 140ms ease;" in css
+    assert "adminPage.setAttribute('aria-busy', 'true')" in template
+    assert "adminPage.removeAttribute('aria-busy')" in template
 
 
 def test_admin_mobile_layout_is_phone_optimized(client):
@@ -1976,7 +1990,7 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
     assert '<span class="client-discount-prompt">Оставьте отзыв и</span>'.encode() in response.data
     assert "<strong>получите скидку 15%</strong>".encode() in response.data
     assert "Получите скидку 15%%".encode() not in response.data
-    assert b"css/styles.css?v=60" in response.data
+    assert b"css/styles.css?v=65" in response.data
     assert b"client-camera-body" in response.data
     assert b"client-camera-lens-core" in response.data
     assert b"client-aperture" not in response.data
@@ -2007,7 +2021,8 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
         "        display: inline-flex;\n"
         "        pointer-events: auto;"
     ) in css
-    assert "margin-top: 20px;\n        justify-self: center;" in css
+    assert ".client-portrait-panel {\n        display: none;\n    }" in css
+    assert "width: 24px;\n        height: 24px;\n        stroke: #d39a5d;\n        stroke-width: 1.45;\n        transform: translateY(-0.5px);" in css
     assert (
         '.client-discount .client-discount-prompt {\n'
         '    color: #6f6761;\n'
@@ -2018,6 +2033,10 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
     assert "<span>Ниже вы найдете ссылку на {{ client.delivery_copy.lead_noun }}.</span>" in template
     assert ".client-lead > span {\n    display: block;" in css
     assert ".client-page {\n    min-height: 100svh;\n    height: auto;\n    display: grid;\n    place-items: center;" in css
+    assert "top: max(22px, calc(50svh - 390px));" in css
+    assert ".client-discount > div {\n    width: 100%;" in css
+    assert ".client-discount > div > span,\n.client-discount > div > strong,\n.client-discount > div > p {" in css
+    assert "top: 16px;\n        right: 16px;\n        left: 16px;\n        width: auto;" in css
     assert "padding: 92px 16px 24px;\n        place-items: start center;" in css
     assert ".client-link-icon {\n    width: 28px;" in css
     assert "background: rgba(23, 19, 16, 0.78);" in css
