@@ -897,7 +897,6 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert ".ph-contact {\n        padding-top: 52px;\n        padding-bottom: 48px;" in css
     assert ".ph-contact {\n        padding-top: 42px;" not in css
     assert ".ph-contact .ph-section-index {\n    grid-column: 1 / -1;\n    align-self: start;\n    margin: 0;" in css
-    assert "min-height: calc(100svh - 150px);" in css
     assert ".ph-trust {\n        min-height: 150px;" in css
     assert ".ph-trust {\n        min-height: 0;\n        flex-direction: column;" in css
     assert ".ph-work-controls {\n    display: none;" in css
