@@ -2028,7 +2028,7 @@ a {
     letter-spacing: 0.8px;
 }
 
-.client-header > span,
+.client-header-badge,
 .client-header-link {
     min-height: 48px;
     display: inline-flex;
@@ -2054,6 +2054,22 @@ a {
     transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background 180ms ease;
 }
 
+.client-header-badge {
+    transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.client-header-badge:hover {
+    transform: translateY(-2px);
+    border-color: rgba(205, 151, 91, 0.34);
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 18px 38px rgba(72, 48, 28, 0.13);
+}
+
+.client-header-badge:focus-visible {
+    outline: 2px solid var(--client-gold);
+    outline-offset: 3px;
+}
+
 .client-delivery-fieldset {
     min-width: 0;
     margin: 0;
@@ -2070,7 +2086,7 @@ a {
 
 .client-delivery-options {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
 }
 
@@ -2149,7 +2165,7 @@ a {
     white-space: nowrap;
 }
 
-.client-header > span i,
+.client-header-badge i,
 .client-header-link i {
     color: var(--client-gold);
     font-style: normal;
@@ -2160,7 +2176,7 @@ a {
     min-height: 100svh;
     height: auto;
     display: grid;
-    place-items: start center;
+    place-items: center;
     padding: 106px 24px 40px;
     position: relative;
     overflow: visible;
@@ -2193,7 +2209,7 @@ a {
         "details details";
     align-content: start;
     gap: 34px 54px;
-    padding: 42px 46px 28px;
+    padding: 42px 46px 42px;
     border-radius: 40px;
     background:
         radial-gradient(circle at 83% 7%, rgba(201, 147, 85, 0.12), transparent 24%),
@@ -2511,9 +2527,12 @@ a {
     word-break: normal;
 }
 
-.client-discount strong span {
-    color: inherit;
-    font: inherit;
+.client-discount .client-discount-prompt {
+    color: #6f6761;
+    font-family: Inter, "Segoe UI", Arial, sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.35;
 }
 
 .client-discount p {
@@ -2850,17 +2869,21 @@ a {
     }
 
     .client-header {
+        position: fixed;
         top: 16px;
+        left: 50%;
         width: calc(100% - 32px);
         min-height: 48px;
         justify-content: center;
+        transform: translateX(-50%);
+        pointer-events: none;
     }
 
     .client-brand {
         font-size: 15px;
     }
 
-    .client-header > span,
+    .client-header-badge,
     .client-header-link {
         min-height: 36px;
         padding: 0 12px;
@@ -2918,7 +2941,8 @@ a {
     }
 
     .client-header-badge {
-        display: none;
+        display: inline-flex;
+        pointer-events: auto;
     }
 
     .client-body {
@@ -3032,6 +3056,7 @@ a {
         width: 100%;
         min-height: 320px;
         gap: 16px;
+        margin-top: 20px;
         justify-self: center;
     }
 
@@ -3094,7 +3119,7 @@ a {
     }
 
     .client-header-badge {
-        display: none;
+        display: inline-flex;
     }
 
     .client-brand {
@@ -3336,6 +3361,488 @@ a {
 
     .login-divider {
         gap: 16px;
+    }
+}
+
+@media (max-width: 720px) {
+    .admin-body:not(.admin-login-body) {
+        overscroll-behavior-y: contain;
+    }
+
+    .admin-page:not(.admin-login-page) {
+        display: block;
+        min-height: 100svh;
+        padding: max(14px, env(safe-area-inset-top)) 12px calc(98px + env(safe-area-inset-bottom));
+    }
+
+    .admin-page:not(.admin-login-page)::before {
+        background:
+            radial-gradient(circle at 82% 4%, rgba(229, 204, 181, 0.42), transparent 28%),
+            linear-gradient(145deg, rgba(255, 255, 255, 0.5), transparent 42%);
+    }
+
+    .admin-shell {
+        width: 100%;
+        min-height: 0;
+        gap: 16px;
+        padding: 8px 4px 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+        backdrop-filter: none;
+    }
+
+    .admin-shell::before {
+        content: none;
+    }
+
+    .admin-header {
+        min-height: 76px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: start;
+        gap: 12px;
+        padding: 4px 4px 0;
+    }
+
+    .admin-header > div {
+        min-width: 0;
+    }
+
+    .admin-kicker {
+        font-size: 10px;
+        letter-spacing: 2.2px;
+    }
+
+    .admin-header h1 {
+        margin-top: 5px;
+        font-size: 30px;
+        line-height: 1.05;
+        overflow-wrap: anywhere;
+    }
+
+    .admin-header > a {
+        width: 44px;
+        min-height: 44px;
+        padding: 0;
+        border-radius: 14px;
+        font-size: 0;
+        box-shadow: 0 10px 24px rgba(69, 48, 31, 0.08);
+    }
+
+    .admin-header > a span {
+        font-size: 20px;
+    }
+
+    .admin-period {
+        min-height: 28px;
+        align-items: center;
+        margin-top: 8px;
+        padding: 4px 10px;
+        font-size: 11px;
+    }
+
+    .admin-period.is-placeholder {
+        display: none;
+    }
+
+    .admin-tabs {
+        position: fixed;
+        z-index: 80;
+        left: 12px;
+        right: 12px;
+        bottom: max(10px, env(safe-area-inset-bottom));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 4px;
+        padding: 6px;
+        border-radius: 20px;
+        background: rgba(255, 250, 245, 0.94);
+        border-color: rgba(94, 65, 43, 0.14);
+        box-shadow: 0 18px 48px rgba(48, 31, 20, 0.22);
+        backdrop-filter: blur(20px);
+    }
+
+    .admin-tabs a {
+        height: 56px;
+        min-height: 56px;
+        flex-direction: column;
+        gap: 3px;
+        padding: 4px 2px;
+        border-radius: 14px;
+        font-size: 10px;
+        line-height: 1;
+    }
+
+    .admin-tabs a::after {
+        left: 24%;
+        right: 24%;
+        bottom: 3px;
+    }
+
+    .admin-tab-icon {
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+    }
+
+    .admin-tab-icon svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .admin-content {
+        gap: 14px;
+        padding: 0;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .stats-grid article {
+        min-height: 104px;
+        align-content: space-between;
+        gap: 10px;
+        padding: 16px;
+        border-radius: 18px;
+    }
+
+    .stats-grid span {
+        font-size: 12px;
+        line-height: 1.25;
+    }
+
+    .stats-grid strong {
+        font-size: 30px;
+    }
+
+    .admin-card {
+        padding: 16px;
+        border-radius: 20px;
+        box-shadow: 0 12px 30px rgba(69, 48, 31, 0.06);
+    }
+
+    .admin-card h2,
+    .admin-card-heading h2 {
+        font-size: 19px;
+        line-height: 1.2;
+    }
+
+    .admin-card-heading {
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+    .click-list {
+        gap: 8px;
+    }
+
+    .click-list div {
+        min-height: 54px;
+        padding: 12px 13px;
+        border-radius: 14px;
+    }
+
+    .click-list strong {
+        font-size: 18px;
+    }
+
+    .client-admin-card {
+        gap: 12px;
+        padding: 10px 0 0;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+        overflow: visible;
+    }
+
+    .client-admin-card::before {
+        content: none;
+    }
+
+    .client-subtabs {
+        position: sticky;
+        z-index: 15;
+        top: 8px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 4px;
+        padding: 5px;
+        border-radius: 17px;
+        background: rgba(255, 250, 245, 0.94);
+        box-shadow: 0 10px 28px rgba(69, 48, 31, 0.1);
+        backdrop-filter: blur(18px);
+    }
+
+    .client-subtabs button {
+        min-width: 0;
+        min-height: 48px;
+        justify-content: center;
+        gap: 5px;
+        padding: 0 5px;
+        border-radius: 12px;
+        font-size: 11px;
+        line-height: 1.1;
+    }
+
+    .client-subtabs span {
+        min-width: 20px;
+        height: 20px;
+        padding: 0 5px;
+        font-size: 10px;
+    }
+
+    .client-section-shell,
+    .client-create-panel,
+    .client-list,
+    .client-archive {
+        min-height: 0;
+    }
+
+    .client-section-shell,
+    .client-create-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .client-section-shell {
+        border-radius: 20px;
+        overflow: visible;
+    }
+
+    .client-create-intro {
+        min-height: 68px;
+        align-content: center;
+        padding: 14px 16px;
+        border-right: 0;
+        border-bottom: 1px solid rgba(91, 63, 49, 0.1);
+        border-radius: 20px 20px 0 0;
+    }
+
+    .client-create-intro-compact .client-create-label {
+        display: flex;
+        gap: 5px;
+        font-size: 12px;
+    }
+
+    .client-section-content {
+        padding: 12px;
+        border-radius: 0 0 20px 20px;
+    }
+
+    .client-form {
+        gap: 14px;
+        margin: 0;
+        padding: 4px;
+        border: 0;
+        background: transparent;
+    }
+
+    .client-form label {
+        gap: 7px;
+    }
+
+    .client-form label > span,
+    .client-switch span,
+    .client-delivery-fieldset legend {
+        font-size: 12px;
+    }
+
+    .client-form input,
+    .client-form textarea {
+        font-size: 16px;
+    }
+
+    .client-form input {
+        min-height: 50px;
+        padding: 0 14px;
+    }
+
+    .client-form textarea {
+        min-height: 128px;
+        padding: 13px 14px;
+    }
+
+    .client-delivery-options {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .client-delivery-options label {
+        min-height: 50px;
+    }
+
+    .client-link-note {
+        min-height: 0;
+        padding: 14px;
+        border-radius: 14px;
+    }
+
+    .client-link-note-actions {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "title"
+            "url"
+            "actions";
+    }
+
+    .client-link-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+        gap: 8px;
+    }
+
+    .client-link-action {
+        min-height: 44px;
+        padding: 0 8px;
+        white-space: normal;
+    }
+
+    .client-discount-controls,
+    .client-create-actions {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .client-switch {
+        min-height: 52px;
+        padding: 0 14px;
+    }
+
+    .client-switch input {
+        width: 22px;
+        min-height: 22px;
+    }
+
+    .client-create-actions button,
+    .client-form button:not(.client-link-action) {
+        width: 100%;
+        min-height: 52px;
+    }
+
+    .client-list {
+        gap: 10px;
+    }
+
+    .client-item {
+        border-radius: 17px;
+    }
+
+    .client-item summary {
+        min-height: 78px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 10px;
+        padding: 14px;
+    }
+
+    .client-item summary span {
+        min-width: 0;
+    }
+
+    .client-item summary strong {
+        font-size: 15px;
+    }
+
+    .client-item summary small {
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        font-size: 11px;
+    }
+
+    .client-item summary b {
+        padding: 8px 10px;
+        font-size: 10px;
+    }
+
+    .client-item .client-form {
+        margin: 0;
+        padding: 14px;
+        border-top: 1px solid rgba(94, 65, 43, 0.09);
+        border-radius: 0;
+    }
+
+    .client-delete-form {
+        margin: 0;
+        padding: 0 14px 14px;
+    }
+
+    .client-delete-form button {
+        min-height: 48px;
+    }
+
+    .client-archive-item {
+        grid-template-columns: 1fr;
+        gap: 6px;
+        padding: 14px;
+    }
+
+    .client-archive-item time {
+        justify-self: start;
+    }
+
+    .message-admin-card {
+        padding: 14px;
+    }
+
+    .message-group {
+        gap: 8px;
+        padding: 10px;
+        border-radius: 18px;
+    }
+
+    .message-list article {
+        padding: 13px;
+        border-radius: 15px;
+    }
+
+    .message-head {
+        gap: 8px;
+    }
+
+    .message-actions {
+        width: 100%;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .message-actions form {
+        margin-left: auto;
+    }
+
+    .message-actions button {
+        min-height: 40px;
+        padding: 0 14px;
+    }
+
+    .delete-modal {
+        padding: 16px;
+    }
+
+    .delete-card {
+        width: min(100%, 390px);
+        max-height: calc(100svh - 32px);
+        overflow-y: auto;
+        padding: 22px 16px 16px;
+    }
+
+    .delete-preview {
+        overflow-wrap: anywhere;
+    }
+
+    .delete-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .delete-cancel,
+    .delete-confirm {
+        min-height: 48px;
     }
 }
 

@@ -884,7 +884,12 @@ def build_photo_client_payload(form):
     photo_link = clean_external_url(form.get("photo_link"))
     review_link = clean_external_url(form.get("review_link")) if form.get("review_link") else ""
     has_discount = form.get("has_discount") == "1"
-    delivery_type = clean_text(form.get("delivery_type"), 20) or "photo"
+    if form.get("delivery_selection") == "1":
+        has_photo = form.get("delivery_photo") == "1"
+        has_video = form.get("delivery_video") == "1"
+        delivery_type = "photo_video" if has_photo and has_video else "photo" if has_photo else "video" if has_video else ""
+    else:
+        delivery_type = clean_text(form.get("delivery_type"), 20) or "photo"
     payload = {
         "client_name": clean_text(form.get("client_name"), 120),
         "photo_link": photo_link,
@@ -901,7 +906,7 @@ def build_photo_client_payload(form):
     if not photo_link:
         errors.append("Укажите корректную внешнюю ссылку на фотографии.")
     if delivery_type not in {"photo", "video", "photo_video"}:
-        errors.append("Выберите тип готовых материалов.")
+        errors.append("Выберите хотя бы один готовый материал.")
     if form.get("review_link") and not review_link:
         errors.append("Ссылка для отзыва должна начинаться с http:// или https://.")
     return payload, " ".join(errors)

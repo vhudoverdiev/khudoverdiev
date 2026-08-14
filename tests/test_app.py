@@ -545,7 +545,7 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "default-src 'self'" in response.headers["Content-Security-Policy"]
     assert "frame-src https://vk.com https://vk.ru https://vkvideo.ru" in response.headers["Content-Security-Policy"]
     assert b"css/photo.css" in response.data
-    assert b"photo.css?v=71" in response.data
+    assert b"photo.css?v=73" in response.data
     assert b"js/photo.js" in response.data
     assert b"photo.js?v=23" in response.data
     assert b'id="ph-mobile-nav"' in response.data
@@ -628,10 +628,16 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "--ph-desktop-canvas-width: 1920px;" in css
     assert "@media (min-width: 500px)" in css
     assert "zoom: var(--ph-desktop-scale);" in css
+    assert "padding: 124px max(28px, calc((100% - 1240px) / 2)) 0;" in css
+    assert "padding: 42px max(28px, calc((100% - 1240px) / 2));" in css
+    assert "calc((100vw - 1240px) / 2)" not in css
+    assert ".ph-booking-nudge-card {\n        width: min(560px, calc(100vw - 48px));" in css
     assert "@media (max-width: 760px)" not in css
     assert "@media (max-width: 1100px)" not in css
     assert b'class="ph-desktop-scale-shell"' in response.data
     assert b'class="ph-desktop-scale-stage"' in response.data
+    assert response.data.find(b'class="ph-booking-nudge"') > response.data.find(b'class="ph-footer"')
+    assert response.data.find(b'class="ph-booking-nudge"') < response.data.find(b'class="ph-booking-modal"')
     js = Path("static/js/photo.js").read_text(encoding="utf-8")
     assert 'window.matchMedia("(min-width: 500px)")' in js
     assert 'const desktopCanvasWidth = 1920;' in js
@@ -1520,7 +1526,7 @@ def test_admin_login_page_is_no_store_and_contains_csrf(client):
     assert b'name="csrf_token"' in response.data
     assert b'name="username"' in response.data
     assert b'autocomplete="username"' in response.data
-    assert b"css/styles.css?v=59" in response.data
+    assert b"css/styles.css?v=61" in response.data
     assert "<title>Админ-панель</title>".encode() in response.data
     assert "Админ-панель — KHUDOVERDIEV".encode() not in response.data
     assert "Фотография сохраняет тишину момента".encode() in response.data
@@ -1548,6 +1554,20 @@ def test_admin_dashboard_layout_keeps_shell_height_stable_and_scrolls_content():
     assert "min-width: 0;" in css
     assert ".click-list strong {\n    flex: 0 0 auto;" in css
     assert ".click-list span {\n    min-width: 0;\n    overflow-wrap: anywhere;" in css
+
+
+def test_admin_mobile_layout_is_phone_optimized(client):
+    response = client.get(site.ADMIN_PATH)
+    css = Path("static/css/styles.css").read_text(encoding="utf-8")
+
+    assert b'content="width=device-width, initial-scale=1, viewport-fit=cover"' in response.data
+    assert "@media (max-width: 720px) {\n    .admin-body:not(.admin-login-body)" in css
+    assert "bottom: max(10px, env(safe-area-inset-bottom));" in css
+    assert "grid-template-columns: repeat(2, minmax(0, 1fr));" in css
+    assert "font-size: 16px;\n    }\n\n    .client-form input" in css
+    assert ".client-subtabs {\n        position: sticky;" in css
+    assert ".client-link-actions {\n        display: grid;" in css
+    assert "max-height: calc(100svh - 32px);" in css
 
 
 def test_admin_tabs_keep_same_vertical_anchor_across_sections(client):
@@ -1953,15 +1973,17 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
     assert "Готовая серия".encode() not in response.data
     assert "Оставьте отзыв и".encode() in response.data
     assert "получите скидку 15%".encode() in response.data
+    assert '<span class="client-discount-prompt">Оставьте отзыв и</span>'.encode() in response.data
+    assert "<strong>получите скидку 15%</strong>".encode() in response.data
     assert "Получите скидку 15%%".encode() not in response.data
-    assert b"css/styles.css?v=54" in response.data
+    assert b"css/styles.css?v=60" in response.data
     assert b"client-camera-body" in response.data
     assert b"client-camera-lens-core" in response.data
     assert b"client-aperture" not in response.data
     assert b"photo/portrait-cutout.png" in response.data
     assert b"class=\"client-photo-stage\"" in response.data
-    assert b"class=\"client-link-icon\"" in response.data
-    assert b"class=\"client-link-text\"" in response.data
+    assert b"class=\"client-link-icon\"" not in response.data
+    assert b"class=\"client-link-text\"" not in response.data
     assert b"class=\"client-portrait-orbit\"" not in response.data
     assert b"img/profile-new.jpg" not in response.data
     assert "Владимир Худовердиев</a>".encode() not in response.data
@@ -1976,12 +1998,27 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
     assert b'href="https://vk.ru/reviews-190646738"' in response.data
     assert b'href="https://ph.khudoverdiev.ru"' in response.data
     assert "Страница фотографа".encode() in response.data
-    assert b"class=\"client-header-link\"" in response.data
+    assert b'class="client-header-badge"' in response.data
+    assert b'class="client-header-link"' not in response.data
+    assert "Персональная ссылка".encode() not in response.data
     css = Path("static/css/styles.css").read_text(encoding="utf-8")
+    assert (
+        ".client-header-badge {\n"
+        "        display: inline-flex;\n"
+        "        pointer-events: auto;"
+    ) in css
+    assert "margin-top: 20px;\n        justify-self: center;" in css
+    assert (
+        '.client-discount .client-discount-prompt {\n'
+        '    color: #6f6761;\n'
+        '    font-family: Inter, "Segoe UI", Arial, sans-serif;'
+    ) in css
     template = Path("templates/client_photos.html").read_text(encoding="utf-8")
     assert "<span>Мне было очень приятно работать с вами.</span>" in template
     assert "<span>Ниже вы найдете ссылку на {{ client.delivery_copy.lead_noun }}.</span>" in template
     assert ".client-lead > span {\n    display: block;" in css
+    assert ".client-page {\n    min-height: 100svh;\n    height: auto;\n    display: grid;\n    place-items: center;" in css
+    assert "padding: 92px 16px 24px;\n        place-items: start center;" in css
     assert ".client-link-icon {\n    width: 28px;" in css
     assert "background: rgba(23, 19, 16, 0.78);" in css
     assert "color: #ffffff;" in css
@@ -1996,7 +2033,7 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
     assert "margin-top: -48px;" in css
     assert "width: 444px;" in css
     assert "min-height: min(820px, calc(100svh - 146px));" not in css
-    assert "padding: 42px 46px 28px;" in css
+    assert "padding: 42px 46px 42px;" in css
     assert ".client-button-primary {\n    min-height: 56px;" in css
     assert "background: linear-gradient(135deg, #1d1712, #49301e);" in css
     assert ".client-button-primary i {" in css
@@ -2062,11 +2099,30 @@ def test_photo_client_delivery_type_defaults_to_photo_and_is_available_in_admin(
 
     assert columns["delivery_type"]["notnull"] == 1
     assert db_rows("photo_clients")[0]["delivery_type"] == "photo"
-    assert b'name="delivery_type"' in response.data
     assert b'class="client-delivery-options"' in response.data
-    assert b'type="radio" name="delivery_type" value="photo"' in response.data
-    assert b'type="radio" name="delivery_type" value="video"' in response.data
-    assert b'type="radio" name="delivery_type" value="photo_video"' in response.data
+    assert b'type="checkbox" name="delivery_photo" value="1"' in response.data
+    assert b'type="checkbox" name="delivery_video" value="1"' in response.data
+    assert b'name="delivery_type"' not in response.data
+    assert "Фото и видео</span>".encode() not in response.data
+
+
+def test_photo_client_delivery_checkboxes_map_to_supported_delivery_types():
+    base_form = {
+        "client_name": "Клиент",
+        "photo_link": "https://example.com/materials",
+        "message_text": "Материалы готовы.",
+    }
+
+    both_payload, both_error = site.build_photo_client_payload({**base_form, "delivery_selection": "1", "delivery_photo": "1", "delivery_video": "1"})
+    video_payload, video_error = site.build_photo_client_payload({**base_form, "delivery_selection": "1", "delivery_video": "1"})
+    empty_payload, empty_error = site.build_photo_client_payload({**base_form, "delivery_selection": "1"})
+
+    assert both_payload["delivery_type"] == "photo_video"
+    assert both_error == ""
+    assert video_payload["delivery_type"] == "video"
+    assert video_error == ""
+    assert empty_payload["delivery_type"] == ""
+    assert "Выберите хотя бы один готовый материал." in empty_error
 
 
 def test_old_phh_client_page_is_not_part_of_project(client):

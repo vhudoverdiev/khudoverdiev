@@ -175,7 +175,7 @@ img { max-width: 100%; }
     grid-template-columns: minmax(0, 530px) minmax(0, 1fr);
     align-items: center;
     gap: 56px;
-    padding: 124px max(28px, calc((100vw - 1240px) / 2)) 0;
+    padding: 124px max(28px, calc((100% - 1240px) / 2)) 0;
     overflow: hidden;
     background:
         linear-gradient(90deg, rgba(54, 35, 27, .94), rgba(111, 82, 64, .88)),
@@ -325,7 +325,7 @@ body.ph-nudge-open .ph-scroll-cue {
 .ph-booking-nudge {
     position: fixed;
     inset: 0;
-    z-index: 24;
+    z-index: 950;
     width: 100%;
     min-height: 100vh;
     min-height: 100svh;
@@ -338,6 +338,23 @@ body.ph-nudge-open .ph-scroll-cue {
     opacity: 0;
     pointer-events: none;
     transition: opacity .28s ease, transform .28s var(--ph-ease);
+}
+
+@media (min-width: 500px) {
+    .ph-booking-nudge-card {
+        width: min(560px, calc(100vw - 48px));
+        padding: 62px 54px 48px;
+    }
+
+    .ph-booking-nudge p strong {
+        max-width: 13ch;
+        font-size: 42px;
+    }
+
+    .ph-booking-nudge p small {
+        max-width: 380px;
+        font-size: 16px;
+    }
 }
 .ph-booking-nudge.is-visible {
     opacity: 1;
@@ -647,7 +664,7 @@ body.ph-modal-open .ph-booking-nudge {
     display: flex;
     align-items: center;
     gap: 28px;
-    padding: 42px max(28px, calc((100vw - 1240px) / 2));
+    padding: 42px max(28px, calc((100% - 1240px) / 2));
     overflow: hidden;
     border-top: 1px solid rgba(255, 255, 255, .06);
     border-bottom: 0;

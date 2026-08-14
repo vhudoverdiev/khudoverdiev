@@ -11,7 +11,7 @@
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='photo/ph-favicon.svg') }}?v=5">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='photo/ph-favicon.png') }}?v=2">
     <link rel="preload" as="image" type="image/webp" href="{{ url_for('static', filename='photo/portrait-cutout.webp') }}?v=1" fetchpriority="high">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/photo.css') }}?v=71">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/photo.css') }}?v=73">
 </head>
 <body>
     <a class="ph-skip" href="#portfolio">Перейти к портфолио</a>
@@ -343,20 +343,20 @@
 
     <button class="ph-scroll-cue" type="button" aria-label="Перейти к следующему блоку" data-direction="down"><span class="ph-arrow ph-arrow-down" aria-hidden="true"></span></button>
 
-    <div class="ph-booking-nudge" data-booking-nudge aria-hidden="true">
-        <div class="ph-booking-nudge-card">
-            <button class="ph-booking-nudge-close" type="button" aria-label="Закрыть уведомление" data-booking-nudge-close>×</button>
-            <p><strong>Желаете записаться на съемку?</strong><small>Оставьте короткую заявку, и я помогу выбрать формат, дату и настроение будущей серии.</small></p>
-            <button type="button" data-booking-nudge-open>Подробнее <span class="ph-arrow ph-arrow-down-right" aria-hidden="true"></span></button>
-        </div>
-    </div>
-
     <footer class="ph-footer" id="ph-site-footer">
         <a class="ph-brand" href="#top">PH<span>.</span></a>
         <p class="ph-footer-owner"><span>Владимир Худовердиев</span><small>Все права защищены</small></p>
         <p>© 2026</p>
     </footer>
     </div>
+    </div>
+
+    <div class="ph-booking-nudge" data-booking-nudge aria-hidden="true">
+        <div class="ph-booking-nudge-card">
+            <button class="ph-booking-nudge-close" type="button" aria-label="Закрыть уведомление" data-booking-nudge-close>×</button>
+            <p><strong>Желаете записаться на съемку?</strong><small>Оставьте короткую заявку, и я помогу выбрать формат, дату и настроение будущей серии.</small></p>
+            <button type="button" data-booking-nudge-open>Подробнее <span class="ph-arrow ph-arrow-down-right" aria-hidden="true"></span></button>
+        </div>
     </div>
 
     <div class="ph-booking-modal" id="booking" aria-hidden="true">
