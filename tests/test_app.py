@@ -11,6 +11,7 @@ import app as site
 @pytest.fixture()
 def client(tmp_path, monkeypatch):
     monkeypatch.setattr(site, "DB_PATH", tmp_path / "site.db")
+    monkeypatch.setattr(site.app, "secret_key", "test-secret-key-that-is-long-enough-for-sessions")
     monkeypatch.setattr(site, "ADMIN_USERNAME", "admin")
     monkeypatch.setattr(site, "ADMIN_PASSWORD", "secret")
     monkeypatch.setattr(site, "ADMIN_PASSWORD_HASH", None)
@@ -545,7 +546,9 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "default-src 'self'" in response.headers["Content-Security-Policy"]
     assert "frame-src https://vk.com https://vk.ru https://vkvideo.ru" in response.headers["Content-Security-Policy"]
     assert b"css/photo.css" in response.data
-    assert b"photo.css?v=78" in response.data
+    assert b'<meta name="google" content="notranslate">' in response.data
+    assert b'<body class="notranslate" translate="no">' in response.data
+    assert b"photo.css?v=79" in response.data
     assert b"js/photo.js" in response.data
     assert b"photo.js?v=23" in response.data
     assert b'id="ph-mobile-nav"' in response.data
@@ -636,7 +639,8 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "min-height: 930px;" in css
     assert "@media (min-width: 1180px) and (min-height: 680px)" not in css
     assert "padding: 16px 26px;" in css
-    assert "justify-content: flex-end;" in css
+    assert ".ph-facts span {" in css
+    assert "justify-content: center;" in css
     assert "justify-self: start;" in css
     assert ".ph-review-all-button .ph-arrow { display: none; }" in css
     assert ".ph-booking-nudge-card {\n        width: min(560px, calc(100vw - 48px));" in css
@@ -644,6 +648,7 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "@media (max-width: 1100px)" not in css
     assert b'class="ph-desktop-scale-shell"' in response.data
     assert b'class="ph-desktop-scale-stage"' in response.data
+    assert b'class="ph-facts notranslate" translate="no"' in response.data
     assert response.data.find(b'class="ph-booking-nudge"') > response.data.find(b'class="ph-footer"')
     assert response.data.find(b'class="ph-booking-nudge"') < response.data.find(b'class="ph-booking-modal"')
     js = Path("static/js/photo.js").read_text(encoding="utf-8")
@@ -1334,9 +1339,9 @@ def test_message_rate_limit_blocks_excessive_posts(client):
 def test_message_rate_limit_is_scoped_by_first_forwarded_ip_and_user_agent(client, monkeypatch):
     monkeypatch.setattr(site.time, "time", lambda: 1_000.0)
     csrf = csrf_from(client, base_url="http://ph.khudoverdiev.ru")
-    throttled_headers = {"X-Forwarded-For": "203.0.113.10, 10.0.0.1", "User-Agent": "mobile-app"}
-    other_ip_headers = {"X-Forwarded-For": "203.0.113.11, 10.0.0.1", "User-Agent": "mobile-app"}
-    other_agent_headers = {"X-Forwarded-For": "203.0.113.10, 10.0.0.1", "User-Agent": "browser"}
+    throttled_headers = {"X-Forwarded-For": "203.0.113.10", "User-Agent": "mobile-app"}
+    other_ip_headers = {"X-Forwarded-For": "203.0.113.11", "User-Agent": "mobile-app"}
+    other_agent_headers = {"X-Forwarded-For": "203.0.113.10", "User-Agent": "browser"}
 
     for index in range(10):
         response = client.post(
@@ -1533,7 +1538,7 @@ def test_admin_login_page_is_no_store_and_contains_csrf(client):
     assert b'name="csrf_token"' in response.data
     assert b'name="username"' in response.data
     assert b'autocomplete="username"' in response.data
-    assert b"css/styles.css?v=66" in response.data
+    assert b"css/styles.css?v=67" in response.data
     assert "<title>Админ-панель</title>".encode() in response.data
     assert "Админ-панель — KHUDOVERDIEV".encode() not in response.data
     assert "Фотография сохраняет тишину момента".encode() in response.data
@@ -1576,6 +1581,9 @@ def test_admin_mobile_layout_is_phone_optimized(client):
     assert b'content="width=device-width, initial-scale=1, viewport-fit=cover"' in response.data
     assert "@media (max-width: 720px) {\n    .admin-body:not(.admin-login-body)" in css
     assert "bottom: max(10px, env(safe-area-inset-bottom));" in css
+    assert "min-height: 0;\n        gap: 10px;" in css
+    assert ".admin-header {\n        min-height: 0;" in css
+    assert "min-height: 52px;\n        align-content: center;\n        padding: 8px 16px;" in css
     assert "grid-template-columns: repeat(2, minmax(0, 1fr));" in css
     assert "font-size: 16px;\n    }\n\n    .client-form input" in css
     assert ".client-subtabs {\n        position: sticky;" in css
@@ -1989,7 +1997,7 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
     assert '<span class="client-discount-prompt">Оставьте отзыв и</span>'.encode() in response.data
     assert "<strong>получите скидку 15%</strong>".encode() in response.data
     assert "Получите скидку 15%%".encode() not in response.data
-    assert b"css/styles.css?v=65" in response.data
+    assert b"css/styles.css?v=70" in response.data
     assert b"client-camera-body" in response.data
     assert b"client-camera-lens-core" in response.data
     assert b"client-aperture" not in response.data
@@ -2021,6 +2029,7 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
         "        pointer-events: auto;"
     ) in css
     assert ".client-portrait-panel {\n        display: none;\n    }" in css
+    assert 'grid-template-areas:\n            "copy"\n            "details";\n        gap: 18px;' in css
     assert "width: 24px;\n        height: 24px;\n        stroke: #d39a5d;\n        stroke-width: 1.45;\n        transform: translateY(-0.5px);" in css
     assert (
         '.client-discount .client-discount-prompt {\n'
@@ -2035,8 +2044,10 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
     assert "top: max(22px, calc(50svh - 390px));" in css
     assert ".client-discount > div {\n    width: 100%;" in css
     assert ".client-discount > div > span,\n.client-discount > div > strong,\n.client-discount > div > p {" in css
-    assert "top: 16px;\n        right: 16px;\n        left: 16px;\n        width: auto;" in css
-    assert "padding: 92px 16px 24px;\n        place-items: start center;" in css
+    assert "top: max(16px, calc(50svh - 384px));\n        right: 16px;\n        left: 16px;\n        width: auto;" in css
+    assert ".client-body.client-no-discount .client-header {\n        top: max(16px, calc(50svh - 314px));\n    }" in css
+    assert 'client-body{% if not client.discount_text %} client-no-discount{% endif %} notranslate' in template
+    assert "padding: 72px 16px 24px;\n        place-items: center;" in css
     assert ".client-link-icon {\n    width: 28px;" in css
     assert "background: rgba(23, 19, 16, 0.78);" in css
     assert "color: #ffffff;" in css
@@ -2598,23 +2609,28 @@ def test_legacy_delete_path_preserves_post_semantics(client):
     assert db_rows("messages") == []
 
 
-def test_logout_removes_only_admin_flag(client):
+def test_logout_requires_csrf_and_clears_session(client):
     login_as_admin(client)
     with client.session_transaction() as session:
         csrf = session["_csrf_token"]
 
-    response = client.get(f"{site.ADMIN_PATH}/logout")
+    assert client.get(f"{site.ADMIN_PATH}/logout").status_code == 405
+    assert client.post(f"{site.ADMIN_PATH}/logout").status_code == 400
+    response = client.post(f"{site.ADMIN_PATH}/logout", data={"csrf_token": csrf})
 
     assert response.status_code == 302
     with client.session_transaction() as session:
         assert "admin" not in session
-        assert session["_csrf_token"] == csrf
+        assert "_csrf_token" not in session
 
 
 def test_legacy_routes_redirect_to_current_admin_paths(client):
     assert client.get(site.LEGACY_ADMIN_PATH).headers["Location"] == site.ADMIN_PATH
     assert client.get("/admin").headers["Location"] == site.ADMIN_PATH
-    assert client.get(f"{site.LEGACY_ADMIN_PATH}/logout").headers["Location"] == f"{site.ADMIN_PATH}/logout"
+    login_as_admin(client)
+    csrf = csrf_from(client, site.ADMIN_PATH)
+    response = client.post(f"{site.LEGACY_ADMIN_PATH}/logout", data={"csrf_token": csrf})
+    assert response.headers["Location"] == site.ADMIN_PATH
 
 
 def test_health_endpoint_reports_ok(client):

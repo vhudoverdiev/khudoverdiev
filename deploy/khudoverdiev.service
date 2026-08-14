@@ -9,7 +9,8 @@ WorkingDirectory=/opt/khudoverdiev
 EnvironmentFile=-/opt/khudoverdiev/.env
 Environment="PATH=/opt/khudoverdiev/venv/bin"
 Environment="SITE_DB_PATH=/var/lib/khudoverdiev/site.db"
-ExecStart=/opt/khudoverdiev/venv/bin/gunicorn --workers 3 --timeout 120 --bind 127.0.0.1:8000 app:app
+UMask=0077
+ExecStart=/opt/khudoverdiev/venv/bin/gunicorn --workers 3 --timeout 30 --graceful-timeout 30 --keep-alive 5 --max-requests 2000 --max-requests-jitter 200 --limit-request-line 4094 --limit-request-fields 50 --limit-request-field_size 4096 --bind 127.0.0.1:8000 app:app
 Restart=always
 RestartSec=5
 NoNewPrivileges=true
@@ -23,6 +24,10 @@ ReadWritePaths=/var/lib/khudoverdiev
 CapabilityBoundingSet=
 LockPersonality=true
 RestrictSUIDSGID=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
 
 [Install]
 WantedBy=multi-user.target

@@ -13,23 +13,23 @@ from ipaddress import ip_address, ip_network
 from urllib.parse import urlparse
 import uuid
 
-from flask import Flask, abort, jsonify, make_response, redirect, render_template, request, session, url_for
+from flask import Flask, abort, g, jsonify, make_response, redirect, render_template, request, session, url_for
 from werkzeug.exceptions import HTTPException
 from werkzeug.security import check_password_hash
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-only-change-this-secret-key")
+app.secret_key = os.environ.get("FLASK_SECRET_KEY")
 app.config.update(
     MAX_CONTENT_LENGTH=16 * 1024,
     PERMANENT_SESSION_LIFETIME=timedelta(hours=2),
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE="Strict",
-    SESSION_COOKIE_SECURE=os.environ.get("FLASK_COOKIE_SECURE") == "1",
+    SESSION_COOKIE_SECURE=os.environ.get("FLASK_COOKIE_SECURE") == "1" or os.environ.get("FORCE_HTTPS") == "1",
 )
 
 DB_PATH = Path(os.environ.get("SITE_DB_PATH", Path(__file__).with_name("site.db"))).expanduser()
-ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin")
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin")
+ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
 ADMIN_PASSWORD_HASH = os.environ.get("ADMIN_PASSWORD_HASH")
 ADMIN_IP_ALLOWLIST = {item.strip() for item in os.environ.get("ADMIN_IP_ALLOWLIST", "").split(",") if item.strip()}
 TRUSTED_PROXY_CIDRS = {item.strip() for item in os.environ.get("TRUSTED_PROXY_CIDRS", "").split(",") if item.strip()}
@@ -195,6 +195,7 @@ SLUG_RE = re.compile(r"^[a-z0-9-]{1,80}$")
 CLIENT_SLUG_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789"
 CLIENT_SLUG_LENGTH = 32
 RATE_LIMITS = {}
+MAX_RATE_LIMIT_KEYS = 10_000
 BLOCKED_PATH_SUFFIXES = (
     ".bak",
     ".backup",
@@ -259,9 +260,20 @@ def is_allowed_host():
 
 def get_client_ip():
     remote_addr = (request.remote_addr or "").strip()
-    forwarded_for = (request.headers.get("X-Forwarded-For") or "").split(",", 1)[0].strip()
-    if forwarded_for and is_trusted_proxy(remote_addr):
-        return forwarded_for
+    if not is_trusted_proxy(remote_addr):
+        return remote_addr
+
+    forwarded_for = (request.headers.get("X-Forwarded-For") or "").split(",")
+    # Nginx appends the actual peer address to X-Forwarded-For.  Work from the
+    # right so a value injected by the client cannot replace that address.
+    for candidate in reversed(forwarded_for):
+        candidate = candidate.strip()
+        try:
+            ip_address(candidate)
+        except ValueError:
+            continue
+        if not is_trusted_proxy(candidate):
+            return candidate
     return remote_addr
 
 
@@ -282,7 +294,8 @@ def is_trusted_proxy(remote_addr):
 
 
 def check_rate_limit(scope, limit, window_seconds):
-    key = f"{scope}:{get_client_ip()}:{request.headers.get('User-Agent', '')[:80]}"
+    client_identity = f"{get_client_ip()}:{request.headers.get('User-Agent', '')[:80]}"
+    key = f"{scope}:{hashlib.sha256(client_identity.encode('utf-8')).hexdigest()}"
     current_time = time.time()
     hits = [hit for hit in RATE_LIMITS.get(key, []) if current_time - hit < window_seconds]
     if len(hits) >= limit:
@@ -290,6 +303,13 @@ def check_rate_limit(scope, limit, window_seconds):
         return False
     hits.append(current_time)
     RATE_LIMITS[key] = hits
+    if len(RATE_LIMITS) > MAX_RATE_LIMIT_KEYS:
+        # The limiter is deliberately process-local; bound attacker-controlled
+        # cardinality so distinct User-Agent values cannot exhaust worker RAM.
+        excess = len(RATE_LIMITS) - MAX_RATE_LIMIT_KEYS
+        oldest_keys = sorted(RATE_LIMITS, key=lambda item: RATE_LIMITS[item][-1])[: max(excess, 1)]
+        for oldest_key in oldest_keys:
+            RATE_LIMITS.pop(oldest_key, None)
     return True
 
 
@@ -304,6 +324,13 @@ def csrf_token():
 app.jinja_env.globals["csrf_token"] = csrf_token
 
 
+def csp_nonce():
+    return getattr(g, "csp_nonce", "")
+
+
+app.jinja_env.globals["csp_nonce"] = csp_nonce
+
+
 def validate_csrf():
     submitted = request.form.get("csrf_token") or request.headers.get("X-CSRF-Token")
     expected = session.get("_csrf_token")
@@ -316,7 +343,7 @@ def clean_text(value, max_length):
 
 
 def hmac_digest(value):
-    secret = (app.secret_key or "dev-only-change-this-secret-key").encode("utf-8")
+    secret = (app.secret_key or "").encode("utf-8")
     return hmac.new(secret, value.encode("utf-8"), hashlib.sha256).hexdigest()
 
 
@@ -561,15 +588,15 @@ def should_force_https():
 def validate_runtime_security():
     if app.config.get("TESTING"):
         return
+    if not app.secret_key or len(app.secret_key) < 32 or app.secret_key.startswith("replace-with-"):
+        raise RuntimeError("FLASK_SECRET_KEY must be set to a strong random value (at least 32 characters).")
     production_like = os.environ.get("FORCE_HTTPS") == "1" or os.environ.get("FLASK_ENV") == "production"
-    if not production_like:
-        return
-    if app.secret_key == "dev-only-change-this-secret-key":
-        raise RuntimeError("FLASK_SECRET_KEY must be set to a strong random value in production.")
-    if os.environ.get("REQUIRE_ADMIN_PASSWORD_HASH") == "1" and not ADMIN_PASSWORD_HASH:
+    if production_like and not app.config["SESSION_COOKIE_SECURE"]:
+        raise RuntimeError("Secure cookies must be enabled in production.")
+    if production_like and not ADMIN_PASSWORD_HASH:
         raise RuntimeError("ADMIN_PASSWORD_HASH is required in production.")
-    if not ADMIN_PASSWORD_HASH and ADMIN_USERNAME == "admin" and ADMIN_PASSWORD == "admin":
-        raise RuntimeError("Default admin credentials are not allowed in production.")
+    if production_like and not ADMIN_USERNAME:
+        raise RuntimeError("ADMIN_USERNAME is required in production.")
 
 
 def audit_event(event_type, subject="", metadata=None):
@@ -613,6 +640,7 @@ def admin_required(view):
 
 @app.before_request
 def security_gate():
+    g.csp_nonce = secrets.token_urlsafe(24)
     try:
         validate_runtime_security()
     except RuntimeError:
@@ -624,6 +652,8 @@ def security_gate():
         abort(404)
     if should_force_https():
         return redirect(request.url.replace("http://", "https://", 1), code=308)
+    if request.is_secure or os.environ.get("FORCE_HTTPS") == "1":
+        app.config["SESSION_COOKIE_SECURE"] = True
     if request.path.startswith((ADMIN_PATH, LEGACY_ADMIN_PATH, "/admin")) and not is_admin_ip_allowed():
         audit_event("admin_ip_blocked")
         abort(404)
@@ -645,7 +675,7 @@ def add_security_headers(response):
     upgrade = "upgrade-insecure-requests; " if os.environ.get("FORCE_HTTPS") == "1" else ""
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
-        "script-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline'; "
+        f"script-src 'self' https://cdnjs.cloudflare.com 'nonce-{csp_nonce()}'; "
         "script-src-attr 'none'; "
         "style-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline'; "
         "font-src 'self' https://cdnjs.cloudflare.com data:; "
@@ -1510,9 +1540,11 @@ def legacy_delete_message(message_id):
     return delete_message(message_id)
 
 
-@app.route(f"{ADMIN_PATH}/logout")
+@app.route(f"{ADMIN_PATH}/logout", methods=["POST"])
 def admin_logout():
-    session.pop("admin", None)
+    if not validate_csrf():
+        abort(400)
+    session.clear()
     return redirect(url_for("admin"))
 
 
@@ -1525,9 +1557,9 @@ def handle_http_exception(error):
     return error
 
 
-@app.route(f"{LEGACY_ADMIN_PATH}/logout")
+@app.route(f"{LEGACY_ADMIN_PATH}/logout", methods=["POST"])
 def legacy_admin_logout():
-    return redirect(url_for("admin_logout"))
+    return admin_logout()
 
 
 if __name__ == "__main__":

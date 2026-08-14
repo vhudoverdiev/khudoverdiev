@@ -90,7 +90,7 @@
         </div>
     </div>
 
-    <script>
+    <script nonce="{{ csp_nonce() }}">
         const form = document.getElementById('message-form');
         const successModal = document.getElementById('success-modal');
         const successClose = document.getElementById('success-close');

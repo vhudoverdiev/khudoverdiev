@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="google" content="notranslate">
     <title>{{ client.delivery_copy.title }}</title>
     <meta name="description" content="Персональная страница для получения готовых материалов.">
     <meta name="theme-color" content="#f4f0ea">
@@ -11,9 +12,9 @@
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='photo/ph-favicon.svg') }}?v=5">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='photo/ph-favicon.png') }}?v=2">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='photo/ph-favicon.png') }}?v=2">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=65">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=70">
 </head>
-<body class="client-body">
+<body class="client-body{% if not client.discount_text %} client-no-discount{% endif %} notranslate" translate="no">
     <header class="client-header">
         <a class="client-header-badge" href="https://ph.khudoverdiev.ru" rel="noopener">
             <i aria-hidden="true">↗</i>
