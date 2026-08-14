@@ -3278,7 +3278,7 @@ h2 em {
     .ph-review-all-button {
         width: max-content;
         min-height: 42px;
-        justify-self: center;
+        justify-self: start;
         justify-content: center;
         gap: 0;
         padding: 0 16px;

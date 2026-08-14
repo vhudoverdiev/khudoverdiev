@@ -545,7 +545,7 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "default-src 'self'" in response.headers["Content-Security-Policy"]
     assert "frame-src https://vk.com https://vk.ru https://vkvideo.ru" in response.headers["Content-Security-Policy"]
     assert b"css/photo.css" in response.data
-    assert b"photo.css?v=77" in response.data
+    assert b"photo.css?v=78" in response.data
     assert b"js/photo.js" in response.data
     assert b"photo.js?v=23" in response.data
     assert b'id="ph-mobile-nav"' in response.data
@@ -637,7 +637,7 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "@media (min-width: 1180px) and (min-height: 680px)" not in css
     assert "padding: 16px 26px;" in css
     assert "justify-content: flex-end;" in css
-    assert "justify-self: center;" in css
+    assert "justify-self: start;" in css
     assert ".ph-review-all-button .ph-arrow { display: none; }" in css
     assert ".ph-booking-nudge-card {\n        width: min(560px, calc(100vw - 48px));" in css
     assert "@media (max-width: 760px)" not in css
@@ -652,7 +652,7 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert ".ph-booking-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }" in css
     assert ".ph-header-cta {\n        display: none;" in css
     assert "grid-template-columns: 1fr auto;" in css
-    assert ".ph-review-all-button {\n        width: max-content;\n        min-height: 42px;\n        justify-self: center;" in css
+    assert ".ph-review-all-button {\n        width: max-content;\n        min-height: 42px;\n        justify-self: start;" in css
     assert b"Black Star Burger" in response.data
     assert "Яндекс Маркет".encode() in response.data
     assert "Руки Вверх! Бар".encode() in response.data
