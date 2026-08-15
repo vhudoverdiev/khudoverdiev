@@ -160,6 +160,20 @@
             videoFrame.play?.().catch(() => {});
         }
     };
+
+    const pauseVideoOutsideViewport = () => {
+        if (!videoPlayer || !videoFrame) return;
+        const videoVisibilityObserver = new IntersectionObserver(([entry]) => {
+            if (!entry.isIntersecting || entry.intersectionRatio < 0.25) {
+                videoFrame.pause?.();
+            }
+        }, { threshold: [0, 0.25] });
+        videoVisibilityObserver.observe(videoPlayer);
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) videoFrame.pause?.();
+        });
+    };
+
     const showBookingNudge = () => {
         if (!bookingNudge || bookingNudgeDismissed || bookingModal?.classList.contains("is-open")) return;
         bookingNudge.classList.add("is-visible");
@@ -332,6 +346,7 @@
 
     if (videoCards.length) {
         setActiveVideo(videoCards.find((card) => card.classList.contains("is-active")) || videoCards[0]);
+        pauseVideoOutsideViewport();
         videoCards.forEach((button) => {
             button.addEventListener("click", () => {
                 setActiveVideo(button, true);

@@ -196,6 +196,8 @@ def test_allowed_host_with_port_is_accepted(client):
     assert b"css/styles.css?v=5" in response.data
     assert b'id="message-form-error"' in response.data
     assert b"payload.error" in response.data
+    assert "<title>Твой вдохновитель</title>".encode() in response.data
+    assert "<title>Твой Вдохновитель</title>".encode() not in response.data
     assert "Твой вдохновитель отправил новое сообщение".encode() in response.data
     assert "новый таплинк".encode() not in response.data
     assert len(db_rows("visits")) == 1
@@ -548,9 +550,9 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert b"css/photo.css" in response.data
     assert b'<meta name="google" content="notranslate">' in response.data
     assert b'<body class="notranslate" translate="no">' in response.data
-    assert b"photo.css?v=79" in response.data
+    assert b"photo.css?v=80" in response.data
     assert b"js/photo.js" in response.data
-    assert b"photo.js?v=23" in response.data
+    assert b"photo.js?v=25" in response.data
     assert b'id="ph-mobile-nav"' in response.data
     assert b'class="ph-menu-toggle"' in response.data
     assert b'class="ph-menu-backdrop"' in response.data
@@ -643,6 +645,9 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert "justify-content: center;" in css
     assert "justify-self: start;" in css
     assert ".ph-review-all-button .ph-arrow { display: none; }" in css
+    assert '.ph-header nav a::after {' in css
+    assert 'content: "\\2198"' not in css
+    assert "clip-path: polygon(0 42%, 59% 42%, 59% 13%, 100% 50%, 59% 87%, 59% 58%, 0 58%);" in css
     assert ".ph-booking-nudge-card {\n        width: min(560px, calc(100vw - 48px));" in css
     assert "@media (max-width: 760px)" not in css
     assert "@media (max-width: 1100px)" not in css
@@ -772,9 +777,9 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
 
     assert response.status_code == 200
     assert b"css/photo.css" in response.data
-    assert b"photo.css?v=70" in response.data
+    assert b"photo.css?v=80" in response.data
     assert b"js/photo.js" in response.data
-    assert b"photo.js?v=24" in response.data
+    assert b"photo.js?v=25" in response.data
     assert "Портфолио".encode() in response.data
     assert "126 фотографий".encode() not in response.data
     assert "Собрал сюда все снимки из альбома ВКонтакте".encode() not in response.data
@@ -792,6 +797,9 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert b'id="ph-mobile-nav"' in response.data
     assert b'class="ph-portfolio-back"' in response.data
     assert b'class="ph-menu-toggle"' in response.data
+    assert response.data.count("Обсудить съемку".encode()) == 1
+    assert '<a class="ph-button ph-button-primary" href="/#booking">Обсудить съемку'.encode() in response.data
+    assert "Открыть альбом VK".encode() not in response.data
     assert '<a href="/#services">Фото</a>'.encode() in response.data
     assert '<a href="/#video">Видео</a>'.encode() in response.data
     assert '<a href="/#reviews">Отзывы</a>'.encode() in response.data
@@ -868,6 +876,10 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
     assert "videoFrame.src = videoSrc;" in js
     assert "videoFrame.load?.();" in js
     assert "videoFrame.play?.().catch(() => {});" in js
+    assert "pauseVideoOutsideViewport" in js
+    assert "new IntersectionObserver" in js
+    assert "entry.intersectionRatio < 0.25" in js
+    assert 'document.addEventListener("visibilitychange"' in js
     assert "setHeroButtonState" in js
     assert "card.setAttribute(\"aria-pressed\", isActive ? \"true\" : \"false\");" in js
     assert "videoPlayButton" not in js

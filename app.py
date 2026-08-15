@@ -1167,7 +1167,6 @@ def photo_portfolio():
         render_template(
             "photo_portfolio.html",
             photos=PHOTO_PORTFOLIO_IMAGES,
-            source_album_url="https://vk.ru/ph.khudoverdiev?z=album-190646738_306357774",
         )
     )
     response.set_cookie(
