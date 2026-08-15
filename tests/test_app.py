@@ -193,7 +193,7 @@ def test_allowed_host_with_port_is_accepted(client):
     response = client.get("/", base_url="http://localhost:5000")
 
     assert response.status_code == 200
-    assert b"css/styles.css?v=5" in response.data
+    assert b"css/styles.css?v=72" in response.data
     assert b'id="message-form-error"' in response.data
     assert b"payload.error" in response.data
     assert "<title>Твой вдохновитель</title>".encode() in response.data
@@ -548,6 +548,28 @@ def test_ph_favicon_png_supports_transparency():
     assert favicon[25] == 6  # PNG RGBA color type.
 
 
+def test_root_photo_and_admin_mobile_pages_are_portrait_only():
+    templates = [
+        "index.html",
+        "admin.html",
+        "photo.html",
+        "photo_portfolio.html",
+        "client_photos.html",
+        "client_unavailable.html",
+    ]
+
+    for template_name in templates:
+        template = Path("templates", template_name).read_text(encoding="utf-8")
+        assert 'class="portrait-orientation-lock"' in template
+        assert "Поверните телефон" in template
+
+    for stylesheet_name in ["styles.css", "photo.css"]:
+        stylesheet = Path("static/css", stylesheet_name).read_text(encoding="utf-8")
+        assert "@media (orientation: landscape) and (max-width: 1000px) and (pointer: coarse)" in stylesheet
+        assert ".portrait-orientation-lock {" in stylesheet
+        assert "z-index: 100000;" in stylesheet
+
+
 def test_ph_subdomain_renders_photographer_portfolio(client):
     response = client.get("/", base_url="http://ph.khudoverdiev.ru")
 
@@ -557,7 +579,7 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert b"css/photo.css" in response.data
     assert b'<meta name="google" content="notranslate">' in response.data
     assert b'<body class="notranslate" translate="no">' in response.data
-    assert b"photo.css?v=80" in response.data
+    assert b"photo.css?v=82" in response.data
     assert b"js/photo.js" in response.data
     assert b"photo.js?v=25" in response.data
     assert b'id="ph-mobile-nav"' in response.data
@@ -787,7 +809,7 @@ def test_ph_full_portfolio_renders_local_album_page_and_records_visit(client):
 
     assert response.status_code == 200
     assert b"css/photo.css" in response.data
-    assert b"photo.css?v=80" in response.data
+    assert b"photo.css?v=82" in response.data
     assert b"js/photo.js" in response.data
     assert b"photo.js?v=25" in response.data
     assert "Портфолио".encode() in response.data
@@ -1560,7 +1582,7 @@ def test_admin_login_page_is_no_store_and_contains_csrf(client):
     assert b'name="csrf_token"' in response.data
     assert b'name="username"' in response.data
     assert b'autocomplete="username"' in response.data
-    assert b"css/styles.css?v=67" in response.data
+    assert b"css/styles.css?v=72" in response.data
     assert "<title>Админ-панель</title>".encode() in response.data
     assert "Админ-панель — KHUDOVERDIEV".encode() not in response.data
     assert "Фотография сохраняет тишину момента".encode() in response.data
@@ -2019,7 +2041,7 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
     assert '<span class="client-discount-prompt">Оставьте отзыв и</span>'.encode() in response.data
     assert "<strong>получите скидку 15%</strong>".encode() in response.data
     assert "Получите скидку 15%%".encode() not in response.data
-    assert b"css/styles.css?v=70" in response.data
+    assert b"css/styles.css?v=72" in response.data
     assert b"client-camera-body" in response.data
     assert b"client-camera-lens-core" in response.data
     assert b"client-aperture" not in response.data
