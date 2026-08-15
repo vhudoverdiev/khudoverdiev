@@ -193,7 +193,7 @@ def test_allowed_host_with_port_is_accepted(client):
     response = client.get("/", base_url="http://localhost:5000")
 
     assert response.status_code == 200
-    assert b"css/styles.css?v=72" in response.data
+    assert b"css/styles.css?v=74" in response.data
     assert b'id="message-form-error"' in response.data
     assert b"payload.error" in response.data
     assert "<title>Твой вдохновитель</title>".encode() in response.data
@@ -1582,7 +1582,7 @@ def test_admin_login_page_is_no_store_and_contains_csrf(client):
     assert b'name="csrf_token"' in response.data
     assert b'name="username"' in response.data
     assert b'autocomplete="username"' in response.data
-    assert b"css/styles.css?v=72" in response.data
+    assert b"css/styles.css?v=74" in response.data
     assert "<title>Админ-панель</title>".encode() in response.data
     assert "Админ-панель — KHUDOVERDIEV".encode() not in response.data
     assert "Фотография сохраняет тишину момента".encode() in response.data
@@ -2041,7 +2041,7 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
     assert '<span class="client-discount-prompt">Оставьте отзыв и</span>'.encode() in response.data
     assert "<strong>получите скидку 15%</strong>".encode() in response.data
     assert "Получите скидку 15%%".encode() not in response.data
-    assert b"css/styles.css?v=72" in response.data
+    assert b"css/styles.css?v=74" in response.data
     assert b"client-camera-body" in response.data
     assert b"client-camera-lens-core" in response.data
     assert b"client-aperture" not in response.data
@@ -2062,8 +2062,13 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
     assert b'href="https://drive.google.com/photos"' in response.data
     assert b'href="https://vk.ru/reviews-190646738"' in response.data
     assert b'href="https://ph.khudoverdiev.ru"' in response.data
+    assert b'property="og:image"' in response.data
+    assert b"photo/ph-favicon.png?v=4" in response.data
+    assert b'property="og:image:alt" content="' in response.data
+    assert b'name="twitter:card" content="summary"' in response.data
     assert "Страница фотографа".encode() in response.data
     assert b'class="client-header-badge"' in response.data
+    assert b'class="client-badge-arrow"' in response.data
     assert b'class="client-header-link"' not in response.data
     assert "Персональная ссылка".encode() not in response.data
     css = Path("static/css/styles.css").read_text(encoding="utf-8")
@@ -2081,6 +2086,8 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
         '    font-family: Inter, "Segoe UI", Arial, sans-serif;'
     ) in css
     template = Path("templates/client_photos.html").read_text(encoding="utf-8")
+    assert "↗" not in template
+    assert ".client-badge-arrow" in css
     assert "<span>Мне было очень приятно работать с вами.</span>" in template
     assert "<span>Ниже вы найдете ссылку на {{ client.delivery_copy.lead_noun }}.</span>" in template
     assert ".client-lead > span {\n    display: block;" in css
@@ -2088,8 +2095,11 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
     assert "top: max(22px, calc(50svh - 390px));" in css
     assert ".client-discount > div {\n    width: 100%;" in css
     assert ".client-discount > div > span,\n.client-discount > div > strong,\n.client-discount > div > p {" in css
-    assert "top: max(16px, calc(50svh - 384px));\n        right: 16px;\n        left: 16px;\n        width: auto;" in css
-    assert ".client-body.client-no-discount .client-header {\n        top: max(16px, calc(50svh - 314px));\n    }" in css
+    assert "top: calc(16px + env(safe-area-inset-top));\n        right: 16px;\n        left: 16px;\n        width: auto;" in css
+    assert ".client-header {\n        position: fixed;\n        top: calc(16px + env(safe-area-inset-top));" in css
+    assert ".client-body.client-no-discount .client-header {\n        top: calc(16px + env(safe-area-inset-top));\n    }" in css
+    assert "calc(50svh - 384px)" not in css
+    assert "calc(50svh - 314px)" not in css
     assert 'client-body{% if not client.discount_text %} client-no-discount{% endif %} notranslate' in template
     assert "padding: 72px 16px 24px;\n        place-items: center;" in css
     assert ".client-link-icon {\n    width: 28px;" in css
