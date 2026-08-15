@@ -541,6 +541,13 @@ def test_it_portfolio_keeps_security_headers_and_records_visit(client):
     assert len(db_rows("unique_visits")) == 1
 
 
+def test_ph_favicon_png_supports_transparency():
+    favicon = Path("static/photo/ph-favicon.png").read_bytes()
+
+    assert favicon.startswith(b"\x89PNG\r\n\x1a\n")
+    assert favicon[25] == 6  # PNG RGBA color type.
+
+
 def test_ph_subdomain_renders_photographer_portfolio(client):
     response = client.get("/", base_url="http://ph.khudoverdiev.ru")
 
@@ -560,6 +567,9 @@ def test_ph_subdomain_renders_photographer_portfolio(client):
     assert b"photo/ph-favicon.ico" in response.data
     assert b"photo/ph-favicon.svg" in response.data
     assert b"photo/ph-favicon.png" in response.data
+    assert b'property="og:image"' in response.data
+    assert b"photo/ph-favicon.png?v=3" in response.data
+    assert b'rel="apple-touch-icon"' in response.data
     assert b"portfolio/vh-favicon.svg" not in response.data
     assert b">PH<span>.</span></a>" in response.data
     assert b">IT<span" not in response.data
