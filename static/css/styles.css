@@ -2902,12 +2902,12 @@ a {
         position: absolute;
         top: calc(16px + env(safe-area-inset-top));
         right: auto;
-        left: auto;
+        left: 50%;
         width: calc(100% - 32px);
         min-height: 48px;
-        margin: 0 auto;
+        margin: 0;
         justify-content: center;
-        transform: none;
+        transform: translateX(-50%);
         pointer-events: none;
     }
 
