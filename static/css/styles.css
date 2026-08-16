@@ -2679,11 +2679,20 @@ a {
 }
 
 .client-card-unavailable h1 {
+    position: relative;
+    z-index: 1;
     max-width: 11ch;
 }
 
 .client-card-unavailable .client-lead {
+    position: relative;
+    z-index: 1;
     max-width: 620px;
+}
+
+.client-card-unavailable .client-kicker {
+    position: relative;
+    z-index: 1;
 }
 
 @keyframes clientCardIn {
@@ -2890,13 +2899,13 @@ a {
     }
 
     .client-header {
-        position: sticky;
+        position: absolute;
         top: calc(16px + env(safe-area-inset-top));
         right: auto;
         left: auto;
         width: calc(100% - 32px);
         min-height: 48px;
-        margin: calc(16px + env(safe-area-inset-top)) auto -48px;
+        margin: 0 auto;
         justify-content: center;
         transform: none;
         pointer-events: none;

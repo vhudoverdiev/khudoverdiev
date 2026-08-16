@@ -20,24 +20,37 @@
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='photo/ph-favicon.svg') }}?v=5">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='photo/ph-favicon.png') }}?v=4">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='photo/ph-favicon.png') }}?v=4">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=75">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=77">
 </head>
 <body class="client-body">
     <div class="portrait-orientation-lock" role="alert" aria-live="polite">
         <div class="portrait-orientation-lock-card"><span class="portrait-orientation-lock-icon" aria-hidden="true">↻</span><strong>Поверните телефон</strong><span>Страница доступна в вертикальном режиме.</span></div>
     </div>
     <header class="client-header">
-        <span><i class="client-badge-arrow" aria-hidden="true"></i> Персональная ссылка</span>
+        <a class="client-header-badge" href="https://ph.khudoverdiev.ru" rel="noopener">
+            <i class="client-badge-arrow" aria-hidden="true"></i>
+            <span>Страница фотографа</span>
+        </a>
     </header>
 
     <main class="client-page">
         <section class="client-card client-card-unavailable" aria-labelledby="unavailable-title">
-            <p class="client-kicker"><i></i> Доступ закрыт</p>
+            <p class="client-kicker">
+                <i aria-hidden="true">
+                    <svg viewBox="0 0 24 24" role="presentation" focusable="false">
+                        <path class="client-camera-body" d="M4.75 8.25h2.1l1.2-2h7.9l1.2 2h2.1A1.75 1.75 0 0 1 21 10v7.25A1.75 1.75 0 0 1 19.25 19H4.75A1.75 1.75 0 0 1 3 17.25V10a1.75 1.75 0 0 1 1.75-1.75Z" />
+                        <circle class="client-camera-lens" cx="12" cy="13" r="3.65" />
+                        <circle class="client-camera-lens-core" cx="12" cy="13" r="1.45" />
+                        <circle class="client-camera-status" cx="18" cy="10.7" r="0.65" />
+                    </svg>
+                </i>
+                Доступ закрыт
+            </p>
             <h1 id="unavailable-title">Материалы недоступны</h1>
             {% if direct_visit %}
             <p class="client-lead">Готовые фотографии открываются по персональной ссылке, которую я отправляю после съемки.</p>
             {% else %}
-            <p class="client-lead">Ссылка могла быть выключена, изменена или еще не готова. Напишите мне, и я проверю доступ.</p>
+            <p class="client-lead">Ссылка могла быть выключена, изменена или еще не готова. Напишите фотографу.</p>
             {% endif %}
         </section>
     </main>
