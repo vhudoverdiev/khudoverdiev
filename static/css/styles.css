@@ -2890,12 +2890,13 @@ a {
     }
 
     .client-header {
-        position: fixed;
+        position: sticky;
         top: calc(16px + env(safe-area-inset-top));
-        right: 16px;
-        left: 16px;
-        width: auto;
+        right: auto;
+        left: auto;
+        width: calc(100% - 32px);
         min-height: 48px;
+        margin: calc(16px + env(safe-area-inset-top)) auto -48px;
         justify-content: center;
         transform: none;
         pointer-events: none;

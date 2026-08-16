@@ -193,7 +193,7 @@ def test_allowed_host_with_port_is_accepted(client):
     response = client.get("/", base_url="http://localhost:5000")
 
     assert response.status_code == 200
-    assert b"css/styles.css?v=74" in response.data
+    assert b"css/styles.css?v=75" in response.data
     assert b'id="message-form-error"' in response.data
     assert b"payload.error" in response.data
     assert "<title>Твой вдохновитель</title>".encode() in response.data
@@ -1582,7 +1582,7 @@ def test_admin_login_page_is_no_store_and_contains_csrf(client):
     assert b'name="csrf_token"' in response.data
     assert b'name="username"' in response.data
     assert b'autocomplete="username"' in response.data
-    assert b"css/styles.css?v=74" in response.data
+    assert b"css/styles.css?v=75" in response.data
     assert "<title>Админ-панель</title>".encode() in response.data
     assert "Админ-панель — KHUDOVERDIEV".encode() not in response.data
     assert "Фотография сохраняет тишину момента".encode() in response.data
@@ -2041,7 +2041,7 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
     assert '<span class="client-discount-prompt">Оставьте отзыв и</span>'.encode() in response.data
     assert "<strong>получите скидку 15%</strong>".encode() in response.data
     assert "Получите скидку 15%%".encode() not in response.data
-    assert b"css/styles.css?v=74" in response.data
+    assert b"css/styles.css?v=75" in response.data
     assert b"client-camera-body" in response.data
     assert b"client-camera-lens-core" in response.data
     assert b"client-aperture" not in response.data
@@ -2095,8 +2095,9 @@ def test_photo_client_page_renders_personal_redirect_buttons_without_storing_pho
     assert "top: max(22px, calc(50svh - 390px));" in css
     assert ".client-discount > div {\n    width: 100%;" in css
     assert ".client-discount > div > span,\n.client-discount > div > strong,\n.client-discount > div > p {" in css
-    assert "top: calc(16px + env(safe-area-inset-top));\n        right: 16px;\n        left: 16px;\n        width: auto;" in css
-    assert ".client-header {\n        position: fixed;\n        top: calc(16px + env(safe-area-inset-top));" in css
+    assert "position: sticky;\n        top: calc(16px + env(safe-area-inset-top));" in css
+    assert "width: calc(100% - 32px);\n        min-height: 48px;\n        margin: calc(16px + env(safe-area-inset-top)) auto -48px;" in css
+    assert ".client-header {\n        position: sticky;\n        top: calc(16px + env(safe-area-inset-top));" in css
     assert ".client-body.client-no-discount .client-header {\n        top: calc(16px + env(safe-area-inset-top));\n    }" in css
     assert "calc(50svh - 384px)" not in css
     assert "calc(50svh - 314px)" not in css
