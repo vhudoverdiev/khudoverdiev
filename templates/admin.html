@@ -329,10 +329,18 @@
                                 <div class="client-archive-list" id="client-archive-list">
                                 {% if archived_photo_clients %}
                                     {% for client in archived_photo_clients %}
-                                    <article class="client-archive-item">
-                                        <strong>{{ client.client_name }}</strong>
-                                        <small>{{ photo_client_public_url(client.slug) }}</small>
-                                        <time>{{ client.archived_at }}</time>
+                                    <article class="client-archive-item" data-archived-client>
+                                        <div class="client-archive-main">
+                                            <strong>{{ client.client_name }}</strong>
+                                            <small>{{ photo_client_public_url(client.slug) }}</small>
+                                        </div>
+                                        <div class="client-archive-actions">
+                                            <time>{{ client.archived_at }}</time>
+                                            <form action="{{ url_for('restore_photo_client', client_id=client.id) }}" method="post" data-client-restore-form>
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <button type="submit">Вернуть</button>
+                                            </form>
+                                        </div>
                                     </article>
                                     {% endfor %}
                                 {% else %}
@@ -521,13 +529,32 @@
                 if (empty) empty.remove();
                 const item = document.createElement('article');
                 item.className = 'client-archive-item';
+                item.dataset.archivedClient = '';
+                const main = document.createElement('div');
+                main.className = 'client-archive-main';
                 const name = document.createElement('strong');
                 name.textContent = payload.client_name || 'Клиент';
                 const url = document.createElement('small');
                 url.textContent = payload.url || '';
+                main.append(name, url);
+                const actions = document.createElement('div');
+                actions.className = 'client-archive-actions';
                 const time = document.createElement('time');
                 time.textContent = payload.archived_at || '';
-                item.append(name, url, time);
+                const form = document.createElement('form');
+                form.method = 'post';
+                form.action = `/st/clients/${payload.id}/restore`;
+                form.dataset.clientRestoreForm = '';
+                const csrf = document.createElement('input');
+                csrf.type = 'hidden';
+                csrf.name = 'csrf_token';
+                csrf.value = csrfToken;
+                const restore = document.createElement('button');
+                restore.type = 'submit';
+                restore.textContent = 'Вернуть';
+                form.append(csrf, restore);
+                actions.append(time, form);
+                item.append(main, actions);
                 archiveList.prepend(item);
                 const archiveCount = document.getElementById('client-archive-count');
                 if (archiveCount) archiveCount.textContent = String(parseInt(archiveCount.textContent || '0', 10) + 1);
@@ -675,6 +702,27 @@
             });
 
             document.addEventListener('submit', (event) => {
+                const restoreForm = event.target.closest('[data-client-restore-form]');
+                if (restoreForm) {
+                    event.preventDefault();
+                    const button = restoreForm.querySelector('button[type="submit"]');
+                    if (button) button.disabled = true;
+                    fetch(restoreForm.action, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'X-Requested-With': 'fetch',
+                            'X-CSRF-Token': csrfToken,
+                        },
+                    }).then((response) => {
+                        if (!response.ok) throw new Error('restore failed');
+                        window.location.reload();
+                    }).catch((error) => {
+                        console.warn(error);
+                        if (button) button.disabled = false;
+                    });
+                    return;
+                }
                 const form = event.target.closest('[data-client-edit-form]');
                 if (!form) return;
                 event.preventDefault();

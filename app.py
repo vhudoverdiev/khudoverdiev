@@ -13,7 +13,7 @@ from ipaddress import ip_address, ip_network
 from urllib.parse import urlparse
 import uuid
 
-from flask import Flask, abort, g, jsonify, make_response, redirect, render_template, request, session, url_for
+from flask import Flask, abort, g, jsonify, make_response, redirect, render_template, request, send_from_directory, session, url_for
 from werkzeug.exceptions import HTTPException
 from werkzeug.security import check_password_hash
 
@@ -41,6 +41,16 @@ ROOT_MESSAGE_SCOPE = "root-message"
 PROJECT_LEAD_COOKIE = "project_lead_device"
 PROJECT_LEAD_DAILY_LIMIT = 3
 PROJECT_LEAD_SCOPE = "it-project-lead"
+PISMO_PASSWORD = os.environ.get("PISMO_PASSWORD", "pismoqwe")
+PISMO_PATH = Path(os.environ.get("PISMO_PATH", Path(__file__).with_name("pismo.txt"))).expanduser()
+DEFAULT_PISMO_TEXT = """Здравствуйте!
+Меня зовут Владимир Худовердиев. Хочу откликнуться на вакансию Junior Python-разработчика.
+Я разрабатываю веб-приложения на Python и Flask, умею работать с backend-логикой, данными, формами, авторизацией, задачами, статусами и CRM-функциональностью. У меня есть практический опыт создания полноценной CRM для строительной компании: я сам проектировал структуру приложения, продумывал пользовательские сценарии, реализовывал основную логику и довёл проект до рабочего состояния.
+До перехода в IT я работал в строительной сфере, поэтому хорошо понимаю реальные бизнес-процессы, умею разбираться в задачах не только со стороны кода, но и со стороны пользователя. Это помогает мне быстрее понимать, какую проблему должен решать продукт, и переводить рабочие процессы в понятную функциональность.
+Сейчас я ищу позицию Junior Python-разработчика, где смогу развиваться в backend-разработке, работать с реальными задачами и приносить пользу команде. Готов быстро вникать в проект, разбирать существующий код, аккуратно выполнять задачи и расти как разработчик.
+Буду рад обсудить вакансию и показать свои проекты.
+С уважением,
+Владимир Худовердиев"""
 
 BRANCH_HOSTS = {
     "root": "khudoverdiev.ru",
@@ -340,6 +350,19 @@ def validate_csrf():
 def clean_text(value, max_length):
     value = CONTROL_CHARS_RE.sub("", (value or "").strip())
     return value[:max_length]
+
+
+def read_pismo_text():
+    try:
+        text = PISMO_PATH.read_text(encoding="utf-8").strip()
+    except FileNotFoundError:
+        return DEFAULT_PISMO_TEXT
+    return text or DEFAULT_PISMO_TEXT
+
+
+def write_pismo_text(text):
+    PISMO_PATH.parent.mkdir(parents=True, exist_ok=True)
+    PISMO_PATH.write_text(text, encoding="utf-8")
 
 
 def hmac_digest(value):
@@ -657,7 +680,7 @@ def security_gate():
     if request.path.startswith((ADMIN_PATH, LEGACY_ADMIN_PATH, "/admin")) and not is_admin_ip_allowed():
         audit_event("admin_ip_blocked")
         abort(404)
-    if request.endpoint != "static" and request.method == "GET":
+    if request.endpoint not in {"static", "resume"} and request.method == "GET":
         csrf_token()
 
 
@@ -1160,6 +1183,46 @@ def health():
     return jsonify({"status": "ok"})
 
 
+@app.route("/rezume")
+def resume():
+    return send_from_directory(app.static_folder, "portfolio/resume.pdf", mimetype="application/pdf")
+
+
+@app.route("/pismo", methods=["GET", "POST"])
+def pismo():
+    error = None
+    saved = False
+
+    if request.method == "POST":
+        if not validate_csrf():
+            abort(400)
+        action = request.form.get("action")
+        if action == "login":
+            if hmac.compare_digest(request.form.get("password", ""), PISMO_PASSWORD):
+                session["pismo_authorized"] = True
+                return redirect(url_for("pismo"))
+            error = "Неверный пароль"
+        elif action == "save":
+            if not session.get("pismo_authorized"):
+                abort(403)
+            write_pismo_text(clean_text(request.form.get("letter"), 12000))
+            saved = True
+        elif action == "logout":
+            session.pop("pismo_authorized", None)
+            return redirect(url_for("pismo"))
+        else:
+            abort(400)
+
+    authorized = bool(session.get("pismo_authorized"))
+    return render_template(
+        "pismo.html",
+        authorized=authorized,
+        error=error,
+        saved=saved,
+        letter=read_pismo_text() if authorized else "",
+    )
+
+
 @app.route("/portfolio")
 def photo_portfolio():
     visitor_id = record_visit()
@@ -1495,6 +1558,49 @@ def delete_photo_client(client_id):
             }
         )
     audit_event("photo_client_archived", str(client_id))
+    return redirect(url_for("admin_clients"))
+
+
+@app.route(f"{ADMIN_PATH}/clients/<int:client_id>/restore", methods=["POST"])
+@admin_required
+def restore_photo_client(client_id):
+    init_db()
+    if not validate_csrf():
+        audit_event("admin_client_restore_csrf_failed", str(client_id))
+        abort(400)
+
+    restored_at = now()
+    with get_db() as db:
+        cursor = db.execute(
+            """
+            UPDATE photo_clients
+            SET archived_at = NULL, is_active = 1, updated_at = ?
+            WHERE id = ? AND archived_at IS NOT NULL
+            """,
+            (restored_at, client_id),
+        )
+        restored = db.execute(
+            """
+            SELECT id, client_name, slug, is_active, updated_at
+            FROM photo_clients
+            WHERE id = ? AND archived_at IS NULL
+            """,
+            (client_id,),
+        ).fetchone()
+
+    if cursor.rowcount == 0 or restored is None:
+        abort(404)
+
+    audit_event("photo_client_restored", str(client_id))
+    if request.headers.get("X-Requested-With") == "fetch":
+        return jsonify(
+            {
+                "id": restored["id"],
+                "client_name": restored["client_name"],
+                "url": photo_client_public_url(restored["slug"]),
+                "is_active": bool(restored["is_active"]),
+            }
+        )
     return redirect(url_for("admin_clients"))
 
 

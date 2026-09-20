@@ -1945,26 +1945,66 @@ a {
 .client-archive-item {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: 5px 14px;
-    padding: 13px 14px;
+    align-items: center;
+    gap: 14px 20px;
+    padding: 14px 16px;
     border: 1px solid rgba(94, 65, 43, 0.08);
     border-radius: 14px;
     background: rgba(255, 255, 255, 0.42);
 }
 
-.client-archive-item strong,
-.client-archive-item small {
+.client-archive-main {
+    display: grid;
+    min-width: 0;
+    gap: 5px;
+}
+
+.client-archive-main strong,
+.client-archive-main small {
     overflow-wrap: anywhere;
 }
 
-.client-archive-item small,
+.client-archive-main small,
 .client-archive-item time {
     color: var(--admin-muted);
     font-size: 12px;
 }
 
 .client-archive-item time {
-    justify-self: end;
+    white-space: nowrap;
+}
+
+.client-archive-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.client-archive-actions form {
+    margin: 0;
+}
+
+.client-archive-actions button {
+    min-height: 38px;
+    padding: 0 16px;
+    border: 1px solid rgba(156, 106, 56, 0.18);
+    border-radius: 12px;
+    background: rgba(246, 229, 210, 0.72);
+    color: var(--admin-cocoa);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 850;
+    cursor: pointer;
+}
+
+.client-archive-actions button:hover {
+    background: rgba(246, 229, 210, 0.98);
+}
+
+.client-archive-actions button:disabled {
+    cursor: wait;
+    opacity: 0.6;
 }
 
 .client-body {
@@ -3818,6 +3858,12 @@ a {
 
     .client-archive-item time {
         justify-self: start;
+    }
+
+    .client-archive-actions {
+        width: 100%;
+        justify-content: space-between;
+        flex-wrap: wrap;
     }
 
     .message-admin-card {

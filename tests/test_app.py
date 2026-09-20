@@ -11,6 +11,7 @@ import app as site
 @pytest.fixture()
 def client(tmp_path, monkeypatch):
     monkeypatch.setattr(site, "DB_PATH", tmp_path / "site.db")
+    monkeypatch.setattr(site, "PISMO_PATH", tmp_path / "pismo.txt")
     monkeypatch.setattr(site.app, "secret_key", "test-secret-key-that-is-long-enough-for-sessions")
     monkeypatch.setattr(site, "ADMIN_USERNAME", "admin")
     monkeypatch.setattr(site, "ADMIN_PASSWORD", "secret")
@@ -296,6 +297,7 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
     assert b"vh-favicon.svg?v=7" in portfolio.data
     assert b'content="width=device-width, initial-scale=1, viewport-fit=cover"' in portfolio.data
     assert b"css/it.css?v=108" in portfolio.data
+    assert b'href="/rezume"' in portfolio.data
     assert b'id="project-prompt"' in portfolio.data
     assert b'class="project-prompt-close"' in portfolio.data
     assert b'data-close-project-prompt' in portfolio.data
@@ -502,6 +504,90 @@ def test_it_subdomain_renders_developer_portfolio_without_replacing_root_taplink
         assert f"/go/{social_name}".encode() not in portfolio.data
     assert b'class="taplink-body"' in taplink.data
     assert "CRM «Передача»".encode() not in taplink.data
+
+
+def test_resume_route_serves_pdf_directly(client):
+    response = client.get("/rezume", base_url="http://it.khudoverdiev.ru")
+
+    assert response.status_code == 200
+    assert response.content_type == "application/pdf"
+    assert response.headers["X-Frame-Options"] == "DENY"
+    assert response.data.startswith(b"%PDF")
+    assert "Set-Cookie" not in response.headers
+    assert not site.DB_PATH.exists()
+
+
+def test_resume_pdf_is_served_as_static_asset(client):
+    response = client.get("/static/portfolio/resume.pdf", base_url="http://it.khudoverdiev.ru")
+
+    assert response.status_code == 200
+    assert response.headers["X-Frame-Options"] == "SAMEORIGIN"
+    assert response.data.startswith(b"%PDF")
+
+
+def test_pismo_requires_password_before_showing_editor(client):
+    response = client.get("/pismo", base_url="http://it.khudoverdiev.ru")
+
+    assert response.status_code == 200
+    assert "Введите пароль".encode() in response.data
+    assert b'name="password"' in response.data
+    assert "Junior Python-разработчика".encode() not in response.data
+
+
+def test_pismo_rejects_wrong_password(client):
+    csrf = csrf_from(client, "/pismo", base_url="http://it.khudoverdiev.ru")
+
+    response = client.post(
+        "/pismo",
+        base_url="http://it.khudoverdiev.ru",
+        data={"csrf_token": csrf, "action": "login", "password": "wrong"},
+    )
+
+    assert response.status_code == 200
+    assert "Неверный пароль".encode() in response.data
+    assert b"<textarea" not in response.data
+
+
+def test_pismo_login_shows_editor_and_default_letter(client):
+    csrf = csrf_from(client, "/pismo", base_url="http://it.khudoverdiev.ru")
+
+    response = client.post(
+        "/pismo",
+        base_url="http://it.khudoverdiev.ru",
+        data={"csrf_token": csrf, "action": "login", "password": "pismoqwe"},
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+    assert b"<textarea" in response.data
+    assert "Здравствуйте!".encode() in response.data
+    assert "Владимир Худовердиев".encode() in response.data
+
+
+def test_pismo_editor_saves_letter_and_escapes_preview(client):
+    csrf = csrf_from(client, "/pismo", base_url="http://it.khudoverdiev.ru")
+    client.post(
+        "/pismo",
+        base_url="http://it.khudoverdiev.ru",
+        data={"csrf_token": csrf, "action": "login", "password": "pismoqwe"},
+        follow_redirects=True,
+    )
+    with client.session_transaction(base_url="http://it.khudoverdiev.ru") as session:
+        csrf = session["_csrf_token"]
+
+    response = client.post(
+        "/pismo",
+        base_url="http://it.khudoverdiev.ru",
+        data={"csrf_token": csrf, "action": "save", "letter": "Привет\n<script>alert(1)</script>"},
+    )
+
+    assert response.status_code == 200
+    assert "Сохранено".encode() in response.data
+    assert site.PISMO_PATH.read_text(encoding="utf-8") == "Привет\n<script>alert(1)</script>"
+    assert b"&lt;script&gt;alert(1)&lt;/script&gt;" in response.data
+    assert b"<script>alert(1)</script>" not in response.data
+    css = Path("static/css/pismo.css").read_text(encoding="utf-8")
+    assert "white-space: pre-wrap;" in css
 
 
 def test_it_mobile_hero_height_does_not_follow_browser_viewport(client):
@@ -2452,6 +2538,39 @@ def test_photo_client_admin_fetch_delete_archives_link_without_losing_record(cli
     assert rows[0]["archived_at"]
     assert rows[0]["is_active"] == 0
     assert client.get("/client/ivanova-2026").status_code == 404
+
+
+def test_photo_client_admin_restores_archived_client(client):
+    client_id = insert_photo_client(slug="restore-me")
+    login_as_admin(client)
+    with client.session_transaction() as session:
+        csrf = session["_csrf_token"]
+
+    client.post(f"{site.ADMIN_PATH}/clients/{client_id}/delete", data={"csrf_token": csrf})
+    response = client.post(
+        f"{site.ADMIN_PATH}/clients/{client_id}/restore",
+        headers={"X-Requested-With": "fetch", "X-CSRF-Token": csrf},
+    )
+
+    row = db_rows("photo_clients")[0]
+    assert response.status_code == 200
+    assert response.get_json()["url"] == "https://ph.khudoverdiev.ru/client/restore-me"
+    assert row["archived_at"] is None
+    assert row["is_active"] == 1
+    assert client.get("/client/restore-me").status_code == 200
+
+
+def test_photo_client_restore_requires_csrf(client):
+    client_id = insert_photo_client(slug="stay-archived")
+    login_as_admin(client)
+    with client.session_transaction() as session:
+        csrf = session["_csrf_token"]
+    client.post(f"{site.ADMIN_PATH}/clients/{client_id}/delete", data={"csrf_token": csrf})
+
+    response = client.post(f"{site.ADMIN_PATH}/clients/{client_id}/restore")
+
+    assert response.status_code == 400
+    assert db_rows("photo_clients")[0]["archived_at"] is not None
 
 
 def test_client_delete_modal_wraps_long_public_urls_inside_card():
