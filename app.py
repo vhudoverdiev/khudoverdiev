@@ -41,7 +41,6 @@ ROOT_MESSAGE_SCOPE = "root-message"
 PROJECT_LEAD_COOKIE = "project_lead_device"
 PROJECT_LEAD_DAILY_LIMIT = 3
 PROJECT_LEAD_SCOPE = "it-project-lead"
-PISMO_PASSWORD = os.environ.get("PISMO_PASSWORD", "pismoqwe")
 PISMO_PATH = Path(os.environ.get("PISMO_PATH", Path(__file__).with_name("pismo.txt"))).expanduser()
 DEFAULT_PISMO_TEXT = """Здравствуйте!
 Меня зовут Владимир Худовердиев. Хочу откликнуться на вакансию Junior Python-разработчика.
@@ -1198,22 +1197,22 @@ def pismo():
             abort(400)
         action = request.form.get("action")
         if action == "login":
-            if hmac.compare_digest(request.form.get("password", ""), PISMO_PASSWORD):
-                session["pismo_authorized"] = True
+            if verify_admin_credentials(request.form.get("username"), request.form.get("password")):
+                session["pismo_admin"] = True
                 return redirect(url_for("pismo"))
-            error = "Неверный пароль"
+            error = "Неверный логин или пароль"
         elif action == "save":
-            if not session.get("pismo_authorized"):
+            if not session.get("pismo_admin"):
                 abort(403)
             write_pismo_text(clean_text(request.form.get("letter"), 12000))
             saved = True
         elif action == "logout":
-            session.pop("pismo_authorized", None)
+            session.pop("pismo_admin", None)
             return redirect(url_for("pismo"))
         else:
             abort(400)
 
-    authorized = bool(session.get("pismo_authorized"))
+    authorized = bool(session.get("pismo_admin"))
     return render_template(
         "pismo.html",
         authorized=authorized,

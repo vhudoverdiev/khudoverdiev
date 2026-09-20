@@ -15,13 +15,17 @@
             <section class="login-card" aria-labelledby="login-title">
                 <a class="brand" href="{{ url_for('index') }}">IT<span>.</span></a>
                 <p class="eyebrow">Закрытая страница</p>
-                <h1 id="login-title">Введите пароль</h1>
+                <h1 id="login-title">Вход</h1>
                 <form method="post" class="login-form">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="action" value="login">
                     <label>
+                        <span>Логин</span>
+                        <input type="text" name="username" autocomplete="username" required autofocus>
+                    </label>
+                    <label>
                         <span>Пароль</span>
-                        <input type="password" name="password" autocomplete="current-password" required autofocus>
+                        <input type="password" name="password" autocomplete="current-password" required>
                     </label>
                     {% if error %}<p class="form-message error" role="alert">{{ error }}</p>{% endif %}
                     <button type="submit">Открыть письмо</button>

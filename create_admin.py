@@ -19,7 +19,8 @@ def main():
 
     if "-h" not in args and "--help" not in args:
         if not has_option(args, "--username"):
-            args = ["--username", "admin", *args]
+            username = input("Admin username: ").strip()
+            args = ["--username", username, *args]
         if not has_option(args, "--password") and not has_option(args, "--prompt-password"):
             args = [*args, "--prompt-password"]
 

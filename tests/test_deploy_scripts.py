@@ -153,7 +153,7 @@ def test_admin_credentials_script_updates_env_with_password_hash(tmp_path):
     assert check_password_hash(values["ADMIN_PASSWORD_HASH"], "new-secret")
 
 
-def test_create_admin_launcher_defaults_to_admin_user_and_hashes_password(tmp_path):
+def test_create_admin_launcher_prompts_for_username_and_hashes_password(tmp_path):
     env_path = tmp_path / ".env"
     env_path.write_text("FLASK_SECRET_KEY=keep-me\n", encoding="utf-8")
 
@@ -168,13 +168,39 @@ def test_create_admin_launcher_defaults_to_admin_user_and_hashes_password(tmp_pa
         ],
         check=True,
         capture_output=True,
+        input="owner\n",
         text=True,
     )
 
     values = dict(line.split("=", 1) for line in env_path.read_text(encoding="utf-8").splitlines() if "=" in line)
     assert values["FLASK_SECRET_KEY"] == "keep-me"
-    assert values["ADMIN_USERNAME"] == "admin"
+    assert values["ADMIN_USERNAME"] == "owner"
     assert values["ADMIN_PASSWORD"] == ""
+    assert check_password_hash(values["ADMIN_PASSWORD_HASH"], "new-secret")
+
+
+def test_create_admin_launcher_accepts_username_option_without_prompt(tmp_path):
+    env_path = tmp_path / ".env"
+    env_path.write_text("FLASK_SECRET_KEY=keep-me\n", encoding="utf-8")
+
+    subprocess.run(
+        [
+            sys.executable,
+            str(PROJECT_ROOT / "create_admin.py"),
+            "--env",
+            str(env_path),
+            "--username",
+            "editor",
+            "--password",
+            "new-secret",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    values = dict(line.split("=", 1) for line in env_path.read_text(encoding="utf-8").splitlines() if "=" in line)
+    assert values["ADMIN_USERNAME"] == "editor"
     assert check_password_hash(values["ADMIN_PASSWORD_HASH"], "new-secret")
 
 

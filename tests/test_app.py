@@ -525,11 +525,12 @@ def test_resume_pdf_is_served_as_static_asset(client):
     assert response.data.startswith(b"%PDF")
 
 
-def test_pismo_requires_password_before_showing_editor(client):
+def test_pismo_requires_admin_login_before_showing_editor(client):
     response = client.get("/pismo", base_url="http://it.khudoverdiev.ru")
 
     assert response.status_code == 200
-    assert "Введите пароль".encode() in response.data
+    assert "<h1 id=\"login-title\">Вход</h1>".encode() in response.data
+    assert b'name="username"' in response.data
     assert b'name="password"' in response.data
     assert b"css/pismo.css?v=2" in response.data
     assert "Junior Python-разработчика".encode() not in response.data
@@ -540,17 +541,17 @@ def test_pismo_requires_password_before_showing_editor(client):
     assert "padding: 0 16px 0 58px;" in css
 
 
-def test_pismo_rejects_wrong_password(client):
+def test_pismo_rejects_wrong_admin_credentials(client):
     csrf = csrf_from(client, "/pismo", base_url="http://it.khudoverdiev.ru")
 
     response = client.post(
         "/pismo",
         base_url="http://it.khudoverdiev.ru",
-        data={"csrf_token": csrf, "action": "login", "password": "wrong"},
+        data={"csrf_token": csrf, "action": "login", "username": "admin", "password": "wrong"},
     )
 
     assert response.status_code == 200
-    assert "Неверный пароль".encode() in response.data
+    assert "Неверный логин или пароль".encode() in response.data
     assert b"<textarea" not in response.data
 
 
@@ -560,7 +561,7 @@ def test_pismo_login_shows_editor_and_default_letter(client):
     response = client.post(
         "/pismo",
         base_url="http://it.khudoverdiev.ru",
-        data={"csrf_token": csrf, "action": "login", "password": "pismoqwe"},
+        data={"csrf_token": csrf, "action": "login", "username": "admin", "password": "secret"},
         follow_redirects=True,
     )
 
@@ -575,7 +576,7 @@ def test_pismo_editor_saves_letter_and_escapes_preview(client):
     client.post(
         "/pismo",
         base_url="http://it.khudoverdiev.ru",
-        data={"csrf_token": csrf, "action": "login", "password": "pismoqwe"},
+        data={"csrf_token": csrf, "action": "login", "username": "admin", "password": "secret"},
         follow_redirects=True,
     )
     with client.session_transaction(base_url="http://it.khudoverdiev.ru") as session:
