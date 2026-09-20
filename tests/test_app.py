@@ -531,7 +531,13 @@ def test_pismo_requires_password_before_showing_editor(client):
     assert response.status_code == 200
     assert "Введите пароль".encode() in response.data
     assert b'name="password"' in response.data
+    assert b"css/pismo.css?v=1" in response.data
     assert "Junior Python-разработчика".encode() not in response.data
+    css = Path("static/css/pismo.css").read_text(encoding="utf-8")
+    assert "--lime: #ceff33;" in css
+    assert "background: linear-gradient(112deg, #10120f 0%, #121410 58%, #0b0d0b 100%);" in css
+    assert 'content: "portfolio";' in css
+    assert "padding: 0 16px 0 58px;" in css
 
 
 def test_pismo_rejects_wrong_password(client):
